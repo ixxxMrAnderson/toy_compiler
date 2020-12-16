@@ -39,12 +39,12 @@ suite : '{' statement* '}';
 statement
     : suite                                                 # block
     | var_def                                               # var_def_stmt
-    | IF '(' expression ')' true_stmt=statement 
-        (ELSE false_stmt=statement)?                        # if_stmt
+    | IF '(' expression ')' if_true = statement 
+        (ELSE if_false = statement)?                        # if_stmt
     | WHILE '(' expression ')' statement;					# while_stmt
-    | FOR '(' init = expression? ';' 
-    	condition = expression? ';'
-    	step =  expression? ')' statement;					# for_stmt
+    | FOR '(' for_init = expression? ';' 
+    	for_gate = expression? ';'
+    	for_it =  expression? ')' statement;				# for_stmt
     | RETURN expression? ';'                                # return_stmt
     | BREAK ';' 										 	# break_stmt
     | CONTINUE ';' 											# continue_stmt
