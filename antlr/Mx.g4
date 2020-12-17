@@ -71,7 +71,7 @@ expression
 	| expression op = '|' expression 						# binary_expr
 	| expression op = '&&' expression 						# binary_expr
 	| expression op = '||' expression 						# binary_expr
-	| expression '=' expression 							# assign_expr
+	| <assoc=right> expression '=' expression 				# assign_expr
 	| THIS 													# this_expr
 	;
 
