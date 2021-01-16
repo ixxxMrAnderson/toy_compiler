@@ -367,7 +367,7 @@ public class SemanticChecker implements ASTVisitor {
 //        System.out.println("!!l: " + it.lhs.expr_type.type);
         it.rhs = (ExprNode) it.rhs.accept(this);
 //        System.out.println("!!r: " + it.rhs.expr_type.type);
-        if (!it.lhs.expr_type.cmp(it.rhs.expr_type) && !(it.rhs.expr_type.type == type.NULL && it.lhs.expr_type.type == type.CLASS))
+        if (!it.lhs.expr_type.cmp(it.rhs.expr_type) && !(it.rhs.expr_type.type == type.NULL && (it.lhs.expr_type.type == type.CLASS || it.lhs.expr_type.dimension > 0)))
             throw new semanticError("Semantic Error: assign_sema2", it.pos);
         return it;
     }
