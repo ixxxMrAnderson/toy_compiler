@@ -6,10 +6,12 @@ import java.util.HashSet;
 public class Scope {
 
     private HashSet<DefinedVariable> members;
+    private HashSet<String> members_name;
     private Scope parent_scope;
 
     public Scope(Scope parent_scope) {
         members = new HashSet<>();
+        members_name = new HashSet<>();
         this.parent_scope = parent_scope;
     }
 
@@ -19,13 +21,10 @@ public class Scope {
 
     public void defineVariable(String name, Type type, position pos) {
         DefinedVariable tmp = new DefinedVariable(name, type);
-        if (members != null){
-            for (DefinedVariable tmp_ : members) {
-                if (tmp_.id.equals(name))
-                    throw new semanticError("Semantic Error: variable redefine", pos);
-            }
-        }
+        if (members_name != null && members_name.contains(name))
+            throw new semanticError("Semantic Error: variable redefine", pos);
         members.add(tmp);
+        members_name.add(name);
     }
 
     public boolean containsVariable(String name, boolean lookUpon) {
@@ -43,20 +42,14 @@ public class Scope {
     }
 
     public Type getType(String name, boolean lookUpon) {
-//        System.out.println("getType: " + name);
-        Type return_ = new Type();
-        if (members != null){
+        if (members_name != null && members_name.contains(name)) {
+//            System.out.println("get type: "+name);
             for (DefinedVariable tmp : members)
-                if (tmp.id.equals(name)) {
-//                    System.out.println(name + " dimension: " + tmp.type.dimension);
-                    return_.type = tmp.type.type;
-                    return_.class_id = tmp.type.class_id;
-                    return_.dimension = tmp.type.dimension;
-                    return return_;
-                }
-        }
-        if (parent_scope != null && lookUpon)
+                if (tmp.id.equals(name))
+                    return new Type(tmp.type);
+        } else if (parent_scope != null && lookUpon) {
             return parent_scope.getType(name, true);
-        return return_;
+        }
+        return null;
     }
 }

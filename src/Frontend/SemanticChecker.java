@@ -238,14 +238,18 @@ public class SemanticChecker implements ASTVisitor {
     public forStmtNode visit(forStmtNode it) {
         boolean last_loop = loop_flag;
         loop_flag = true;
+//        System.out.println("init");
         if (it.init != null) it.init = (ExprNode) it.init.accept(this);
+//        System.out.println("cond");
         if (it.condition != null) {
             it.condition = (ExprNode) it.condition.accept(this);
             if (it.condition.expr_type.type != type.BOOL) {
                 throw new semanticError("Semantic Error: for_sema", it.condition.pos);
             }
         }
+//        System.out.println("step");
         if (it.step != null) it.step = (ExprNode) it.step.accept(this);
+//        System.out.println("body");
         currentScope = new Scope(currentScope);
         if (it.body != null) it.body = (StmtNode) it.body.accept(this);
         currentScope = currentScope.parentScope();
@@ -374,8 +378,11 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public binaryExprNode visit(binaryExprNode it) {
+//        System.out.println("lhs");
         it.lhs = (ExprNode) it.lhs.accept(this);
-        it.rhs = (ExprNode) it.lhs.accept(this);
+//        System.out.println("rhs");
+        it.rhs = (ExprNode) it.rhs.accept(this);
+//        System.out.println("rhs_over" + it.op);
         switch (it.op) {
             case MUL: case DIV: case MOD: case SUB: case SLA: case SRA: case BITWISE_AND: case BITWISE_XOR: case BITWISE_OR:
                 if (it.lhs.expr_type.type != type.INT)
@@ -421,10 +428,10 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public varExprNode visit(varExprNode it) {
-        if (currentScope.containsVariable(it.id, true)) {
+        Type type_ = currentScope.getType(it.id, true);
+        if (type_ != null) {
             it.isAssignable = true;
-            it.expr_type = new Type(currentScope.getType(it.id, true));
-//            System.out.println(it.expr_type.type);
+            it.expr_type = new Type(type_);
             if (it.expr_type.type == type.VOID || defined_class_name.contains(it.id))
                 throw new semanticError("Semantic Error: var_expr_sema1: " + it.id, it.pos);
         } else if (!checkFunctionDefined(it.id, it.pos)) {

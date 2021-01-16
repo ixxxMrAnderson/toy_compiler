@@ -16,9 +16,9 @@ import java.io.InputStream;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-//        String file_name = "./testcases/sema/basic-package/basic-59.mx";
-//        InputStream input = new FileInputStream(file_name);
-        InputStream input = System.in;
+        String file_name = "./testcases/sema/loop-package/loop-2.mx";
+        InputStream input = new FileInputStream(file_name);
+//        InputStream input = System.in;
 
         try {
             MxLexer lexer = new MxLexer(CharStreams.fromStream(input));
