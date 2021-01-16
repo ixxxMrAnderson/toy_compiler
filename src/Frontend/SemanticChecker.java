@@ -123,7 +123,7 @@ public class SemanticChecker implements ASTVisitor {
         if (defined_class_name.contains(it.name))
             throw new semanticError("Semantic Error: fun_def_sema", it.pos);
         if (it.name.equals("main")) {
-            if (it.type.type.type != type.INT)
+            if (it.type.type.type != type.INT || it.parameters_type.size() > 0)
                 throw new semanticError("Semantic Error: fun_def_sema1" + it.type.type.type, it.pos);
             main_called = true;
         }
@@ -293,9 +293,9 @@ public class SemanticChecker implements ASTVisitor {
     public suffixExprNode visit(suffixExprNode it) {
         it.expr = (ExprNode) it.expr.accept(this);
         if (!it.expr.isAssignable)
-            throw new semanticError("Semantic Error: suffix_sema", it.expr.pos);
+            throw new semanticError("Semantic Error: suffix_sema1", it.expr.pos);
         if (it.expr.expr_type.type != type.INT)
-            throw new semanticError("Semantic Error: suffix_sema", it.expr.pos);
+            throw new semanticError("Semantic Error: suffix_sema2", it.expr.pos);
         it.expr_type.type = type.INT;
         it.isAssignable = false;
         return it;
@@ -325,6 +325,7 @@ public class SemanticChecker implements ASTVisitor {
                 it.expr_type.type = type.BOOL;
                 break;
         }
+        it.isAssignable = true;
 //        System.out.println("pre_"+it.expr_type.type);
         return it;
     }
@@ -363,8 +364,9 @@ public class SemanticChecker implements ASTVisitor {
         if (!it.lhs.isAssignable)
             throw new semanticError("Semantic Error: assign_sema1", it.lhs.pos);
         it.rhs = (ExprNode) it.rhs.accept(this);
-//        System.out.println("!!: " + it.rhs.expr_type.type);
-        if (!it.lhs.expr_type.cmp(it.rhs.expr_type) && it.rhs.expr_type.type != type.NULL)
+//        System.out.println("!!r: " + it.rhs.expr_type.type);
+//        System.out.println("!!l: " + it.rhs.expr_type.type);
+        if (!it.lhs.expr_type.cmp(it.rhs.expr_type) && !(it.rhs.expr_type.type == type.NULL && it.lhs.expr_type.type != type.CLASS))
             throw new semanticError("Semantic Error: assign_sema2", it.pos);
         return it;
     }
@@ -421,7 +423,7 @@ public class SemanticChecker implements ASTVisitor {
         if (currentScope.containsVariable(it.id, true)) {
             it.isAssignable = true;
             it.expr_type = currentScope.getType(it.id, true);
-            if (it.expr_type.type == type.VOID || defined_class_name.contains(it.id) || checkFunctionDefined(it.id, it.pos))
+            if (it.expr_type.type == type.VOID || defined_class_name.contains(it.id))
                 throw new semanticError("Semantic Error: var_expr_sema1: " + it.id, it.pos);
         } else if (!checkFunctionDefined(it.id, it.pos)) {
             throw new semanticError("Semantic Error: var_expr_sema2: " + it.id, it.pos);
@@ -445,20 +447,15 @@ public class SemanticChecker implements ASTVisitor {
             if (expr_.expr_type.type == type.CLASS && defined_class_name.contains(expr_.expr_type.class_id)) {
                 classDefNode node_ = getClass(expr_.expr_type.class_id, it.pos);
                 if (node_.containFunction(member)) {
-//                    System.out.println("get_many_in_call");
                     node = node_.getFunction(member, it.pos);
                 } else if (expr_.expr_type.dimension > 0) {
-    //                System.out.println("getclass in array");
                     classDefNode node__ = getClass("*ARRAY", it.pos);
-    //                System.out.println("getclass in array");
                     node = node__.getFunction(member, it.pos);
                 } else {
                     throw new semanticError("Semantic Error: fun_call_sema", it.pos);
                 }
             } else if (expr_.expr_type.dimension > 0) {
-//                System.out.println("getclass in array");
                 classDefNode node_ = getClass("*ARRAY", it.pos);
-//                System.out.println("getclass in array");
                 node = node_.getFunction(member, it.pos);
             } else if (expr_.expr_type.type == type.STRING) {
                 classDefNode node_ = getClass("*STRING", it.pos);
@@ -472,7 +469,6 @@ public class SemanticChecker implements ASTVisitor {
         int def_ = 0;
         if (node.parameters_type != null)  def_ = node.parameters_type.size();
         int call_ = it.parameters.size();
-//        System.out.println("def: " + def_ + " call: " + call_);
         if (def_ == call_) {
             ArrayList<ExprNode> tmp = new ArrayList<>();
             for (int i = 0; i < def_; ++i){
@@ -490,9 +486,6 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public memberExprNode visit(memberExprNode it) {
-//        System.out.println(((varExprNode) it.expr).id);
-//        if ((it.expr instanceof varExprNode) && (((varExprNode) it.expr).id == "this"))
-//            System.out.println("!!!!!!!!!this");
         it.expr = (ExprNode) it.expr.accept(this);
         if (it.expr.expr_type.type == type.CLASS && defined_class_name.contains(it.expr.expr_type.class_id)) {
             classDefNode node = getClass(it.expr.expr_type.class_id, it.pos);
@@ -500,7 +493,6 @@ public class SemanticChecker implements ASTVisitor {
                 it.isAssignable = true;
                 it.expr_type = node.getMemberType(it.member).type;
             } else if (node.containFunction(it.member)) {
-//                System.out.println("get_many_in_member");
                 it.expr_type = node.getFunction(it.member, it.pos).type.type;
             } else {
                 throw new semanticError("Semantic Error: member_sema1", it.pos);
@@ -522,22 +514,16 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public arrayExprNode visit(arrayExprNode it) {
-//        System.out.println("in_array_expr: " + it.array.expr_type.dimension);
-        currentScope.getType("a", true);
         it.array = (ExprNode) it.array.accept(this);
         it.index = (ExprNode) it.index.accept(this);
-//        System.out.println("defined var:" + tmp.id + ".");
         if (it.array.expr_type.dimension == 0)
             throw new semanticError("Semantic Error: array_expr_sema1", it.pos);
         if (it.index.expr_type.type != type.INT || it.index.expr_type.dimension > 0)
             throw new semanticError("Semantic Error: array_expr_sema2", it.pos);
-        currentScope.getType("a", true);
-//        System.out.println("asd");
         it.isAssignable = true;
-        it.expr_type = it.array.expr_type;
+        it.expr_type = new Type(it.array.expr_type);
         it.expr_type.dimension -= 1;
-//        System.out.println("out_array_expr: " + it.array.expr_type.dimension);
-        currentScope.getType("a", true);
+//        System.out.println("out_array_expr: " + it.expr_type.type + it.expr_type.dimension);
         return it;
     }
 }
