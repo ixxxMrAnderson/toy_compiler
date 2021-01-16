@@ -312,7 +312,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
 
     @Override public ASTNode visitAssign_expr(MxParser.Assign_exprContext ctx) {
         if (ctx.expression().size() != 2) throw new semanticError("Semantic Error: assign_expr", new position(ctx));
-        ExprNode lhs = (ExprNode) visit(ctx.expression().get(0)), rhs = (ExprNode) visit(ctx.expression().get(1));
+        ExprNode lhs = (ExprNode) visit(ctx.expression(0)), rhs = (ExprNode) visit(ctx.expression(1));
         return new assignExprNode(lhs, rhs, new position(ctx));
     }
 
