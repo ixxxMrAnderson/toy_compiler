@@ -406,7 +406,7 @@ public class SemanticChecker implements ASTVisitor {
                 else throw new semanticError("Semantic Error: binary_sema", it.pos);
                 break;
             case NEQ: case EQ:
-                if (it.lhs.expr_type.cmp(it.rhs.expr_type))
+                if (it.lhs.expr_type.cmp(it.rhs.expr_type) || it.lhs.expr_type.type == type.NULL || it.rhs.expr_type.type == type.NULL)
                     it.expr_type.type = type.BOOL;
                 else throw new semanticError("Semantic Error: binary_sema", it.pos);
                 break;
