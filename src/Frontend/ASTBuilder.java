@@ -20,7 +20,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         ArrayList<typeNode> tmp_1 = new ArrayList<>();
         classDefNode array_class = new classDefNode(new position(ctx), "*ARRAY");
         array_class.defineFunction(new position(ctx), "size", type.INT, tmp_1);
-        classDefNode string_class = new classDefNode(new position(ctx), "*STRING");
+        classDefNode string_class = new classDefNode(new position(ctx), "string");
         string_class.defineFunction(new position(ctx), "length", type.INT, tmp_1);
         string_class.defineFunction(new position(ctx), "parseInt", type.INT, tmp_1);
         this.program_node.defineFunction(new position(ctx), "main", type.INT, tmp_1);
@@ -37,7 +37,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         this.program_node.defineFunction(new position(ctx), "printlnInt", type.VOID, tmp_2);
         tmp_2.add(new typeNode(new position(ctx), new Type(type.INT)));
         string_class.defineFunction(new position(ctx), "substring", type.STRING, tmp_2);
-        this.program_node.defined_class_name.add("*STRING");
+        this.program_node.defined_class_name.add("string");
         this.program_node.defined_class.add(string_class);
         this.program_node.defined_class_name.add("*ARRAY");
         this.program_node.defined_class.add(array_class);

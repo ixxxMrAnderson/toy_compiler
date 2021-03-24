@@ -1,6 +1,12 @@
 import AST.programNode;
+import Backend.RegAlloc;
 import Frontend.ASTBuilder;
 import Frontend.SemanticChecker;
+import Backend.IRBuilder;
+import Backend.IRPrinter;
+import Backend.AsmPrinter;
+import Backend.RegAlloc;
+import MIR.block;
 import Parser.MxLexer;
 import Parser.MxParser;
 import Util.MxErrorListener;
@@ -11,12 +17,13 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.HashMap;
 
 
 public class Main {
     public static void main(String[] args) throws Exception{
 
-//        String file_name = "./testcases/sema/misc-package/misc-36.mx";
+        String file_name = "./testcases/codegen/e4.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 
@@ -32,6 +39,13 @@ public class Main {
             AST_builder.visit(parse_tree_root);
             programNode AST_root = AST_builder.program_node;
             AST_root = new SemanticChecker().visit(AST_root);
+            HashMap<String, block> blocks = new HashMap<>();
+            HashMap<String, Integer> spillPara = new HashMap<>();
+            new IRBuilder(blocks, spillPara).visit(AST_root);
+            new IRPrinter(blocks);
+            HashMap<String, HashMap<String, Integer>> stackAlloc = new HashMap<>();
+            new RegAlloc(blocks, stackAlloc);
+            new AsmPrinter(blocks, stackAlloc, spillPara);
         } catch (error er) {
             System.err.println(er.toString());
             throw new RuntimeException();

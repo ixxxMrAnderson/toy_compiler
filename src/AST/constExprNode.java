@@ -13,6 +13,14 @@ public class constExprNode extends ExprNode {
         this.expr_type.type = type.INT;
     }
 
+    public constExprNode(constExprNode other, position pos) {
+        super(pos);
+        this.int_value = other.int_value;
+        this.string_value = other.string_value;
+        this.bool_value = other.bool_value;
+        this.expr_type.type = other.expr_type.type;
+    }
+
     public constExprNode(String value, position pos) {
         super(pos);
         this.string_value = value;

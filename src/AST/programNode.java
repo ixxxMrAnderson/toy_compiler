@@ -3,6 +3,7 @@ import Util.Type;
 import Util.error.semanticError;
 import Util.position;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 
 public class programNode extends ASTNode {
@@ -11,6 +12,8 @@ public class programNode extends ASTNode {
     public HashSet<funDefNode> defined_function;
     public HashSet<String> defined_function_name;
     public HashSet<String> defined_class_name;
+    public HashMap<String, HashMap<String, Integer>> func2vars = new HashMap<>();
+    public HashMap<String, Integer> func2offset = new HashMap<>();
 
     public programNode(position pos) {
         super(pos);

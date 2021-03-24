@@ -1,5 +1,6 @@
 package AST;
 import Util.position;
+import MIR.*;
 
 public class singleVarDefNode extends SectionNode {
     public String id;

@@ -18,15 +18,32 @@ public class Type {
     }
 
     public Type(Type other){
-        this.type = other.type;
-        this.dimension = other.dimension;
-        this.class_id = other.class_id;
+        if (other != null) {
+            this.type = other.type;
+            this.dimension = other.dimension;
+            this.class_id = other.class_id;
+        }
+    }
+
+    public boolean isClass(){
+        return type == type.CLASS;
     }
 
     public boolean cmp(Type other){
 //        System.out.println("this: " + this.type);
 //        System.out.println("other: " + other.type);
         if (this.dimension != other.dimension) return false;
+        if (this.type != type.CLASS && this.type.equals(other.type)) return true;
+//        System.out.println("this: " + this.type);
+//        System.out.println("other: " + other.type);
+        if (this.type == type.CLASS && other.type == type.CLASS && this.class_id.equals(other.class_id)) return true;
+        return false;
+    }
+
+    public boolean cmp_new(Type other){
+//        System.out.println("this: " + this.type);
+//        System.out.println("other: " + other.type);
+        if (this.dimension < other.dimension) return false;
         if (this.type != type.CLASS && this.type.equals(other.type)) return true;
 //        System.out.println("this: " + this.type);
 //        System.out.println("other: " + other.type);
