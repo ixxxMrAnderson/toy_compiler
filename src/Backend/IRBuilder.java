@@ -12,23 +12,21 @@ import java.util.HashSet;
 import java.util.Stack;
 
 public class IRBuilder implements ASTVisitor {
-    private block currentBlock;
+    private block currentBlock, currentRetBlk, curMainBlk;
     private Scope currentScope;
-    private String currentClass;
-    private String currentFun;
+    private String currentClass, currentFun;
     public HashSet<classDefNode> defined_class;
     public HashSet<String> defined_class_name;
     public HashSet<funDefNode> defined_function;
     public HashSet<String> defined_function_name;
     public HashMap<String, block> blocks;
     public HashMap<String, Integer> spillPara;
-    public block currentRetBlk;
     public Stack<block> loopDes = new Stack<>();
     public Stack<Integer> loopFlag = new Stack<>(); // 0: while, 1: for
 
     // todo: all the builtin shit
-    // a.size() be like 'int ARRAY_SIZE(int address_of_a)'
-    // builtin function for string: 'STRING_' + name and take the address of string as the 1st parameter
+    // a.size() be like 'int Mx_array_size(int address_of_a)'
+    // builtin function for string: 'Mx_string_' + name and take the address of string as the 1st parameter
     // other builtin function: just the same
 
     public funDefNode getFunction(String name){
@@ -46,9 +44,9 @@ public class IRBuilder implements ASTVisitor {
     }
 
     public classDefNode getClass(String name){
-        System.out.println("finding: " + name);
+//        System.out.println("finding: " + name);
         for (classDefNode class_ : defined_class){
-            System.out.println("has: " + class_.id);
+//            System.out.println("has: " + class_.id);
             if (class_.id.equals(name)){
                 return new classDefNode(class_);
             }
@@ -73,15 +71,20 @@ public class IRBuilder implements ASTVisitor {
         this.defined_function = it.defined_function;
         this.defined_function_name = it.defined_function_name;
         ArrayList<SectionNode> tmp = new ArrayList<>();
+        curMainBlk = blocks.get("main");
+//        System.out.println(curMainBlk + "_1");
         for (int i = 0; i < it.sections.size(); ++i) {
             if (it.sections.get(i) instanceof varDefNode){
-                currentBlock = blocks.get("main");
+                currentBlock = curMainBlk;
+//                System.out.println(curMainBlk + "_2");
                 varDefNode v = (varDefNode) it.sections.get(i);
                 for (singleVarDefNode single_v : v.variables){
                     blocks.get("_VAR_DEF").push_back(new define(new entity("@" + single_v.id), null));
                 }
             }
             tmp.add((SectionNode) it.sections.get(i).accept(this));
+            if (it.sections.get(i) instanceof varDefNode) curMainBlk = currentBlock;
+//            System.out.println(curMainBlk);
         }
         it.sections = tmp;
         return it;
@@ -114,6 +117,7 @@ public class IRBuilder implements ASTVisitor {
         currentFun = currentClass + "_memberFn_" + it.name;
         blocks.put(currentFun, currentBlock);
         spillPara.put(currentFun, 0);
+        currentBlock.push_back(new define(new entity("_THIS"), new entity("_A0")));
         currentScope = new Scope(currentScope);
         for (int i = 0; i < it.parameters_type.size(); ++i){
             currentScope.defineVariable(it.parameters.get(i).id, it.parameters_type.get(i).type, it.pos);
@@ -134,7 +138,7 @@ public class IRBuilder implements ASTVisitor {
         currentFun = it.name;
         Integer paraNum = 0;
         if (currentFun.equals("main")){
-            currentBlock = blocks.get("main");
+            currentBlock = curMainBlk;
         } else {
             currentBlock = new block();
             if (currentClass != null) {
@@ -338,10 +342,10 @@ public class IRBuilder implements ASTVisitor {
         it.expr = (ExprNode) it.expr.accept(this);
         it.val = new entity();
         currentBlock.push_back(new assign(new entity(it.val), new entity(it.expr.val)));
-        if (it.expr.val.is_addr && !it.expr.val.id.substring(0, 1).equals("@")){
-            currentBlock.push_back(new load(new entity(it.expr.val), new entity(it.expr.val)));
-            it.expr.val.is_addr = false;
-        }
+//        if (it.expr.val.is_addr && !it.expr.val.id.substring(0, 1).equals("@")){
+//            currentBlock.push_back(new load(new entity(it.expr.val), new entity(it.expr.val)));
+//            it.expr.val.is_addr = false;
+//        }
         if (it.op == suffixExprNode.Op.DECREASE){
             currentBlock.push_back(
                 new binary(new entity(it.expr.val), new entity(it.expr.val), new entity(1), binaryExprNode.Op.SUB)
@@ -358,12 +362,12 @@ public class IRBuilder implements ASTVisitor {
     @Override
     public prefixExprNode visit(prefixExprNode it) {
         it.expr = (ExprNode) it.expr.accept(this);
-        if (it.expr.val.is_addr && !it.expr.val.id.substring(0, 1).equals("@")){
-            currentBlock.push_back(
-                new load(new entity(it.expr.val), new entity(it.expr.val))
-            );
-            it.expr.val.is_addr = false;
-        }
+//        if (it.expr.val.is_addr && !it.expr.val.id.substring(0, 1).equals("@")){
+//            currentBlock.push_back(
+//                new load(new entity(it.expr.val), new entity(it.expr.val))
+//            );
+//            it.expr.val.is_addr = false;
+//        }
         switch(it.op) {
             case NEGATIVE:
                 currentBlock.push_back(
@@ -414,12 +418,13 @@ public class IRBuilder implements ASTVisitor {
         if (it.type.type.isClass()){
             size_ *= getClass(it.type.type.class_id).members.size();
         }
+        entity tmp_mul = new entity();
         currentBlock.push_back(
-            new binary(new entity(it.val), new entity(tmp_node.val), new entity(size_), binaryExprNode.Op.MUL)
+            new binary(new entity(tmp_mul), new entity(tmp_node.val), new entity(size_), binaryExprNode.Op.MUL)
         );
-        currentBlock.push_back(new assign(new entity("_A0"), new entity(it.val)));
-        currentBlock.push_back(new call("malloc"));
-        currentBlock.push_back(new assign(new entity(it.val), new entity("_A0")));
+        currentBlock.push_back(new assign(new entity("_A0"), new entity(tmp_mul)));
+        currentBlock.push_back(new call("Mx_malloc"));
+        currentBlock.push_back(new define(new entity("_NEW_" + it.size.size()), new entity("_A0")));
         if (it.type.type.type == type.CLASS){
             String classId = it.type.type.class_id;
             currentBlock.push_back(new call(classId + "_memberFn_" + classId));
@@ -462,6 +467,8 @@ public class IRBuilder implements ASTVisitor {
             currentBlock.nxtBlock = outBlk;
             currentBlock = outBlk;
         }
+        currentBlock.push_back(new getPtr("_NEW_" + it.size.size(), new entity(it.val)));
+        currentBlock.push_back(new load(new entity(it.val), new entity(it.val)));
         return it;
     }
 
@@ -480,6 +487,10 @@ public class IRBuilder implements ASTVisitor {
         if (it.lhs instanceof varExprNode){
             if (currentScope.isGlobl(((varExprNode) it.lhs).id)) {
                 currentBlock.push_back(new store(new entity("@" + ((varExprNode) it.lhs).id), new entity(rhs_)));
+            } else {
+                entity lhs_ = new entity();
+                currentBlock.push_back(new getPtr(((varExprNode) it.lhs).id, new entity(lhs_)));
+                currentBlock.push_back(new store(new entity(lhs_), new entity(rhs_)));
             }
         } else {
             it.lhs = (ExprNode) it.lhs.accept(this);
@@ -501,19 +512,19 @@ public class IRBuilder implements ASTVisitor {
             currentBlock.push_back(new assign(new entity("_A0"), new entity(it.lhs.val)));
             currentBlock.push_back(new assign(new entity("_A1"), new entity(it.rhs.val)));
             if (op == binaryExprNode.Op.ADD){
-                currentBlock.push_back(new call("STRING_ADD"));
+                currentBlock.push_back(new call("Mx_string_ADD"));
             } else if (op == binaryExprNode.Op.EQ) {
-                currentBlock.push_back(new call("STRING_EQ"));
+                currentBlock.push_back(new call("Mx_string_EQ"));
             } else if (op == binaryExprNode.Op.NEQ) {
-                currentBlock.push_back(new call("STRING_NEQ"));
+                currentBlock.push_back(new call("Mx_string_NEQ"));
             } else if (op == binaryExprNode.Op.GTH) {
-                currentBlock.push_back(new call("STRING_GTH"));
+                currentBlock.push_back(new call("Mx_string_GTH"));
             } else if (op == binaryExprNode.Op.LTH) {
-                currentBlock.push_back(new call("STRING_LTH"));
+                currentBlock.push_back(new call("Mx_string_LTH"));
             } else if (op == binaryExprNode.Op.GEQ) {
-                currentBlock.push_back(new call("STRING_GEQ"));
+                currentBlock.push_back(new call("Mx_string_GEQ"));
             } else if (op == binaryExprNode.Op.LEQ) {
-                currentBlock.push_back(new call("STRING_LEQ"));
+                currentBlock.push_back(new call("Mx_string_LEQ"));
             }
             currentBlock.push_back(new assign(new entity(it.val), new entity("_A0")));
         } else {
@@ -526,7 +537,7 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public constExprNode visit(constExprNode it) {
-        System.out.println("in constExprNode");
+//        System.out.println("in constExprNode");
         if (it.string_value != null){
             entity tmp = new entity(true);
             tmp.id = "%" + tmp.id;
@@ -542,7 +553,7 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public varExprNode visit(varExprNode it) {
-        System.out.println("var_expr_" + it.id);
+//        System.out.println("var_expr_" + it.id);
         it.expr_type = new Type(currentScope.getType(it.id, true));
         if (currentScope.isGlobl(it.id)){
             it.val = new entity();
@@ -567,19 +578,25 @@ public class IRBuilder implements ASTVisitor {
             it.expr_type = new Type(getFunction(function_id).type.type);
         } else {
             ExprNode expr_ = (ExprNode) ((memberExprNode) it.function_id).expr.accept(this);
-            System.out.println("call: " + ((memberExprNode) it.function_id).member);
-            it.expr_type = new Type(getClass(expr_.expr_type.class_id).getFunction(((memberExprNode) it.function_id).member, null).type.type);
+//            System.out.println("call: " + ((memberExprNode) it.function_id).member);
+            if (expr_.expr_type.type == type.STRING){
+                it.expr_type = new Type(getClass("string").getFunction(((memberExprNode) it.function_id).member, null).type.type);
+            } else if (expr_.expr_type.dimension > 0){
+                it.expr_type = new Type(getClass("*ARRAY").getFunction(((memberExprNode) it.function_id).member, null).type.type);
+            } else {
+                it.expr_type = new Type(getClass(expr_.expr_type.class_id).getFunction(((memberExprNode) it.function_id).member, null).type.type);
+            }
             currentBlock.push_back(new assign(new entity("_A" + paraNum++), new entity(expr_.val)));
             expr_ = (ExprNode) expr_.accept(this);
             if (expr_.expr_type.dimension > 0) {
-                function_id = "ARRAY_SIZE";
+                function_id = "Mx_array_size";
             } else if (expr_.expr_type.type == type.STRING) {
-                function_id = "STRING_" + ((memberExprNode) it.function_id).member;
+                function_id = "Mx_string_" + ((memberExprNode) it.function_id).member;
             } else { // this_expr or class_expr
                 function_id = expr_.expr_type.class_id + "_memberFn_" + ((memberExprNode) it.function_id).member;
             }
         }
-        System.out.println("call: " + function_id);
+//        System.out.println("call: " + function_id);
         for (int i = 0; i < it.parameters.size(); ++i){
             ExprNode tmp_node = (ExprNode) it.parameters.get(i).accept(this);
             entity tmp = new entity();

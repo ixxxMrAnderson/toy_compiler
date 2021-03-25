@@ -34,8 +34,8 @@ public class Scope {
     }
 
     public void defineVariable(String name, Type type, position pos, entity ent) {
-        if (this.parent_scope == null) System.out.println("is global");
-        System.out.println("defining " + name);
+//        if (this.parent_scope == null) System.out.println("is global");
+//        System.out.println("defining " + name);
         DefinedVariable tmp = new DefinedVariable(name, type);
         if (members_name != null && members_name.contains(name))
             throw new semanticError("Semantic Error: variable redefine", pos);

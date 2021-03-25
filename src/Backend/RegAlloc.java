@@ -1,55 +1,20 @@
 package Backend;
 
 import MIR.*;
-
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
 public class RegAlloc implements Pass{
 
     public HashMap<String, Integer> id2reg = new HashMap<>();
-    public Integer regCnt = 10, sp = 0;
+    public HashMap<Integer, String> reg2id = new HashMap<>();
+    public Integer sp = 0, currentIndex = 0;
+    public block currentBlk;
     public HashMap<String, Integer> currentStack = new HashMap<>();
-    public ArrayList<String> regIdentifier = new ArrayList<>();
     public HashSet<block> allocated = new HashSet<>();
 
     public RegAlloc(HashMap<String, block> blocks, HashMap<String, HashMap<String, Integer>> stackAlloc){
-
-        regIdentifier.add("zero"); // 0
-        regIdentifier.add("ra");   // 1
-        regIdentifier.add("sp");   // 2
-        regIdentifier.add("gp");   // 3
-        regIdentifier.add("tp");   // 4
-        regIdentifier.add("t0");   // 5
-        regIdentifier.add("t1");   // 6
-        regIdentifier.add("t2");   // 7
-        regIdentifier.add("s0");   // 8
-        regIdentifier.add("s1");   // 9
-        regIdentifier.add("a0");   // 10
-        regIdentifier.add("a1");   // 11
-        regIdentifier.add("a2");   // 12
-        regIdentifier.add("a3");   // 13
-        regIdentifier.add("a4");   // 14
-        regIdentifier.add("a5");   // 15
-        regIdentifier.add("a6");   // 16
-        regIdentifier.add("a7");   // 17
-        regIdentifier.add("s2");   // 18
-        regIdentifier.add("s3");   // 19
-        regIdentifier.add("s4");   // 20
-        regIdentifier.add("s5");   // 21
-        regIdentifier.add("s6");   // 22
-        regIdentifier.add("s7");   // 23
-        regIdentifier.add("s8");   // 24
-        regIdentifier.add("s9");   // 25
-        regIdentifier.add("s10");  // 26
-        regIdentifier.add("s11");  // 27
-        regIdentifier.add("t3");   // 28
-        regIdentifier.add("t4");   // 29
-        regIdentifier.add("t5");   // 30
-        regIdentifier.add("t6");   // 31
-
-
+        for (int i = 0; i < 32; ++i) reg2id.put(i, null);
         for (String i : blocks.keySet()){
             if (i.equals("_VAR_DEF")) continue;
             visitBlock(blocks.get(i));
@@ -63,60 +28,183 @@ public class RegAlloc implements Pass{
     public void visitBlock(block blk) {
         if (allocated.contains(blk)) return;
         else allocated.add(blk);
+        currentBlk = blk;
         if (blk != null) {
-            // todo: allocate register while forming stackAlloc
-            // todo: how to insert define stmt?
-            for (int i = 0; i < blk.stmts().size(); ++i) {
-                statement s = blk.stmts().get(i);
+            for (currentIndex = 0; currentIndex < blk.stmts.size(); ++currentIndex) {
+                upload();
+                statement s = blk.stmts.get(currentIndex);
+//                System.out.println("----------" + s + "----------");
+//                System.out.println(id2reg);
                 if (s instanceof binary) {
                     binary b = (binary) s;
-                    if (!b.op1.is_constant) b.op1.reg = getReg(b.op1.id);
-                    if (!b.op2.is_constant) b.op2.reg = getReg(b.op2.id);
-                    if (!b.lhs.is_constant) b.lhs.reg = getReg(b.lhs.id);
+                    allocReg(b.op1);
+                    allocReg(b.op2);
+                    if (!b.lhs.is_constant) allocReg(b.lhs, true);
                 } else if (s instanceof jump) {
 
                 } else if (s instanceof branch) {
                     branch b = (branch) s;
-                    if (!b.flag.is_constant) b.flag.reg = getReg(b.flag.id);
+                    if (!b.flag.is_constant) allocReg(b.flag);
                 } else if (s instanceof ret) {
                     ret r = (ret) s;
-                    if (r.value != null) r.value.reg = getReg(r.value.id);
+                    if (r.value != null && !r.value.is_constant) allocReg(r.value);
                 } else if (s instanceof assign) {
                     assign a = (assign) s;
-                    if (!a.lhs.is_constant) a.lhs.reg = getReg(a.lhs.id);
+                    if (a.lhs.id != null && a.lhs.id.equals("_A0")){
+                        for (String id : id2reg.keySet()){
+                            entity assign = new entity();
+                            assign.reg = id2reg.get(id);
+                            if (!currentStack.containsKey(id)){
+                                sp += 4;
+                                currentStack.put(id, sp);
+                            }
+                            currentBlk.stmts.add(currentIndex++, new define(new entity(id), new entity(assign)));
+                        }
+                    }
+                    if (!a.lhs.is_constant) allocReg(a.lhs, true);
+                    if (!a.rhs.is_constant) allocReg(a.rhs);
                 } else if (s instanceof call) {
-
+                    for (String id : id2reg.keySet()){
+                        reg2id.put(id2reg.get(id), null);
+                    }
+                    id2reg = new HashMap<>();
                 } else if (s instanceof define) {
                     define d = (define) s;
+//                    System.out.println("REG----------define----------" + d.var.id + "--------" + currentStack);
                     if (!d.var.id.startsWith("@") && !d.var.id.startsWith("%")){
                         sp += 4;
                         currentStack.put(d.var.id, sp);
                     }
-                    if (!d.var.is_constant) d.var.reg = getReg(d.var.id);
-                    if (!d.assign.is_constant) d.assign.reg = getReg(d.assign.id);
+                    if (!d.var.is_constant && d.var.id.startsWith("@")) allocReg(d.var, true);
+                    if (!d.assign.is_constant) allocReg(d.assign);
+//                    System.out.println(currentIndex + "_out");
                 } else if (s instanceof getPtr) {
                     getPtr g = (getPtr) s;
-                    if (!g.ret.is_constant) g.ret.reg = getReg(g.ret.id);
+                    if (!g.ret.is_constant) allocReg(g.ret, true);
                 } else if (s instanceof load) {
                     load l = (load) s;
-                    if (!l.addr.is_constant) l.addr.reg = getReg(l.addr.id);
-                    if (!l.to.is_constant) l.to.reg = getReg(l.to.id);
+                    if (!l.addr.is_constant) allocReg(l.addr);
+                    if (!l.to.is_constant) allocReg(l.to, true);
                 } else if (s instanceof store) {
                     store s_ = (store) s;
-                    if (!s_.addr.is_constant) s_.addr.reg = getReg(s_.addr.id);
-                    if (!s_.value.is_constant) s_.value.reg = getReg(s_.value.id);
+                    if (!s_.addr.is_constant) allocReg(s_.addr);
+                    if (!s_.value.is_constant) allocReg(s_.value);
                 }
             }
             blk.successors().forEach(this::visitBlock);
         }
     }
 
-    public Integer getReg(String id){ // todo: much more complicated than this...
-        if (id2reg.containsKey(id)) return id2reg.get(id);
-        id2reg.put(id, regCnt++);
-        return regCnt - 1;
-        // todo: spill?
-        // if spill, insert store, free register
-        // load defined variable everytime
+    public void allocReg(entity var){
+        allocReg(var, false);
+    }
+
+    // a0-a7 (10-17);
+    // s0-s1 (8-9), s2-s11 (18-27);
+    // t0-t2 (5-7), t3-t6 (28-31)
+    public void allocReg(entity var, boolean flag){ // todo: much more complicated than this...
+        if (var.id.startsWith("_A")) {
+            var.reg = 10 + Integer.parseInt(var.id.substring(2, 3));
+            return;
+        }
+        if (var.id.equals("_SP")){
+            var.reg = 2;
+            return;
+        }
+        if (var.id.equals("_S0")){
+            var.reg = 8;
+            return;
+        }
+        if (var.is_constant) var.id = String.valueOf(var.constant.int_value);
+        if (id2reg.containsKey(var.id)) {
+            var.reg = id2reg.get(var.id);
+            return;
+        }
+
+        for (int i = 5; i < 32; ++i){
+            if (i == 8) continue;
+            if (reg2id.get(i) == null){
+                var.reg = i;
+                id2reg.put(var.id, i);
+                reg2id.put(i, var.id);
+                if (currentStack.containsKey(var.id) && !flag){
+                    entity to = new entity();
+                    to.reg = i;
+                    currentBlk.stmts.add(currentIndex, new load(new entity(to), new entity(to)));
+                    currentBlk.stmts.add(currentIndex, new getPtr(var.id, new entity(to)));
+                    currentIndex += 2;
+                }
+                return;
+            }
+        }
+
+        // spill a0
+        entity assign = new entity();
+        assign.reg = 10;
+        if (!currentStack.containsKey(reg2id.get(10))){
+            sp += 4;
+            currentStack.put(reg2id.get(10), sp);
+        }
+        currentBlk.stmts.add(currentIndex++, new define(new entity(reg2id.get(10)), new entity(assign)));
+        var.reg = 10;
+        id2reg.remove(reg2id.get(10));
+        id2reg.put(var.id, 10);
+        reg2id.put(10, var.id);
+        if (currentStack.containsKey(var.id) && !flag){
+            entity to = new entity();
+            to.reg = 10;
+            currentBlk.stmts.add(currentIndex, new load(new entity(to), new entity(to)));
+            currentBlk.stmts.add(currentIndex, new getPtr(var.id, new entity(to)));
+            currentIndex += 2;
+        }
+        return;
+    }
+
+    public void upload(){
+        for (int i = 5; i < 32; ++i){
+            if (i == 8) continue;
+            if (reg2id.get(i) != null){
+//                System.out.println("-----upload-------: " + reg2id.get(i));
+                boolean flag = false;
+                for (int j = currentIndex; j < currentBlk.stmts.size(); ++j){
+                    statement s = currentBlk.stmts.get(j);
+                    if (s instanceof binary) {
+                        binary b = (binary) s;
+                        if (b.op1.id != null && b.op1.id.equals(reg2id.get(i))) flag = true;
+                        if (b.op2.id != null && b.op2.id.equals(reg2id.get(i))) flag = true;
+                    } else if (s instanceof jump) {
+
+                    } else if (s instanceof branch) {
+                        branch b = (branch) s;
+                        if (b.flag.id != null && b.flag.id.equals(reg2id.get(i))) flag = true;
+                    } else if (s instanceof ret) {
+                        ret r = (ret) s;
+                        if (r.value != null && r.value.id != null && r.value.id.equals(reg2id.get(i))) flag = true;
+                    } else if (s instanceof assign) {
+                        assign a = (assign) s;
+                        if (a.rhs.id != null && a.rhs.id.equals(reg2id.get(i))) flag = true;
+                    } else if (s instanceof call) {
+
+                    } else if (s instanceof define) {
+                        define d = (define) s;
+//                        System.out.println("-upload---define-: " + reg2id.get(i));
+                        if (d.assign.id != null && d.assign.id.equals(reg2id.get(i))) flag = true;
+                    } else if (s instanceof getPtr) {
+
+                    } else if (s instanceof load) {
+                        load l = (load) s;
+                        if (l.addr.id != null && l.addr.id.equals(reg2id.get(i))) flag = true;
+                    } else if (s instanceof store) {
+                        store s_ = (store) s;
+                        if (s_.addr.id != null && s_.addr.id.equals(reg2id.get(i))) flag = true;
+                        if (s_.value.id != null && s_.value.id.equals(reg2id.get(i))) flag = true;
+                    }
+                }
+                if (!flag || reg2id.get(i).startsWith("@")){ // @var store its addr instead of value
+                    id2reg.remove(reg2id.get(i));
+                    reg2id.put(i, null);
+                }
+            }
+        }
     }
 }

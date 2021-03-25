@@ -14,23 +14,11 @@ ExitCode: 0
 InstLimit: -1
 Origin Package: Codeforces 1A #52940143
 */
-class A{
-    int a;
-    int b;
-    A(){
-        this.a = 3;
-    }
-    int fun(int x){
-        if (x == 0) return 0;
-        return 1;
-    }
-};
-int wtf = 1;
-int k = 1;
+int[][] a = new int [3][4];
 int main(){
     string k = "str";
-    int t = wtf;
-    A x = new A;
-    int c = x.a;
-    int d = x.fun(3);
+    int b = a.size();
+    println(k);
+    b = getInt();
+    k = k.substring(0, 1);
 }

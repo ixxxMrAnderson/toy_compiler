@@ -3,7 +3,7 @@ package MIR;
 import java.util.ArrayList;
 
 public class block {
-    private ArrayList<statement> stmts = new ArrayList<>();
+    public ArrayList<statement> stmts = new ArrayList<>();
     private terminalStmt tailStmt = null;
     public block nxtBlock = null;
     public block tailBlk = null;
@@ -17,9 +17,6 @@ public class block {
     }
     public void pop(){
         stmts.remove(stmts.size() - 1);
-    }
-    public ArrayList<statement> stmts() {
-        return new ArrayList<>(stmts);
     }
     public ArrayList<block> successors() {
         ArrayList<block> ret = new ArrayList<>();

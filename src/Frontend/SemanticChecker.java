@@ -159,7 +159,7 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public varDefNode visit(varDefNode it) {
-        System.out.println("vardef\n");
+//        System.out.println("vardef\n");
         ArrayList<singleVarDefNode> tmp = new ArrayList<>();
         for (int i = 0; i < it.variables.size(); ++i) {
             singleVarDefNode tmp_node = it.variables.get(i).accept(this);
@@ -206,7 +206,7 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public varDefStmtNode visit(varDefStmtNode it) {
-        System.out.println("vardefstmt\n");
+//        System.out.println("vardefstmt\n");
         if (it.type.type.type == type.VOID)
             throw new semanticError("Semantic Error: var_def_sema", it.pos);
         ArrayList<singleVarDefNode> tmp = new ArrayList<>();

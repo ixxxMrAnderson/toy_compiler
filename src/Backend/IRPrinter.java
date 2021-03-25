@@ -25,7 +25,7 @@ public class IRPrinter implements Pass {
         else printed.add(getBlockName(blk));
         if (blk != null) {
             System.out.println(getBlockName(blk) + ":");
-            blk.stmts().forEach(this::print);
+            blk.stmts.forEach(this::print);
             blk.successors().forEach(this::visitBlock);
         }
     }

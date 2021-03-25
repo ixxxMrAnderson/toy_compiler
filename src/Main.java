@@ -24,8 +24,8 @@ public class Main {
     public static void main(String[] args) throws Exception{
 
         String file_name = "./testcases/codegen/e4.mx";
-//        InputStream input = new FileInputStream(file_name);
-        InputStream input = System.in;
+        InputStream input = new FileInputStream(file_name);
+//        InputStream input = System.in;
 
         try {
             MxLexer lexer = new MxLexer(CharStreams.fromStream(input));
@@ -42,7 +42,7 @@ public class Main {
             HashMap<String, block> blocks = new HashMap<>();
             HashMap<String, Integer> spillPara = new HashMap<>();
             new IRBuilder(blocks, spillPara).visit(AST_root);
-            new IRPrinter(blocks);
+//            new IRPrinter(blocks);
             HashMap<String, HashMap<String, Integer>> stackAlloc = new HashMap<>();
             new RegAlloc(blocks, stackAlloc);
             new AsmPrinter(blocks, stackAlloc, spillPara);
