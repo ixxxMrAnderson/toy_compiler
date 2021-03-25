@@ -76,7 +76,7 @@ public class RegAlloc implements Pass{
                         currentStack.put(d.var.id, sp);
                     }
                     if (!d.var.is_constant && d.var.id.startsWith("@")) allocReg(d.var, true);
-                    if (!d.assign.is_constant) allocReg(d.assign);
+                    if (d.assign != null && !d.assign.is_constant) allocReg(d.assign);
 //                    System.out.println(currentIndex + "_out");
                 } else if (s instanceof getPtr) {
                     getPtr g = (getPtr) s;
@@ -188,7 +188,7 @@ public class RegAlloc implements Pass{
                     } else if (s instanceof define) {
                         define d = (define) s;
 //                        System.out.println("-upload---define-: " + reg2id.get(i));
-                        if (d.assign.id != null && d.assign.id.equals(reg2id.get(i))) flag = true;
+                        if (d.assign != null && d.assign.id != null && d.assign.id.equals(reg2id.get(i))) flag = true;
                     } else if (s instanceof getPtr) {
 
                     } else if (s instanceof load) {
