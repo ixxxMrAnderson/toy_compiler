@@ -24,8 +24,8 @@ public class Main {
     public static void main(String[] args) throws Exception{
 
         String file_name = "./testcases/sema/codeforces-package/231A.mx";
-        InputStream input = new FileInputStream(file_name);
-//        InputStream input = System.in;
+//        InputStream input = new FileInputStream(file_name);
+        InputStream input = System.in;
 
         try {
             MxLexer lexer = new MxLexer(CharStreams.fromStream(input));
