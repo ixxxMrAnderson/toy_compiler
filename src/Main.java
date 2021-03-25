@@ -23,9 +23,9 @@ import java.util.HashMap;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/codegen/e4.mx";
-        InputStream input = new FileInputStream(file_name);
-//        InputStream input = System.in;
+        String file_name = "./testcases/sema/breakcontinue-package/breakcontinue-1.mx";
+//        InputStream input = new FileInputStream(file_name);
+        InputStream input = System.in;
 
         try {
             MxLexer lexer = new MxLexer(CharStreams.fromStream(input));
