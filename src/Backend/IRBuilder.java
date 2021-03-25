@@ -243,12 +243,12 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public returnStmtNode visit(returnStmtNode it) {
-        entity value;
         if (it.value != null) {
             it.value = (ExprNode) it.value.accept(this);
-            value = it.value.val;
-        } else value = null;
-        currentBlock.push_back(new ret(new entity(value), currentRetBlk));
+            currentBlock.push_back(new ret(new entity(it.value.val), currentRetBlk));
+        } else {
+            currentBlock.push_back(new ret(null, currentRetBlk));
+        }
         return it;
     }
 
@@ -284,7 +284,7 @@ public class IRBuilder implements ASTVisitor {
         currentBlock = body;
         loopDes.push(cond_blk);
         loopFlag.push(1);
-        it.body = (StmtNode) it.body.accept(this);
+        if (it.body != null) it.body = (StmtNode) it.body.accept(this);
         loopDes.pop();
         loopFlag.pop();
         currentBlock.push_back(new jump(iter_blk));

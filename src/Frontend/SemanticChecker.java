@@ -533,11 +533,6 @@ public class SemanticChecker implements ASTVisitor {
     public arrayExprNode visit(arrayExprNode it) {
         it.array = (ExprNode) it.array.accept(this);
         it.index = (ExprNode) it.index.accept(this);
-        if (it.array instanceof varExprNode){
-            it.id = ((varExprNode) it.array).id;
-        } else {
-            it.id = ((arrayExprNode) it.array).id;
-        }
         if (it.array.expr_type.dimension == 0)
             throw new semanticError("Semantic Error: array_expr_sema1", it.pos);
         if (it.index.expr_type.type != type.INT || it.index.expr_type.dimension > 0)
