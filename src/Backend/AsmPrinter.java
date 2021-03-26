@@ -267,7 +267,7 @@ public class AsmPrinter implements Pass{
                         "\tslt\t" + getReg(binaryIns.lhs) + "," + getReg(lop) + "," + getReg(rop)
                 );
                 System.out.println(
-                        "\txori\t" + getReg(binaryIns.lhs) + "," + getReg(binaryIns.lhs) + "," + getReg(lop)
+                        "\txori\t" + getReg(binaryIns.lhs) + "," + getReg(binaryIns.lhs) + ",1"
                 );
                 break;
             case LEQ:
@@ -275,7 +275,7 @@ public class AsmPrinter implements Pass{
                         "\tsgt\t" + getReg(binaryIns.lhs) + "," + getReg(lop) + "," + getReg(rop)
                 );
                 System.out.println(
-                        "\txori\t" + getReg(binaryIns.lhs) + "," + getReg(binaryIns.lhs) + "," + getReg(lop)
+                        "\txori\t" + getReg(binaryIns.lhs) + "," + getReg(binaryIns.lhs) + ",1"
                 );
                 break;
             case ADD:
