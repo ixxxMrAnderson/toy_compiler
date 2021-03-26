@@ -39,12 +39,12 @@ public class RegAlloc implements Pass{
                     binary b = (binary) s;
                     allocReg(b.op1);
                     allocReg(b.op2);
-                    if (!b.lhs.is_constant) allocReg(b.lhs, true);
+                    allocReg(b.lhs, true);
                 } else if (s instanceof jump) {
 
                 } else if (s instanceof branch) {
                     branch b = (branch) s;
-                    if (!b.flag.is_constant) allocReg(b.flag);
+                    allocReg(b.flag);
                 } else if (s instanceof ret) {
                     ret r = (ret) s;
                     if (r.value != null && !r.value.is_constant) allocReg(r.value);

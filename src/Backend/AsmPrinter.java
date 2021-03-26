@@ -103,12 +103,14 @@ public class AsmPrinter implements Pass{
                     }
                 } else if (s instanceof branch) {
                     branch b = (branch) s;
-                    if (b.trueBranch == null){
-                        System.out.println("\tbeq\t" + getReg(b.flag) + ",zero,"
+                    if (b.flag.is_constant){
+                        System.out.println("\tbeq\t" + regIdentifier.get(b.flag.reg) + ",zero,"
                                 + getBlockName(b.falseBranch));
                     } else {
                         System.out.println("\tbeq\t" + getReg(b.flag) + ",zero,"
                                 + getBlockName(b.falseBranch));
+                    }
+                    if (b.trueBranch != null){
                         System.out.println("\tj\t" + getBlockName(b.trueBranch));
                     }
                 } else if (s instanceof ret) {
@@ -163,8 +165,10 @@ public class AsmPrinter implements Pass{
                     } else if (getEntityString(l.addr).startsWith("%")){
                         Integer index = 0;
                         for (int i = 0; i < roList.size(); ++i){
-                            if (roList.get(i).equals(getEntityString(l.addr))){
+//                            System.out.println("roList____" + getEntityString(roList.get(i).assign));
+                            if (getEntityString(roList.get(i).var).equals(getEntityString(l.addr))){
                                 index = i;
+//                                System.out.println("roList_____________" + getEntityString(roList.get(i).assign) + i);
                                 break;
                             }
                         }
@@ -368,9 +372,9 @@ public class AsmPrinter implements Pass{
             } else if (e.constant.expr_type.type == type.NULL){
                 return "null";
             } else if (e.constant.bool_value == true){
-                return "true";
+                return "1";
             } else {
-                return "false";
+                return "0";
             }
         } else {
             if (e.reg == 0) {
