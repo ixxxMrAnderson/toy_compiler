@@ -170,7 +170,7 @@ public class AsmPrinter implements Pass{
                         }
                         System.out.println("\tlui\t" + getReg(l.to) + ",%hi(.S" + index + ")");
                         System.out.println("\taddi\t" + getReg(l.to) + "," + getReg(l.to)
-                                + ".%lo(.S" + index + ")");
+                                + ",%lo(.S" + index + ")");
                     } else {
                         System.out.println("\tlw\t" + getReg(l.to) + ",0(" + getReg(l.addr) + ")");
                     }
