@@ -390,16 +390,20 @@ public class IRBuilder implements ASTVisitor {
         it.val = new entity();
         currentBlock.push_back(new assign(new entity(it.val), new entity(it.expr.val)));
         binaryExprNode tmp_b;
-        if (it.op == suffixExprNode.Op.DECREASE){
-            tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.SUB, it.expr, new constExprNode(1, it.pos));
-        } else {
-            tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.ADD, it.expr, new constExprNode(1, it.pos));
+        if (it.op != null) {
+            if (it.op == suffixExprNode.Op.DECREASE) {
+                tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.SUB, it.expr, new constExprNode(1, it.pos));
+            } else {
+                tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.ADD, it.expr, new constExprNode(1, it.pos));
+            }
+            assignExprNode tmp_a = new assignExprNode(it.expr, tmp_b, it.pos);
+            visit(tmp_a);
         }
-        assignExprNode tmp_a = new assignExprNode(it.expr, tmp_b, it.pos);
-        visit(tmp_a);
+        it.op = null;
         it.expr_type = new Type(it.expr.expr_type);
         return it;
     }
+
 
     @Override
     public prefixExprNode visit(prefixExprNode it) {
@@ -407,39 +411,45 @@ public class IRBuilder implements ASTVisitor {
         it.val = new entity(it.expr.val);
         binaryExprNode tmp_b;
         assignExprNode tmp_a;
-        switch(it.op) {
-            case NEGATIVE:
-                if (it.expr.val.is_constant){
-                    it.val = new entity(-it.expr.val.constant.int_value);
-                    return it;
-                }
-                currentBlock.push_back(
-                    new binary(new entity(it.expr.val), new entity(0), new entity(it.expr.val), binaryExprNode.Op.SUB)
-                );
-                break;
-            case POSITIVE:
-                break;
-            case BITWISE_NOT:
-                currentBlock.push_back(
-                    new binary(new entity(it.expr.val), new entity(it.expr.val), new entity(-1), binaryExprNode.Op.BITWISE_XOR)
-                );
-                break;
-            case DECREASE:
-                tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.SUB, it.expr, new constExprNode(1, it.pos));
-                tmp_a = new assignExprNode(it.expr, tmp_b, it.pos);
-                visit(tmp_a);
-                break;
-            case INCREASE:
-                tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.ADD, it.expr, new constExprNode(1, it.pos));
-                tmp_a = new assignExprNode(it.expr, tmp_b, it.pos);
-                visit(tmp_a);
-                break;
-            case NOT:
-                currentBlock.push_back(
-                    new binary(new entity(it.expr.val), new entity(it.expr.val), new entity(0), binaryExprNode.Op.OR)
-                );
-                break;
+        if (it.op != null) {
+            switch (it.op) {
+                case NEGATIVE:
+                    if (it.expr.val.is_constant) {
+                        it.val = new entity(-it.expr.val.constant.int_value);
+                        return it;
+                    }
+                    currentBlock.push_back(
+                            new binary(new entity(it.expr.val), new entity(0), new entity(it.expr.val), binaryExprNode.Op.SUB)
+                    );
+                    break;
+                case POSITIVE:
+                    break;
+                case BITWISE_NOT:
+                    currentBlock.push_back(
+                            new binary(new entity(it.expr.val), new entity(it.expr.val), new entity(-1), binaryExprNode.Op.BITWISE_XOR)
+                    );
+                    break;
+                case DECREASE:
+                    tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.SUB, it.expr, new constExprNode(1, it.pos));
+                    tmp_a = new assignExprNode(it.expr, tmp_b, it.pos);
+                    visit(tmp_a);
+                    break;
+                case INCREASE:
+                    tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.ADD, it.expr, new constExprNode(1, it.pos));
+                    tmp_a = new assignExprNode(it.expr, tmp_b, it.pos);
+                    visit(tmp_a);
+                    break;
+                case NOT:
+                    it.expr = (ExprNode) it.expr.accept(this);
+                    it.val = new entity(it.expr.val);
+                    currentBlock.push_back(
+                            new binary(new entity(it.expr.val), new entity(it.expr.val), new entity(0), binaryExprNode.Op.OR)
+                    );
+                    break;
+                default:
+            }
         }
+        it.op = null;
         it.expr_type = new Type(it.expr.expr_type);
         return it;
     }
@@ -549,9 +559,11 @@ public class IRBuilder implements ASTVisitor {
                 currentBlock.push_back(new store(new entity(lhs_), new entity(rhs_)));
             }
         } else {
-            it.lhs = (ExprNode) it.lhs.accept(this);
-            if (it.lhs instanceof arrayExprNode || it.lhs instanceof memberExprNode) currentBlock.pop();
-            else currentBlock.push_back(new getPtr(it.lhs.val.id, new entity(it.lhs.val)));
+            if (!(it.lhs instanceof prefixExprNode)) {
+                it.lhs = (ExprNode) it.lhs.accept(this);
+                if (it.lhs instanceof arrayExprNode || it.lhs instanceof memberExprNode) currentBlock.pop();
+                else currentBlock.push_back(new getPtr(it.lhs.val.id, new entity(it.lhs.val)));
+            }
             currentBlock.push_back(new store(new entity(it.lhs.val), new entity(rhs_)));
         }
         return it;

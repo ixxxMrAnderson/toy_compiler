@@ -128,6 +128,7 @@ public class RegAlloc implements Pass{
                 id2reg.put(var.id, i);
                 reg2id.put(i, var.id);
                 if (currentStack.containsKey(var.id) && !flag){
+//                    System.out.println("regAlloc---------" + currentStack);
                     entity to = new entity();
                     to.reg = i;
                     currentBlk.stmts.add(currentIndex, new load(new entity(to), new entity(to)));
@@ -151,6 +152,7 @@ public class RegAlloc implements Pass{
         id2reg.put(var.id, 10);
         reg2id.put(10, var.id);
         if (currentStack.containsKey(var.id) && !flag){
+//            System.out.println("regAlloc---------" + currentStack);
             entity to = new entity();
             to.reg = 10;
             currentBlk.stmts.add(currentIndex, new load(new entity(to), new entity(to)));
