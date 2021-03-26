@@ -745,7 +745,10 @@ public class IRBuilder implements ASTVisitor {
         it.val = new entity(true);
         entity l = new entity(true);
         currentBlock.push_back(
-            new binary(new entity(l), new entity(it.index.val), new entity(4), binaryExprNode.Op.MUL)
+                new binary(new entity(l), new entity(it.index.val), new entity(1), binaryExprNode.Op.ADD)
+        );
+        currentBlock.push_back(
+            new binary(new entity(l), new entity(l), new entity(4), binaryExprNode.Op.MUL)
         );
         currentBlock.push_back(
             new binary(new entity(it.val), new entity(l), new entity(it.array.val), binaryExprNode.Op.ADD)
