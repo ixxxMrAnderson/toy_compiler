@@ -23,7 +23,7 @@ import java.util.HashMap;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/sema/builtin-func-package/builtin-2.mx";
+        String file_name = "./testcases/sema/misc-package/misc-66.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 

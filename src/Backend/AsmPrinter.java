@@ -149,6 +149,7 @@ public class AsmPrinter implements Pass{
                     }
                 } else if (s instanceof getPtr) {
                     getPtr g = (getPtr) s;
+//                    System.out.println("getPtr----------------------" + g.id);
                     if (g.id.startsWith("@")) continue;
                     System.out.println("\taddi\t" + getReg(g.ret) + ",s0,-"
                             + (8 + stackAlloc.get(currentFun).get(g.id)));

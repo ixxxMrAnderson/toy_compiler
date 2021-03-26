@@ -15,6 +15,7 @@ public class block {
             tailStmt = (terminalStmt)stmt;
         }
     }
+    public statement tail(){return stmts.get(stmts.size() - 1);}
     public void pop(){
         stmts.remove(stmts.size() - 1);
     }

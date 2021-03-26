@@ -14,6 +14,7 @@ public class Scope {
     public HashMap<String, entity> entities = new HashMap<>();
     public HashMap<String, ArrayList<entity>> array_size = new HashMap<>();
     private Scope parent_scope;
+    public boolean isClassDef = false;
 
     public Scope(Scope parent_scope) {
         members = new HashSet<>();
@@ -42,6 +43,21 @@ public class Scope {
         members.add(tmp);
         members_name.add(name);
         entities.put(name, ent);
+    }
+
+    public boolean isMember(String name){
+//        System.out.println("isMember??????????????????????" + name);
+//        System.out.println(members_name);
+//        System.out.println(isClassDef);
+        if (members_name != null){
+            for (String tmp : members_name) {
+                if (tmp.equals(name) && !isClassDef) return false;
+                if (tmp.equals(name) && isClassDef) return true;
+            }
+        }
+        if (parent_scope != null)
+            return parent_scope.isMember(name);
+        return false;
     }
 
     public boolean containsVariable(String name, boolean lookUpon) {

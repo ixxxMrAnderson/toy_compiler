@@ -384,6 +384,9 @@ public class SemanticChecker implements ASTVisitor {
         if (!it.lhs.expr_type.cmp_new(it.rhs.expr_type) && !(it.rhs.expr_type.type == type.NULL && (it.lhs.expr_type.type == type.CLASS || it.lhs.expr_type.dimension > 0))) {
             throw new semanticError("Semantic Error: assign_sema2", it.pos);
         }
+        if (it.lhs.expr_type.dimension > it.rhs.expr_type.dimension && !(it.rhs instanceof newExprNode) && it.rhs.expr_type.type != type.NULL){
+            throw new semanticError("Semantic Error: assign_sema3", it.pos);
+        }
         return it;
     }
 
