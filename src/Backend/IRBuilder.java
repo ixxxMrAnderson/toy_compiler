@@ -440,8 +440,6 @@ public class IRBuilder implements ASTVisitor {
                     visit(tmp_a);
                     break;
                 case NOT:
-                    it.expr = (ExprNode) it.expr.accept(this);
-                    it.val = new entity(it.expr.val);
                     currentBlock.push_back(
                             new binary(new entity(it.expr.val), new entity(it.expr.val), new entity(0), binaryExprNode.Op.OR)
                     );
