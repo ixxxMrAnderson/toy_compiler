@@ -31,6 +31,7 @@ public class IRBuilder implements ASTVisitor {
     // other builtin function: just the same
 
     public String defVar(String id){
+        if (currentScope.parentScope() == null) return id;
         Integer index = 0;
         for (String i : varInFun.get(currentFun)){
             if (i.startsWith(id + "_")) index++;

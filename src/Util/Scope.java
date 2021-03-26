@@ -52,7 +52,7 @@ public class Scope {
     public String getName(String name) {
         if (members != null){
             for (DefinedVariable tmp : members) {
-                if (tmp.id.startsWith(name + "_")) return tmp.id;
+                if (tmp.id.startsWith(name)) return tmp.id;
             }
         }
         if (parent_scope != null)
