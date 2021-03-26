@@ -79,7 +79,7 @@ public class AsmPrinter implements Pass{
             if (blk.tailBlk == null){
                 System.out.println(getBlockName(blk) + ":");
             } else {
-                Integer sp = spillPara.get(currentFun) * 4 + stackAlloc.get(currentFun).size() * 4 + 8;
+                Integer sp = spillPara.get(currentFun) * 4 + stackAlloc.get(currentFun).size() * 4 + 12;
                 System.out.println("\taddi\tsp,sp,-" + sp);
                 System.out.println("\tsw\ts0," + (sp - 4) + "(sp)");
                 System.out.println("\tsw\tra," + (sp - 8) + "(sp)");
@@ -92,7 +92,7 @@ public class AsmPrinter implements Pass{
                 } else if (s instanceof jump) {
                     jump j = (jump) s;
                     if (j.destination == null){
-                        Integer sp = spillPara.get(currentFun) * 4 + stackAlloc.get(currentFun).size() * 4 + 8;
+                        Integer sp = spillPara.get(currentFun) * 4 + stackAlloc.get(currentFun).size() * 4 + 12;
                         System.out.println("\tlw\ts0," + (sp - 4) + "(sp)");
                         System.out.println("\tlw\tra," + (sp - 8) + "(sp)");
                         System.out.println("\taddi\tsp,sp," + sp);

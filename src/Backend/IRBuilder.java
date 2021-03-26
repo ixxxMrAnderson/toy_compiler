@@ -466,15 +466,14 @@ public class IRBuilder implements ASTVisitor {
         ExprNode tmp_node = (ExprNode) it.size.get(0).accept(this);
         it.val = new entity();
         Integer size_ = 4;
-        if (it.type.type.isClass()){
-            size_ *= getClass(it.type.type.class_id).members.size();
+        if (it.type.type.isClass() && it.size.size() == 1){
+            size_ = 4 * getClass(it.type.type.class_id).members.size();
+            currentBlock.push_back(new assign(new entity("_A0"), new entity(size_)));
+            currentBlock.push_back(new call("malloc"));
+        } else {
+            currentBlock.push_back(new assign(new entity("_A0"), new entity(tmp_node.val)));
+            currentBlock.push_back(new call("Mx_malloc"));
         }
-        entity tmp_mul = new entity();
-        currentBlock.push_back(
-            new binary(new entity(tmp_mul), new entity(tmp_node.val), new entity(size_), binaryExprNode.Op.MUL)
-        );
-        currentBlock.push_back(new assign(new entity("_A0"), new entity(tmp_mul)));
-        currentBlock.push_back(new call("malloc"));
         String new_id = defVar("_NEW_" + it.size.size());
         currentBlock.push_back(new define(new entity(new_id), new entity("_A0")));
         if (it.type.type.type == type.CLASS){
@@ -686,8 +685,8 @@ public class IRBuilder implements ASTVisitor {
                     rhs_ = new entity(tmp_node.val);
                 }
                 currentBlock.push_back(new store(new entity(tmp), new entity(rhs_)));
+                paraNum ++;
             }
-            paraNum ++;
         }
         if (paraNum - 7 > spillPara.get(currentFun)) spillPara.put(currentFun, paraNum - 7);
         it.val = new entity();
