@@ -389,19 +389,14 @@ public class IRBuilder implements ASTVisitor {
         it.expr = (ExprNode) it.expr.accept(this);
         it.val = new entity();
         currentBlock.push_back(new assign(new entity(it.val), new entity(it.expr.val)));
-//        if (it.expr.val.is_addr && !it.expr.val.id.substring(0, 1).equals("@")){
-//            currentBlock.push_back(new load(new entity(it.expr.val), new entity(it.expr.val)));
-//            it.expr.val.is_addr = false;
-//        }
+        binaryExprNode tmp_b;
         if (it.op == suffixExprNode.Op.DECREASE){
-            currentBlock.push_back(
-                new binary(new entity(it.expr.val), new entity(it.expr.val), new entity(1), binaryExprNode.Op.SUB)
-            );
+            tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.SUB, it.expr, new constExprNode(1, it.pos));
         } else {
-            currentBlock.push_back(
-                new binary(new entity(it.expr.val), new entity(it.expr.val), new entity(1), binaryExprNode.Op.ADD)
-            );
+            tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.ADD, it.expr, new constExprNode(1, it.pos));
         }
+        assignExprNode tmp_a = new assignExprNode(it.expr, tmp_b, it.pos);
+        visit(tmp_a);
         it.expr_type = new Type(it.expr.expr_type);
         return it;
     }
@@ -409,12 +404,9 @@ public class IRBuilder implements ASTVisitor {
     @Override
     public prefixExprNode visit(prefixExprNode it) {
         it.expr = (ExprNode) it.expr.accept(this);
-//        if (it.expr.val.is_addr && !it.expr.val.id.substring(0, 1).equals("@")){
-//            currentBlock.push_back(
-//                new load(new entity(it.expr.val), new entity(it.expr.val))
-//            );
-//            it.expr.val.is_addr = false;
-//        }
+        it.val = new entity(it.expr.val);
+        binaryExprNode tmp_b;
+        assignExprNode tmp_a;
         switch(it.op) {
             case NEGATIVE:
                 if (it.expr.val.is_constant){
@@ -433,14 +425,14 @@ public class IRBuilder implements ASTVisitor {
                 );
                 break;
             case DECREASE:
-                currentBlock.push_back(
-                    new binary(new entity(it.expr.val), new entity(it.expr.val), new entity(1), binaryExprNode.Op.SUB)
-                );
+                tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.SUB, it.expr, new constExprNode(1, it.pos));
+                tmp_a = new assignExprNode(it.expr, tmp_b, it.pos);
+                visit(tmp_a);
                 break;
             case INCREASE:
-                currentBlock.push_back(
-                    new binary(new entity(it.expr.val), new entity(it.expr.val), new entity(1), binaryExprNode.Op.ADD)
-                );
+                tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.ADD, it.expr, new constExprNode(1, it.pos));
+                tmp_a = new assignExprNode(it.expr, tmp_b, it.pos);
+                visit(tmp_a);
                 break;
             case NOT:
                 currentBlock.push_back(

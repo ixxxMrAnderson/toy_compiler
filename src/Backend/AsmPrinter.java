@@ -370,7 +370,7 @@ public class AsmPrinter implements Pass{
             } else if (e.constant.expr_type.type == type.STRING){
                 return e.constant.string_value;
             } else if (e.constant.expr_type.type == type.NULL){
-                return "null";
+                return "0";
             } else if (e.constant.bool_value == true){
                 return "1";
             } else {
