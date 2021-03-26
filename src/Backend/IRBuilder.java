@@ -417,6 +417,10 @@ public class IRBuilder implements ASTVisitor {
 //        }
         switch(it.op) {
             case NEGATIVE:
+                if (it.expr.val.is_constant){
+                    it.val = new entity(-it.expr.val.constant.int_value);
+                    return it;
+                }
                 currentBlock.push_back(
                     new binary(new entity(it.expr.val), new entity(0), new entity(it.expr.val), binaryExprNode.Op.SUB)
                 );
@@ -482,7 +486,9 @@ public class IRBuilder implements ASTVisitor {
         currentBlock.push_back(new define(new entity(new_id), new entity("_A0")));
         if (it.type.type.type == type.CLASS){
             String classId = it.type.type.class_id;
-            currentBlock.push_back(new call(classId + "_memberFn_" + classId));
+            if (getClass(classId).containFunction(classId)) {
+                currentBlock.push_back(new call(classId + "_memberFn_" + classId));
+            }
         }
         if (it.size.size() > 1){
             entity dim = new entity();
