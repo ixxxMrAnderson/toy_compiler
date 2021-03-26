@@ -249,7 +249,7 @@ public class AsmPrinter implements Pass{
                         "\tsub\t" + getReg(binaryIns.lhs) + "," + getReg(lop) + "," + getReg(rop)
                 );
                 System.out.println(
-                        "\tsqez\t" + getReg(binaryIns.lhs) + "," + getReg(lop)
+                        "\tseqz\t" + getReg(binaryIns.lhs) + "," + getReg(lop)
                 );
                 break;
             case GTH:
