@@ -49,10 +49,24 @@ public class Scope {
         return false;
     }
 
+    public boolean isNumeric(String str) {
+        try {
+            Double.parseDouble(str);
+            return true;
+        } catch(Exception e){
+            return false;
+        }
+    }
+
     public String getName(String name) {
         if (members != null){
             for (DefinedVariable tmp : members) {
-                if (tmp.id.startsWith(name)) return tmp.id;
+//                System.out.println("id: " + tmp.id);
+//                System.out.println("name: " + name);
+                if (tmp.id.startsWith(name)){
+                    if (tmp.id.equals(name)) return name;
+                    if (tmp.id.length() > name.length() + 1 && isNumeric(tmp.id.substring(name.length() + 1))) return tmp.id;
+                }
             }
         }
         if (parent_scope != null)

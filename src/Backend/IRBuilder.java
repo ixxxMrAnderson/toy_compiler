@@ -30,13 +30,23 @@ public class IRBuilder implements ASTVisitor {
     // builtin function for string: 'Mx_string_' + name and take the address of string as the 1st parameter
     // other builtin function: just the same
 
+    public boolean isNumeric(String str) {
+        try {
+            Double.parseDouble(str);
+            return true;
+        } catch(Exception e){
+            return false;
+        }
+    }
+
     public String defVar(String id){
         if (currentScope.parentScope() == null) return id;
         Integer index = 0;
         for (String i : varInFun.get(currentFun)){
-            if (i.startsWith(id + "_")) index++;
+            if (i.startsWith(id + "_")  && isNumeric(i.substring(id.length() + 1))) index++;
         }
         varInFun.get(currentFun).add(id + "_" + index);
+//        System.out.println("def " + id + "_" + index);
         return id + "_" + index;
     }
 
@@ -179,18 +189,18 @@ public class IRBuilder implements ASTVisitor {
         currentRetBlk = retBlk;
         entity tmp = new entity();
         for (int i = 0; i < it.parameters_type.size(); ++i){
+            String para_id = defVar(it.parameters.get(i).id);
+            currentScope.defineVariable(para_id, it.parameters_type.get(i).type, null);
             if (paraNum <= 6){
-                currentBlock.push_back(new define(new entity(it.parameters.get(i).id), new entity("_A" + paraNum)));
+                currentBlock.push_back(new define(new entity(para_id), new entity("_A" + paraNum)));
             } else {
                 currentBlock.push_back(
                     new binary(new entity(tmp), new entity("_S0"), new entity((paraNum - 7) * 4), binaryExprNode.Op.ADD)
                 );
                 currentBlock.push_back(new load(new entity(tmp), new entity(tmp)));
-                currentBlock.push_back(new define(new entity(it.parameters.get(i).id), new entity(tmp)));
+                currentBlock.push_back(new define(new entity(para_id), new entity(tmp)));
             }
             paraNum ++;
-            String id = defVar(it.parameters.get(i).id);
-            currentScope.defineVariable(id, it.parameters_type.get(i).type, it.pos);
         }
         it.suite = it.suite.accept(this);
         currentBlock.push_back(new ret(null, currentRetBlk));
@@ -598,8 +608,9 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public varExprNode visit(varExprNode it) {
-//        System.out.println("var_expr_" + it.id);
+//        System.out.println("varexpr---------" + it.id);
         String id = currentScope.getName(it.id);
+//        System.out.println("varexpr---------" + id);
         if (currentScope.isMember(it.id)){
 //            System.out.println("is_member!!!!!!!!!!!!" + it.id);
             memberExprNode this_ = new memberExprNode(it.pos, new thisExprNode(it.pos), it.id);
@@ -635,6 +646,7 @@ public class IRBuilder implements ASTVisitor {
             }
             it.expr_type = new Type(getFunction(function_id).type.type);
         } else {
+//            System.out.println("call------------------------------");
             ExprNode expr_ = (ExprNode) ((memberExprNode) it.function_id).expr.accept(this);
 //            System.out.println("call: " + ((memberExprNode) it.function_id).member);
             if (expr_.expr_type.type == type.STRING){
