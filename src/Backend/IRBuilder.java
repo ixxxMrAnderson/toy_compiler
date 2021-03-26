@@ -544,6 +544,7 @@ public class IRBuilder implements ASTVisitor {
         }
         if (it.lhs instanceof varExprNode){
             String id = currentScope.getName(((varExprNode) it.lhs).id);
+//            System.out.println("wtf____________" + id);
             if (currentScope.isGlobl(id)) {
                 currentBlock.push_back(new store(new entity("@" + id), new entity(rhs_)));
             } else if (currentScope.isMember(((varExprNode) it.lhs).id)){
@@ -552,6 +553,9 @@ public class IRBuilder implements ASTVisitor {
                 currentBlock.pop();
                 currentBlock.push_back(new store(new entity(tmp_mem.val), new entity(rhs_)));
             } else {
+                // todo: assign value regardless of the relationship between register and varId
+                // todo: (should be atomic)
+                // todo: current solution is to clear the register table after every stmt
                 entity lhs_ = new entity();
                 currentBlock.push_back(new getPtr(id, new entity(lhs_)));
                 currentBlock.push_back(new store(new entity(lhs_), new entity(rhs_)));

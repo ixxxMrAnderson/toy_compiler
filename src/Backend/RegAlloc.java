@@ -88,7 +88,9 @@ public class RegAlloc implements Pass{
                 } else if (s instanceof store) {
                     store s_ = (store) s;
                     if (!s_.addr.is_constant) allocReg(s_.addr);
-                    if (!s_.value.is_constant) allocReg(s_.value);
+                    if (!s_.value.is_constant) {
+                        allocReg(s_.value);
+                    }
                 }
             }
             blk.successors().forEach(this::visitBlock);
@@ -169,6 +171,7 @@ public class RegAlloc implements Pass{
 //                System.out.println("-----upload-------: " + reg2id.get(i));
                 boolean flag = false;
                 for (int j = currentIndex; j < currentBlk.stmts.size(); ++j){
+                    if (currentStack.containsKey(reg2id.get(i))) break;
                     statement s = currentBlk.stmts.get(j);
                     if (s instanceof binary) {
                         binary b = (binary) s;
