@@ -203,7 +203,11 @@ public class IRBuilder implements ASTVisitor {
             paraNum ++;
         }
         it.suite = it.suite.accept(this);
-        currentBlock.push_back(new ret(null, currentRetBlk));
+        if (currentFun.equals("main")){
+            currentBlock.push_back(new ret(new entity(0), currentRetBlk));
+        } else {
+            currentBlock.push_back(new ret(null, currentRetBlk));
+        }
         blocks.get(currentFun).tailBlk = retBlk;
         currentFun = null;
         currentScope = currentScope.parentScope();
