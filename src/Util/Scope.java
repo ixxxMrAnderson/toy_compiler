@@ -34,17 +34,6 @@ public class Scope {
         members_name.add(name);
     }
 
-    public void defineVariable(String name, Type type, position pos, entity ent) {
-//        if (this.parent_scope == null) System.out.println("is global");
-//        System.out.println("defining " + name);
-        DefinedVariable tmp = new DefinedVariable(name, type);
-        if (members_name != null && members_name.contains(name))
-            throw new semanticError("Semantic Error: variable redefine", pos);
-        members.add(tmp);
-        members_name.add(name);
-        entities.put(name, ent);
-    }
-
     public boolean isMember(String name){
 //        System.out.println("isMember??????????????????????" + name);
 //        System.out.println(members_name);
@@ -60,15 +49,15 @@ public class Scope {
         return false;
     }
 
-    public boolean containsVariable(String name, boolean lookUpon) {
+    public String getName(String name) {
         if (members != null){
             for (DefinedVariable tmp : members) {
-                if (tmp.id.equals(name)) return true;
+                if (tmp.id.startsWith(name + "_")) return tmp.id;
             }
         }
-        if (parent_scope != null && lookUpon)
-            return parent_scope.containsVariable(name, true);
-        else return false;
+        if (parent_scope != null)
+            return parent_scope.getName(name);
+        else return null;
     }
 
     public boolean isGlobl(String name) {
@@ -92,31 +81,5 @@ public class Scope {
             return parent_scope.getType(name, true);
         }
         return null;
-    }
-
-    public entity getArraySize(String name, Integer index){
-        if (members_name != null && members_name.contains(name)) {
-            return array_size.get(name).get(index);
-        } else if (parent_scope != null) {
-            return parent_scope.getArraySize(name, index);
-        }
-        return null;
-    }
-
-    public entity getEntity(String name, boolean lookUpon) {
-        if (members_name != null && members_name.contains(name)) {
-            return entities.get(name);
-        } else if (parent_scope != null && lookUpon) {
-            return parent_scope.getEntity(name, true);
-        }
-        return null;
-    }
-
-    public void setEntity(String name, entity ent, boolean lookUpon) {
-        if (members_name != null && members_name.contains(name)) {
-            entities.put(name, ent);
-        } else if (parent_scope != null && lookUpon) {
-            parent_scope.setEntity(name, ent,true);
-        }
     }
 }

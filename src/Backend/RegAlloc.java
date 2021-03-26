@@ -172,6 +172,10 @@ public class RegAlloc implements Pass{
                         binary b = (binary) s;
                         if (b.op1.id != null && b.op1.id.equals(reg2id.get(i))) flag = true;
                         if (b.op2.id != null && b.op2.id.equals(reg2id.get(i))) flag = true;
+//                        if (b.lhs.id != null && b.lhs.id.equals(reg2id.get(i))){
+//                            flag = false;
+//                            break;
+//                        }
                     } else if (s instanceof jump) {
 
                     } else if (s instanceof branch) {
@@ -183,12 +187,20 @@ public class RegAlloc implements Pass{
                     } else if (s instanceof assign) {
                         assign a = (assign) s;
                         if (a.rhs.id != null && a.rhs.id.equals(reg2id.get(i))) flag = true;
+                        if (a.rhs.id != null && a.rhs.id.equals(reg2id.get(i))){
+                            flag = false;
+                            break;
+                        }
                     } else if (s instanceof call) {
 
                     } else if (s instanceof define) {
                         define d = (define) s;
 //                        System.out.println("-upload---define-: " + reg2id.get(i));
                         if (d.assign != null && d.assign.id != null && d.assign.id.equals(reg2id.get(i))) flag = true;
+//                        if (d.var.id != null && d.var.id.equals(reg2id.get(i))){
+//                            flag = false;
+//                            break;
+//                        }
                     } else if (s instanceof getPtr) {
 
                     } else if (s instanceof load) {

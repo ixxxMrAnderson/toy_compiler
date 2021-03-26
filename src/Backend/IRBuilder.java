@@ -21,6 +21,7 @@ public class IRBuilder implements ASTVisitor {
     public HashSet<String> defined_function_name;
     public HashMap<String, block> blocks;
     public HashMap<String, Integer> spillPara;
+    public HashMap<String, HashSet<String>> varInFun = new HashMap<>();
     public Stack<block> loopDes = new Stack<>();
     public Stack<Integer> loopFlag = new Stack<>(); // 0: while, 1: for
 
@@ -28,6 +29,16 @@ public class IRBuilder implements ASTVisitor {
     // a.size() be like 'int Mx_array_size(int address_of_a)'
     // builtin function for string: 'Mx_string_' + name and take the address of string as the 1st parameter
     // other builtin function: just the same
+
+    public String defVar(String id){
+        Integer index = 0;
+        for (String i : varInFun.get(currentFun)){
+            if (i.startsWith(id + "_")) index++;
+        }
+        varInFun.get(currentFun).add(id + "_" + index);
+        return id + "_" + index;
+    }
+
 
     public funDefNode getFunction(String name){
         if (currentClass != null){
@@ -61,6 +72,7 @@ public class IRBuilder implements ASTVisitor {
         this.spillPara.put("_VAR_DEF", 0);
         this.blocks.put("main", new block());
         this.spillPara.put("main", 0);
+        this.varInFun.put("main", new HashSet<>());
     }
 
     @Override
@@ -125,11 +137,13 @@ public class IRBuilder implements ASTVisitor {
         currentBlock = new block();
         currentFun = currentClass + "_memberFn_" + it.name;
         blocks.put(currentFun, currentBlock);
+        varInFun.put(currentFun, new HashSet<>());
         spillPara.put(currentFun, 0);
         currentBlock.push_back(new define(new entity("_THIS"), new entity("_A0")));
         currentScope = new Scope(currentScope);
         for (int i = 0; i < it.parameters_type.size(); ++i){
-            currentScope.defineVariable(it.parameters.get(i).id, it.parameters_type.get(i).type, it.pos);
+            String id = defVar(it.parameters.get(i).id);
+            currentScope.defineVariable(id, it.parameters_type.get(i).type, it.pos);
         }
         block retBlk = new block();
         retBlk.push_back(new jump(null));
@@ -156,6 +170,7 @@ public class IRBuilder implements ASTVisitor {
             }
             blocks.put(currentFun, currentBlock);
             spillPara.put(currentFun, 0);
+            varInFun.put(currentFun, new HashSet<>());
         }
         currentScope = new Scope(currentScope);
         block retBlk = new block();
@@ -173,7 +188,8 @@ public class IRBuilder implements ASTVisitor {
                 currentBlock.push_back(new define(new entity(it.parameters.get(i).id), new entity(tmp)));
             }
             paraNum ++;
-            currentScope.defineVariable(it.parameters.get(i).id, it.parameters_type.get(i).type, it.pos);
+            String id = defVar(it.parameters.get(i).id);
+            currentScope.defineVariable(id, it.parameters_type.get(i).type, it.pos);
         }
         it.suite = it.suite.accept(this);
         currentBlock.push_back(new ret(null, currentRetBlk));
@@ -187,9 +203,10 @@ public class IRBuilder implements ASTVisitor {
     public varDefNode visit(varDefNode it) {
         ArrayList<singleVarDefNode> tmp = new ArrayList<>();
         for (int i = 0; i < it.variables.size(); ++i) {
+            String id = defVar(it.variables.get(i).id);
+            currentScope.defineVariable(id, it.type.type, it.pos);
             singleVarDefNode tmp_node = it.variables.get(i).accept(this);
             tmp.add(tmp_node);
-            currentScope.defineVariable(tmp_node.id, it.type.type, it.pos, new entity(tmp_node.id));
         }
         it.variables = tmp;
         return it;
@@ -197,24 +214,25 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public singleVarDefNode visit(singleVarDefNode it) {
+        String id = currentScope.getName(it.id);
         if (it.expr != null) {
-            if (it.expr instanceof newExprNode && ((newExprNode) it.expr).type.type.type == type.CLASS){
-                ((newExprNode) it.expr).size.add(new constExprNode(1, null));
-            }
+//            if (it.expr instanceof newExprNode && ((newExprNode) it.expr).type.type.type == type.CLASS){
+//                ((newExprNode) it.expr).size.add(new constExprNode(1, null));
+//            }
             it.expr = (ExprNode) it.expr.accept(this);
             entity rhs_ = new entity();
             if (it.expr.val.is_constant) currentBlock.push_back(new assign(new entity(rhs_), new entity(it.expr.val)));
             else rhs_ = new entity(it.expr.val);
             if (currentScope.parentScope() == null){
-                currentBlock.push_back(new define(new entity("@" + it.id), new entity(rhs_)));
+                currentBlock.push_back(new define(new entity("@" + id), new entity(rhs_)));
             } else {
-                currentBlock.push_back(new define(new entity(it.id), new entity(rhs_)));
+                currentBlock.push_back(new define(new entity(id), new entity(rhs_)));
             }
         } else {
             if (currentScope.parentScope() == null){
-                currentBlock.push_back(new define(new entity("@" + it.id), null));
+                currentBlock.push_back(new define(new entity("@" + id), null));
             } else {
-                currentBlock.push_back(new define(new entity(it.id), null));
+                currentBlock.push_back(new define(new entity(id), null));
             }
         }
         return it;
@@ -242,9 +260,10 @@ public class IRBuilder implements ASTVisitor {
     public varDefStmtNode visit(varDefStmtNode it) {
         ArrayList<singleVarDefNode> tmp = new ArrayList<>();
         for (int i = 0; i < it.variables.size(); ++i) {
+            String id = defVar(it.variables.get(i).id);
+            currentScope.defineVariable(id, it.type.type, it.pos);
             singleVarDefNode tmp_node = it.variables.get(i).accept(this);
             tmp.add(tmp_node);
-            currentScope.defineVariable(tmp_node.id, it.type.type, it.pos, new entity(tmp_node.id));
         }
         it.variables = tmp;
         return it;
@@ -444,8 +463,9 @@ public class IRBuilder implements ASTVisitor {
             new binary(new entity(tmp_mul), new entity(tmp_node.val), new entity(size_), binaryExprNode.Op.MUL)
         );
         currentBlock.push_back(new assign(new entity("_A0"), new entity(tmp_mul)));
-        currentBlock.push_back(new call("Mx_malloc"));
-        currentBlock.push_back(new define(new entity("_NEW_" + it.size.size()), new entity("_A0")));
+        currentBlock.push_back(new call("malloc"));
+        String new_id = defVar("_NEW_" + it.size.size());
+        currentBlock.push_back(new define(new entity(new_id), new entity("_A0")));
         if (it.type.type.type == type.CLASS){
             String classId = it.type.type.class_id;
             currentBlock.push_back(new call(classId + "_memberFn_" + classId));
@@ -488,7 +508,7 @@ public class IRBuilder implements ASTVisitor {
             currentBlock.nxtBlock = outBlk;
             currentBlock = outBlk;
         }
-        currentBlock.push_back(new getPtr("_NEW_" + it.size.size(), new entity(it.val)));
+        currentBlock.push_back(new getPtr(new_id, new entity(it.val)));
         currentBlock.push_back(new load(new entity(it.val), new entity(it.val)));
         return it;
     }
@@ -503,8 +523,9 @@ public class IRBuilder implements ASTVisitor {
             rhs_ = new entity(it.rhs.val);
         }
         if (it.lhs instanceof varExprNode){
-            if (currentScope.isGlobl(((varExprNode) it.lhs).id)) {
-                currentBlock.push_back(new store(new entity("@" + ((varExprNode) it.lhs).id), new entity(rhs_)));
+            String id = currentScope.getName(((varExprNode) it.lhs).id);
+            if (currentScope.isGlobl(id)) {
+                currentBlock.push_back(new store(new entity("@" + id), new entity(rhs_)));
             } else if (currentScope.isMember(((varExprNode) it.lhs).id)){
                 memberExprNode tmp_mem = new memberExprNode(it.pos, new thisExprNode(it.pos), ((varExprNode) it.lhs).id);
                 tmp_mem = tmp_mem.accept(this);
@@ -512,7 +533,7 @@ public class IRBuilder implements ASTVisitor {
                 currentBlock.push_back(new store(new entity(tmp_mem.val), new entity(rhs_)));
             } else {
                 entity lhs_ = new entity();
-                currentBlock.push_back(new getPtr(((varExprNode) it.lhs).id, new entity(lhs_)));
+                currentBlock.push_back(new getPtr(id, new entity(lhs_)));
                 currentBlock.push_back(new store(new entity(lhs_), new entity(rhs_)));
             }
         } else {
@@ -577,6 +598,7 @@ public class IRBuilder implements ASTVisitor {
     @Override
     public varExprNode visit(varExprNode it) {
 //        System.out.println("var_expr_" + it.id);
+        String id = currentScope.getName(it.id);
         if (currentScope.isMember(it.id)){
 //            System.out.println("is_member!!!!!!!!!!!!" + it.id);
             memberExprNode this_ = new memberExprNode(it.pos, new thisExprNode(it.pos), it.id);
@@ -584,17 +606,14 @@ public class IRBuilder implements ASTVisitor {
             it.val = new entity(this_.val);
             return it;
         }
-        it.expr_type = new Type(currentScope.getType(it.id, true));
-        if (currentScope.isGlobl(it.id)){
+        it.expr_type = new Type(currentScope.getType(id, true));
+        if (currentScope.isGlobl(id)){
             it.val = new entity();
-            currentBlock.push_back(new load(new entity("@" + it.id), new entity(it.val)));
+            currentBlock.push_back(new load(new entity("@" + id), new entity(it.val)));
         } else if (it.expr_type != null && (it.expr_type.dimension > 0 || it.expr_type.isClass() || it.expr_type.type == type.STRING)) {
-            it.val = new entity(it.id, true);
+            it.val = new entity(id, true);
         } else {
-            it.val = new entity(it.id);
-        }
-        if (it.expr_type != null && it.expr_type.type == type.STRING){
-//            System.out.println("is_string");
+            it.val = new entity(id);
         }
         return it;
     }
@@ -605,6 +624,7 @@ public class IRBuilder implements ASTVisitor {
         Integer paraNum = 0;
         if (it.function_id instanceof varExprNode) {
             function_id = ((varExprNode) it.function_id).id;
+//            function_id = currentScope.getName(function_id);
             if (currentScope.isMember(function_id)) {
                 memberExprNode tmp_mem = new memberExprNode(it.pos, new thisExprNode(it.pos), function_id);
                 funCallExprNode tmp = new funCallExprNode(it.pos, tmp_mem);
