@@ -187,7 +187,7 @@ public class RegAlloc implements Pass{
                     } else if (s instanceof assign) {
                         assign a = (assign) s;
                         if (a.rhs.id != null && a.rhs.id.equals(reg2id.get(i))) flag = true;
-                        if (a.rhs.id != null && a.rhs.id.equals(reg2id.get(i))){
+                        if (a.lhs.id != null && a.lhs.id.equals(reg2id.get(i))){
                             flag = false;
                             break;
                         }
@@ -211,6 +211,7 @@ public class RegAlloc implements Pass{
                         if (s_.addr.id != null && s_.addr.id.equals(reg2id.get(i))) flag = true;
                         if (s_.value.id != null && s_.value.id.equals(reg2id.get(i))) flag = true;
                     }
+                    if (flag) break;
                 }
                 if (!flag || reg2id.get(i).startsWith("@")){ // @var store its addr instead of value
                     id2reg.remove(reg2id.get(i));
