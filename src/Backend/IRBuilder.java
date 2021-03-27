@@ -671,6 +671,7 @@ public class IRBuilder implements ASTVisitor {
     public funCallExprNode visit(funCallExprNode it) {
         String function_id;
         Integer paraNum = 0;
+        ExprNode expr_class = new varExprNode(null, null);
         if (it.function_id instanceof varExprNode) {
             function_id = ((varExprNode) it.function_id).id;
 //            function_id = currentScope.getName(function_id);
@@ -684,33 +685,28 @@ public class IRBuilder implements ASTVisitor {
             it.expr_type = new Type(getFunction(function_id).type.type);
         } else {
 //            System.out.println("call------------------------------");
-            ExprNode expr_ = (ExprNode) ((memberExprNode) it.function_id).expr.accept(this);
+            expr_class = (ExprNode) ((memberExprNode) it.function_id).expr.accept(this);
 //            System.out.println("call: " + ((memberExprNode) it.function_id).member);
-            if (expr_.expr_type.type == type.STRING){
+            if (expr_class.expr_type.type == type.STRING){
                 function_id = "Mx_string_" + ((memberExprNode) it.function_id).member;
                 it.expr_type = new Type(getClass("string").getFunction(((memberExprNode) it.function_id).member, null).type.type);
-            } else if (expr_.expr_type.dimension > 0){
+            } else if (expr_class.expr_type.dimension > 0){
                 function_id = "Mx_array_size";
                 it.expr_type = new Type(getClass("*ARRAY").getFunction(((memberExprNode) it.function_id).member, null).type.type);
             } else {
-                function_id = expr_.expr_type.class_id + "_memberFn_" + ((memberExprNode) it.function_id).member;
-                it.expr_type = new Type(getClass(expr_.expr_type.class_id).getFunction(((memberExprNode) it.function_id).member, null).type.type);
+                function_id = expr_class.expr_type.class_id + "_memberFn_" + ((memberExprNode) it.function_id).member;
+                it.expr_type = new Type(getClass(expr_class.expr_type.class_id).getFunction(((memberExprNode) it.function_id).member, null).type.type);
             }
-            currentBlock.push_back(new assign(new entity("_A" + paraNum++), new entity(expr_.val)));
-//            expr_ = (ExprNode) expr_.accept(this);
-//            if (expr_.expr_type.dimension > 0) {
-//                function_id = "Mx_array_size";
-//            } else if (expr_.expr_type.type == type.STRING) {
-//                function_id = "Mx_string_" + ((memberExprNode) it.function_id).member;
-//            } else { // this_expr or class_expr
-//                function_id = expr_.expr_type.class_id + "_memberFn_" + ((memberExprNode) it.function_id).member;
-//            }
+            paraNum++;
         }
 //        System.out.println("call: " + function_id);
         ArrayList<entity> para_ent = new ArrayList<>();
         for (int i = 0; i < it.parameters.size(); ++i) {
             ExprNode tmp_node = (ExprNode) it.parameters.get(i).accept(this);
             para_ent.add(tmp_node.val);
+        }
+        if (paraNum == 1){
+            currentBlock.push_back(new assign(new entity("_A0"), new entity(expr_class.val)));
         }
         for (int i = 0; i < it.parameters.size(); ++i){
             entity tmp = new entity();
