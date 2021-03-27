@@ -139,13 +139,16 @@ public class AsmPrinter implements Pass{
                 } else if (s instanceof define) {
                     define d = (define) s;
                     if (d.assign != null) {
+                        if (d.assign.is_constant){
+                            System.out.println("\tli\t" + regIdentifier.get(d.assign.reg) + "," + getReg(d.assign));
+                        }
                         if (getEntityString(d.var).startsWith("@")) {
                             System.out.println("\tlui\t" + getReg(d.var) + ",%hi(.G"
                                     + sbssIndex.get(getEntityString(d.var)) + ")");
-                            System.out.println("\tsw\t" + getReg(d.assign) + ",%lo(.G"
+                            System.out.println("\tsw\t" + regIdentifier.get(d.assign.reg) + ",%lo(.G"
                                     + sbssIndex.get(getEntityString(d.var)) + ")(" + getReg(d.var) + ")");
                         } else {
-                            System.out.println("\tsw\t" + getReg(d.assign) + ",-"
+                            System.out.println("\tsw\t" + regIdentifier.get(d.assign.reg) + ",-"
                                     + (8 + stackAlloc.get(currentFun).get(getEntityString(d.var))) + "(s0)");
                         }
                     }
