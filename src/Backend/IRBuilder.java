@@ -700,20 +700,24 @@ public class IRBuilder implements ASTVisitor {
 //            }
         }
 //        System.out.println("call: " + function_id);
-        for (int i = 0; i < it.parameters.size(); ++i){
+        ArrayList<entity> para_ent = new ArrayList<>();
+        for (int i = 0; i < it.parameters.size(); ++i) {
             ExprNode tmp_node = (ExprNode) it.parameters.get(i).accept(this);
+            para_ent.add(tmp_node.val);
+        }
+        for (int i = 0; i < it.parameters.size(); ++i){
             entity tmp = new entity();
             if (paraNum <= 6){
-                currentBlock.push_back(new assign(new entity("_A" + paraNum++), new entity(tmp_node.val)));
+                currentBlock.push_back(new assign(new entity("_A" + paraNum++), new entity(para_ent.get(i))));
             } else {
                 currentBlock.push_back(
                     new binary(new entity(tmp), new entity("_SP"), new entity((paraNum - 7) * 4), binaryExprNode.Op.ADD)
                 );
                 entity rhs_ = new entity();
-                if (tmp_node.val.is_constant){
-                    currentBlock.push_back(new assign(new entity(rhs_), new entity(tmp_node.val)));
+                if (para_ent.get(i).is_constant){
+                    currentBlock.push_back(new assign(new entity(rhs_), new entity(para_ent.get(i))));
                 } else {
-                    rhs_ = new entity(tmp_node.val);
+                    rhs_ = new entity(para_ent.get(i));
                 }
                 currentBlock.push_back(new store(new entity(tmp), new entity(rhs_)));
                 paraNum ++;
