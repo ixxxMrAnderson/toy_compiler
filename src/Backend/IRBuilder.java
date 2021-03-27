@@ -436,11 +436,17 @@ public class IRBuilder implements ASTVisitor {
                     tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.SUB, it.expr, new constExprNode(1, it.pos));
                     tmp_a = new assignExprNode(it.expr, tmp_b, it.pos);
                     visit(tmp_a);
+                    if (it.expr instanceof varExprNode && currentScope.isGlobl(((varExprNode) it.expr).id)){
+                        it.val = new entity(((store) currentBlock.stmts.get(currentBlock.stmts.size() - 1)).value);
+                    }
                     break;
                 case INCREASE:
                     tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.ADD, it.expr, new constExprNode(1, it.pos));
                     tmp_a = new assignExprNode(it.expr, tmp_b, it.pos);
                     visit(tmp_a);
+                    if (it.expr instanceof varExprNode && currentScope.isGlobl(((varExprNode) it.expr).id)){
+                        it.val = new entity(((store) currentBlock.stmts.get(currentBlock.stmts.size() - 1)).value);
+                    }
                     break;
                 case NOT:
                     currentBlock.push_back(
@@ -477,9 +483,8 @@ public class IRBuilder implements ASTVisitor {
         // todo: sry dear you are so complicated
         ExprNode tmp_node = (ExprNode) it.size.get(0).accept(this);
         it.val = new entity();
-        Integer size_ = 4;
         if (it.type.type.isClass() && it.size.size() == 1){
-            size_ = 4 * getClass(it.type.type.class_id).members.size();
+            Integer size_ = 4 * getClass(it.type.type.class_id).members.size();
             currentBlock.push_back(new assign(new entity("_A0"), new entity(size_)));
             currentBlock.push_back(new call("malloc"));
         } else {
