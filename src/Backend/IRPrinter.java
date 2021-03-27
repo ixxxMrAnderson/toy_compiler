@@ -96,7 +96,7 @@ public class IRPrinter implements Pass {
     private String getEntityString(entity e){
         if (e.is_constant){
             if (e.constant.expr_type.type == type.INT){
-                return Integer.toString(e.constant.int_value);
+                return Integer.toString(e.constant.int_value) + "(" + regIdentifier.get(e.reg) + ")";
             } else if (e.constant.expr_type.type == type.STRING){
                 return e.constant.string_value;
             } else if (e.constant.expr_type.type == type.NULL){

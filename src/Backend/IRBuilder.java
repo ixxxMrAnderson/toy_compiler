@@ -527,6 +527,8 @@ public class IRBuilder implements ASTVisitor {
             currentBlock.push_back(
                 new binary(new entity(x), new entity(x), new entity(2), binaryExprNode.Op.SLA)
             );
+            currentBlock.push_back(new getPtr(new_id, new entity(it.val)));
+            currentBlock.push_back(new load(new entity(it.val), new entity(it.val)));
             currentBlock.push_back(
                 new binary(new entity(x), new entity(x), new entity(it.val), binaryExprNode.Op.ADD)
             );
@@ -534,9 +536,10 @@ public class IRBuilder implements ASTVisitor {
             currentBlock.push_back(new jump(retBlk));
             currentBlock.nxtBlock = outBlk;
             currentBlock = outBlk;
+        } else {
+            currentBlock.push_back(new getPtr(new_id, new entity(it.val)));
+            currentBlock.push_back(new load(new entity(it.val), new entity(it.val)));
         }
-        currentBlock.push_back(new getPtr(new_id, new entity(it.val)));
-        currentBlock.push_back(new load(new entity(it.val), new entity(it.val)));
         return it;
     }
 
