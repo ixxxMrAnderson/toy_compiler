@@ -105,14 +105,29 @@ public class AsmPrinter implements Pass{
                     branch b = (branch) s;
                     if (b.flag.is_constant){
                         System.out.println("\tli\t" + regIdentifier.get(b.flag.reg) + "," + getReg(b.flag));
-                        System.out.println("\tbeq\t" + regIdentifier.get(b.flag.reg) + ",zero,"
-                                + getBlockName(b.falseBranch));
+                        if (b.trueBranch == null){
+                            System.out.println("\tbeq\t" + regIdentifier.get(b.flag.reg) + ",zero,"
+                                    + getBlockName(b.falseBranch));
+                        } else if (b.falseBranch == null){
+                            System.out.println("\tbnez\t" + regIdentifier.get(b.flag.reg) + ",zero,"
+                                    + getBlockName(b.trueBranch));
+                        } else {
+                            System.out.println("\tbeq\t" + regIdentifier.get(b.flag.reg) + ",zero,"
+                                    + getBlockName(b.falseBranch));
+                            System.out.println("\tj\t" + getBlockName(b.trueBranch));
+                        }
                     } else {
-                        System.out.println("\tbeq\t" + getReg(b.flag) + ",zero,"
-                                + getBlockName(b.falseBranch));
-                    }
-                    if (b.trueBranch != null){
-                        System.out.println("\tj\t" + getBlockName(b.trueBranch));
+                        if (b.trueBranch == null){
+                            System.out.println("\tbeq\t" + getReg(b.flag) + ",zero,"
+                                    + getBlockName(b.falseBranch));
+                        } else if (b.falseBranch == null){
+                            System.out.println("\tbnez\t" + getReg(b.flag) + ",zero,"
+                                    + getBlockName(b.trueBranch));
+                        } else {
+                            System.out.println("\tbeq\t" + getReg(b.flag) + ",zero,"
+                                    + getBlockName(b.falseBranch));
+                            System.out.println("\tj\t" + getBlockName(b.trueBranch));
+                        }
                     }
                 } else if (s instanceof ret) {
                     ret r = (ret) s;

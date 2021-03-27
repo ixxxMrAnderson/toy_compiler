@@ -596,8 +596,20 @@ public class IRBuilder implements ASTVisitor {
     @Override
     public binaryExprNode visit(binaryExprNode it) {
         it.lhs = (ExprNode) it.lhs.accept(this);
-        it.rhs = (ExprNode) it.rhs.accept(this);
         entity value = new entity();
+        block tr_ = new block(), fa_ = new block(), nxt = new block(), cut_ = new block();
+        tr_.push_back(new assign(new entity(it.val), new entity(1)));
+        tr_.push_back(new jump(nxt));
+        fa_.push_back(new assign(new entity(it.val), new entity(0)));
+        fa_.push_back(new jump(nxt));
+        if (it.op == binaryExprNode.Op.AND){
+            currentBlock.push_back(new branch(it.lhs.val, cut_, fa_));
+            currentBlock = cut_;
+        } else if (it.op == binaryExprNode.Op.OR){
+            currentBlock.push_back(new branch(it.lhs.val, tr_, cut_));
+            currentBlock = cut_;
+        }
+        it.rhs = (ExprNode) it.rhs.accept(this);
         it.val = value;
         binaryExprNode.Op op = it.op;
         if (it.rhs.expr_type.type == type.STRING && it.lhs.expr_type.type == type.STRING){
@@ -623,6 +635,10 @@ public class IRBuilder implements ASTVisitor {
             currentBlock.push_back(
                 new binary(new entity(value), new entity(it.lhs.val), new entity(it.rhs.val), op)
             );
+        }
+        if (it.op == binaryExprNode.Op.AND || it.op == binaryExprNode.Op.OR) {
+            currentBlock.push_back(new jump(nxt));
+            currentBlock = nxt;
         }
         return it;
     }
