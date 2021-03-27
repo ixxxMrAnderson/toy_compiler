@@ -104,6 +104,7 @@ public class AsmPrinter implements Pass{
                 } else if (s instanceof branch) {
                     branch b = (branch) s;
                     if (b.flag.is_constant){
+                        System.out.println("\tli\t" + regIdentifier.get(b.flag.reg) + "," + getReg(b.flag));
                         System.out.println("\tbeq\t" + regIdentifier.get(b.flag.reg) + ",zero,"
                                 + getBlockName(b.falseBranch));
                     } else {

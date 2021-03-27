@@ -65,7 +65,7 @@ public class RegAlloc implements Pass{
                     }
                     if (!a.lhs.is_constant) allocReg(a.lhs, true);
                     if (!a.rhs.is_constant) allocReg(a.rhs);
-                } else if (s instanceof call) {
+                } else if (s instanceof call) { // clear the table (no caller safe)
                     for (String id : id2reg.keySet()){
                         reg2id.put(id2reg.get(id), null);
                     }
@@ -107,6 +107,8 @@ public class RegAlloc implements Pass{
     // s0-s1 (8-9), s2-s11 (18-27);
     // t0-t2 (5-7), t3-t6 (28-31)
     public void allocReg(entity var, boolean flag){ // todo: much more complicated than this...
+        // flag: to load on, no need to pre-load
+
         if (var.id.startsWith("_A")) {
             var.reg = 10 + Integer.parseInt(var.id.substring(2, 3));
             return;
@@ -126,7 +128,7 @@ public class RegAlloc implements Pass{
         }
 
         for (int i = 5; i < 32; ++i){
-            if (i == 8) continue;
+            if (i >= 8 && i <= 17) continue;
             if (reg2id.get(i) == null){
                 var.reg = i;
                 id2reg.put(var.id, i);
@@ -143,22 +145,22 @@ public class RegAlloc implements Pass{
             }
         }
 
-        // spill a0
+        // spill t0
         entity assign = new entity();
-        assign.reg = 10;
-        if (!currentStack.containsKey(reg2id.get(10))){
+        assign.reg = 5;
+        if (!currentStack.containsKey(reg2id.get(5))){
             sp += 4;
-            currentStack.put(reg2id.get(10), sp);
+            currentStack.put(reg2id.get(5), sp);
         }
-        currentBlk.stmts.add(currentIndex++, new define(new entity(reg2id.get(10)), new entity(assign)));
-        var.reg = 10;
-        id2reg.remove(reg2id.get(10));
-        id2reg.put(var.id, 10);
-        reg2id.put(10, var.id);
+        currentBlk.stmts.add(currentIndex++, new define(new entity(reg2id.get(5)), new entity(assign)));
+        var.reg = 5;
+        id2reg.remove(reg2id.get(5));
+        id2reg.put(var.id, 5);
+        reg2id.put(5, var.id);
         if (currentStack.containsKey(var.id) && !flag){
 //            System.out.println("regAlloc---------" + currentStack);
             entity to = new entity();
-            to.reg = 10;
+            to.reg = 5;
             currentBlk.stmts.add(currentIndex, new load(new entity(to), new entity(to)));
             currentBlk.stmts.add(currentIndex, new getPtr(var.id, new entity(to)));
             currentIndex += 2;
@@ -168,12 +170,12 @@ public class RegAlloc implements Pass{
 
     public void upload(){
         for (int i = 5; i < 32; ++i){
-            if (i == 8) continue;
+            if (i >= 8 && i <= 17) continue;
             if (reg2id.get(i) != null){
 //                System.out.println("-----upload-------: " + reg2id.get(i));
                 boolean flag = false;
                 for (int j = currentIndex; j < currentBlk.stmts.size(); ++j){
-                    if (currentStack.containsKey(reg2id.get(i))) break;
+                    if (currentStack.containsKey(reg2id.get(i)) || reg2id.get(i).startsWith("@") || reg2id.get(i).startsWith("%")) break;
                     statement s = currentBlk.stmts.get(j);
                     if (s instanceof binary) {
                         binary b = (binary) s;
