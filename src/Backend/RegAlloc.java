@@ -77,7 +77,7 @@ public class RegAlloc implements Pass{
                         sp += 4;
                         currentStack.put(d.var.id, sp);
                     }
-                    if (!d.var.is_constant && d.var.id.startsWith("@")) allocReg(d.var, true);
+                    if (d.assign != null && d.var.id.startsWith("@")) allocReg(d.var, true);
                     if (d.assign != null) allocReg(d.assign);
 //                    System.out.println(currentIndex + "_out");
                 } else if (s instanceof getPtr) {

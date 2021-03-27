@@ -409,6 +409,7 @@ public class IRBuilder implements ASTVisitor {
     public prefixExprNode visit(prefixExprNode it) {
         it.expr = (ExprNode) it.expr.accept(this);
         it.val = new entity(it.expr.val);
+        entity tmp_lhs = new entity();
         binaryExprNode tmp_b;
         assignExprNode tmp_a;
         if (it.op != null) {
@@ -419,15 +420,17 @@ public class IRBuilder implements ASTVisitor {
                         return it;
                     }
                     currentBlock.push_back(
-                            new binary(new entity(it.expr.val), new entity(0), new entity(it.expr.val), binaryExprNode.Op.SUB)
+                            new binary(new entity(tmp_lhs), new entity(0), new entity(it.expr.val), binaryExprNode.Op.SUB)
                     );
+                    it.val = new entity(tmp_lhs);
                     break;
                 case POSITIVE:
                     break;
                 case BITWISE_NOT:
                     currentBlock.push_back(
-                            new binary(new entity(it.expr.val), new entity(it.expr.val), new entity(-1), binaryExprNode.Op.BITWISE_XOR)
+                            new binary(new entity(tmp_lhs), new entity(it.expr.val), new entity(-1), binaryExprNode.Op.BITWISE_XOR)
                     );
+                    it.val = new entity(tmp_lhs);
                     break;
                 case DECREASE:
                     tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.SUB, it.expr, new constExprNode(1, it.pos));
@@ -441,8 +444,9 @@ public class IRBuilder implements ASTVisitor {
                     break;
                 case NOT:
                     currentBlock.push_back(
-                            new binary(new entity(it.expr.val), new entity(it.expr.val), new entity(1), binaryExprNode.Op.BITWISE_XOR)
+                            new binary(new entity(tmp_lhs), new entity(it.expr.val), new entity(1), binaryExprNode.Op.BITWISE_XOR)
                     );
+                    it.val = new entity(tmp_lhs);
                     break;
                 default:
             }
@@ -516,7 +520,7 @@ public class IRBuilder implements ASTVisitor {
                 new binary(new entity(x), new entity(dim_id), new entity(flag_id), binaryExprNode.Op.SUB)
             );
             currentBlock.push_back(
-                new binary(new entity(x), new entity(x), new entity(4), binaryExprNode.Op.MUL)
+                new binary(new entity(x), new entity(x), new entity(2), binaryExprNode.Op.SLA)
             );
             currentBlock.push_back(
                 new binary(new entity(x), new entity(x), new entity(it.val), binaryExprNode.Op.ADD)
@@ -750,7 +754,7 @@ public class IRBuilder implements ASTVisitor {
                 new binary(new entity(l), new entity(it.index.val), new entity(1), binaryExprNode.Op.ADD)
         );
         currentBlock.push_back(
-            new binary(new entity(l), new entity(l), new entity(4), binaryExprNode.Op.MUL)
+            new binary(new entity(l), new entity(l), new entity(2), binaryExprNode.Op.SLA)
         );
         currentBlock.push_back(
             new binary(new entity(it.val), new entity(l), new entity(it.array.val), binaryExprNode.Op.ADD)
