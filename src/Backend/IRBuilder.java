@@ -147,6 +147,8 @@ public class IRBuilder implements ASTVisitor {
     public classConstructorNode visit(classConstructorNode it) {
         currentBlock = new block();
         currentFun = currentClass + "_memberFn_" + it.name;
+
+//        System.out.println("wtfffuck");
         blocks.put(currentFun, currentBlock);
         varInFun.put(currentFun, new HashSet<>());
         spillPara.put(currentFun, 0);
@@ -498,9 +500,14 @@ public class IRBuilder implements ASTVisitor {
         }
         String new_id = defVar("_NEW_" + it.size.size());
         currentBlock.push_back(new define(new entity(new_id), new entity("_A0")));
-        if (it.type.type.type == type.CLASS){
+        if (it.type.type.isClass()){
             String classId = it.type.type.class_id;
-            if (getClass(classId).containFunction(classId)) {
+//            System.out.println(classId + "wtfffffffffffffffffffffff");
+//            for (funDefNode i : getClass(classId).functions){
+//                System.out.println(i.name + "wtf");
+//            }
+            if (getClass(classId).constructor != null && getClass(classId).constructor.size() > 0) {
+//                System.out.println(classId + "wtfffffffffffffffffffffff");
                 currentBlock.push_back(new call(classId + "_memberFn_" + classId));
             }
         }

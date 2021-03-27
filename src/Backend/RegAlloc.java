@@ -1,6 +1,8 @@
 package Backend;
 
 import MIR.*;
+import Util.Type.type;
+
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -21,6 +23,15 @@ public class RegAlloc implements Pass{
             stackAlloc.put(i, currentStack);
             currentStack = new HashMap<>();
             sp = 0;
+        }
+    }
+
+    public boolean isNumeric(String str) {
+        try {
+            Double.parseDouble(str);
+            return true;
+        } catch(Exception e){
+            return false;
         }
     }
 
@@ -54,6 +65,7 @@ public class RegAlloc implements Pass{
                     assign a = (assign) s;
                     if (a.lhs.id != null && a.lhs.id.equals("_A0")){
                         for (String id : id2reg.keySet()){
+                            if (isNumeric(id)) continue;
                             entity assign = new entity();
                             assign.reg = id2reg.get(id);
                             if (!currentStack.containsKey(id)){
@@ -121,7 +133,17 @@ public class RegAlloc implements Pass{
             var.reg = 8;
             return;
         }
-        if (var.is_constant) var.id = String.valueOf(var.constant.int_value);
+        if (var.is_constant) {
+            if (var.constant.expr_type.type == type.INT){
+                var.id = String.valueOf(var.constant.int_value);
+            } else if (var.constant.expr_type.type == type.NULL){
+                var.id = "0";
+            } else if (var.constant.bool_value == true){
+                var.id = "1";
+            } else {
+                var.id = "0";
+            }
+        }
         if (id2reg.containsKey(var.id)) {
             var.reg = id2reg.get(var.id);
             return;
