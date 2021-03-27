@@ -490,32 +490,30 @@ public class IRBuilder implements ASTVisitor {
                 currentBlock.push_back(new call(classId + "_memberFn_" + classId));
             }
         }
+        String dim_id = defVar("_DIM_" + it.size.size());
+        currentBlock.push_back(new define(new entity(dim_id), new entity(tmp_node.val)));
         if (it.size.size() > 1){
-            entity dim = new entity();
-            dim.id += "_dim";
-            entity i = new entity();
-            i.id += "_i";
+            String flag_id = defVar("_FLAG_" + it.size.size());
+            currentBlock.push_back(new define(new entity(flag_id), new entity(tmp_node.val)));
             entity x = new entity();
             x.id += "_x";
-            currentBlock.push_back(
-                new binary(new entity(dim), new entity(tmp_node.val), new entity(1), binaryExprNode.Op.SUB)
-            );
-            currentBlock.push_back(new assign(new entity(i), new entity(tmp_node.val)));
             currentBlock.nxtBlock = new block();
             currentBlock = currentBlock.nxtBlock;
             block retBlk = currentBlock;
             block outBlk = new block();
-            currentBlock.push_back(new branch(new entity(i),null, outBlk));
-            currentBlock.push_back(
-                new binary(new entity(i), new entity(i), new entity(1), binaryExprNode.Op.SUB)
-            );
+            currentBlock.push_back(new branch(new entity(flag_id),null, outBlk));
+            entity tmp_addr = new entity();
+            entity tmp_val = new entity();
+            currentBlock.push_back(new binary(new entity(tmp_val), new entity(flag_id), new entity(1), binaryExprNode.Op.SUB));
+            currentBlock.push_back(new getPtr(flag_id, tmp_addr));
+            currentBlock.push_back(new store(new entity(tmp_addr), new entity(tmp_val)));
             newExprNode it_ = new newExprNode(null, it.type);
             for (int j = 1; j < it.size.size(); ++j){
                 it_.size.add(it.size.get(j));
             }
             it_ = visit(it_, true);
             currentBlock.push_back(
-                new binary(new entity(x), new entity(dim), new entity(i), binaryExprNode.Op.SUB)
+                new binary(new entity(x), new entity(dim_id), new entity(flag_id), binaryExprNode.Op.SUB)
             );
             currentBlock.push_back(
                 new binary(new entity(x), new entity(x), new entity(4), binaryExprNode.Op.MUL)
@@ -704,7 +702,7 @@ public class IRBuilder implements ASTVisitor {
                 paraNum ++;
             }
         }
-        if (paraNum - 7 > spillPara.get(currentFun)) spillPara.put(currentFun, paraNum - 7);
+        if (currentFun == null ? paraNum - 7 > spillPara.get("main") : paraNum - 7 > spillPara.get(currentFun)) spillPara.put(currentFun, paraNum - 7);
         it.val = new entity();
         currentBlock.push_back(new call(function_id));
         currentBlock.push_back(new assign(new entity(it.val), new entity("_A0")));

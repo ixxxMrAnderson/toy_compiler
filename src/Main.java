@@ -23,7 +23,7 @@ import java.util.HashMap;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/codegen/t61.mx";
+        String file_name = "./testcases/codegen/t12.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 
