@@ -331,7 +331,7 @@ public class IRBuilder implements ASTVisitor {
         if (it.step != null) it.step = (ExprNode) it.step.accept(this);
         currentBlock.push_back(new jump(cond_blk));
         currentBlock = body;
-        loopDes.push(cond_blk);
+        loopDes.push(iter_blk);
         loopFlag.push(1);
         currentScope = new Scope(currentScope);
         if (it.body != null) it.body = (StmtNode) it.body.accept(this);
@@ -345,7 +345,12 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public breakStmtNode visit(breakStmtNode it) {
-        currentBlock.push_back(new jump(((branch) loopDes.peek().tail()).falseBranch));
+        if (loopFlag.peek() == 1){
+            block cond = ((jump) loopDes.peek().tail()).destination;
+            currentBlock.push_back(new jump(((branch) cond.tail()).falseBranch));
+        } else {
+            currentBlock.push_back(new jump(((branch) loopDes.peek().tail()).falseBranch));
+        }
         return it;
     }
 
