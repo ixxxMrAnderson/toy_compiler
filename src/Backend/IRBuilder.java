@@ -441,7 +441,7 @@ public class IRBuilder implements ASTVisitor {
                     break;
                 case NOT:
                     currentBlock.push_back(
-                            new binary(new entity(it.expr.val), new entity(it.expr.val), new entity(0), binaryExprNode.Op.OR)
+                            new binary(new entity(it.expr.val), new entity(it.expr.val), new entity(1), binaryExprNode.Op.BITWISE_XOR)
                     );
                     break;
                 default:
