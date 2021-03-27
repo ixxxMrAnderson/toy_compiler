@@ -4,6 +4,7 @@ import MIR.*;
 import AST.*;
 import Util.Type.type;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -11,8 +12,41 @@ public class IRPrinter implements Pass {
     private int blockCnt = 0;
     private HashMap<block, Integer> blockIndex = new HashMap<>();
     private HashSet<String> printed = new HashSet<>();
+    public ArrayList<String> regIdentifier = new ArrayList<>();
 
     public IRPrinter(HashMap<String, block> b) {
+        regIdentifier.add("zero"); // 0
+        regIdentifier.add("ra");   // 1
+        regIdentifier.add("sp");   // 2
+        regIdentifier.add("gp");   // 3
+        regIdentifier.add("tp");   // 4
+        regIdentifier.add("t0");   // 5
+        regIdentifier.add("t1");   // 6
+        regIdentifier.add("t2");   // 7
+        regIdentifier.add("s0");   // 8
+        regIdentifier.add("s1");   // 9
+        regIdentifier.add("a0");   // 10
+        regIdentifier.add("a1");   // 11
+        regIdentifier.add("a2");   // 12
+        regIdentifier.add("a3");   // 13
+        regIdentifier.add("a4");   // 14
+        regIdentifier.add("a5");   // 15
+        regIdentifier.add("a6");   // 16
+        regIdentifier.add("a7");   // 17
+        regIdentifier.add("s2");   // 18
+        regIdentifier.add("s3");   // 19
+        regIdentifier.add("s4");   // 20
+        regIdentifier.add("s5");   // 21
+        regIdentifier.add("s6");   // 22
+        regIdentifier.add("s7");   // 23
+        regIdentifier.add("s8");   // 24
+        regIdentifier.add("s9");   // 25
+        regIdentifier.add("s10");  // 26
+        regIdentifier.add("s11");  // 27
+        regIdentifier.add("t3");   // 28
+        regIdentifier.add("t4");   // 29
+        regIdentifier.add("t5");   // 30
+        regIdentifier.add("t6");   // 31
         System.out.println("----------------------------IR----------------------------\n");
         for (String name : b.keySet()){
             System.out.println("\n" + name + "_");
@@ -73,7 +107,7 @@ public class IRPrinter implements Pass {
                 return "false";
             }
         }
-        return e.id;
+        return e.id + "(" + regIdentifier.get(e.reg) + ")";
     }
 
     private void print(statement s) {

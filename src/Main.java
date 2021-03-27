@@ -23,7 +23,7 @@ import java.util.HashMap;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/codegen/e2.mx";
+        String file_name = "./testcases/codegen/t61.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 
@@ -42,9 +42,9 @@ public class Main {
             HashMap<String, block> blocks = new HashMap<>();
             HashMap<String, Integer> spillPara = new HashMap<>();
             new IRBuilder(blocks, spillPara).visit(AST_root);
-//            new IRPrinter(blocks);
             HashMap<String, HashMap<String, Integer>> stackAlloc = new HashMap<>();
             new RegAlloc(blocks, stackAlloc);
+//            new IRPrinter(blocks);
             new AsmPrinter(blocks, stackAlloc, spillPara);
         } catch (error er) {
             System.err.println(er.toString());

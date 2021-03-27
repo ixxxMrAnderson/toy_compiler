@@ -29,6 +29,8 @@ public class RegAlloc implements Pass{
         if (allocated.contains(blk)) return;
         else allocated.add(blk);
         currentBlk = blk;
+//        System.out.println("------------------------------");
+//        System.out.println(id2reg);
         if (blk != null) {
             for (currentIndex = 0; currentIndex < blk.stmts.size(); ++currentIndex) {
                 upload();
