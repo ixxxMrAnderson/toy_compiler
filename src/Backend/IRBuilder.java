@@ -619,6 +619,7 @@ public class IRBuilder implements ASTVisitor {
         if (containsAnd(it)){
             currentBlock.optAndBlk = new block();
             ret = visit(it, true);
+            currentBlock.push_back(new define(new entity(ret.val), new entity(ret.val)));
             currentBlock.optAndBlk.push_back(new assign(new entity(ret.val), new entity(0)));
             currentBlock.optAndBlk.push_back(new jump(nxt));
             currentBlock.push_back(new jump(nxt));
@@ -627,9 +628,8 @@ public class IRBuilder implements ASTVisitor {
         }
         if (containsOr(it)){
             currentBlock.optOrBlk = new block();
-//            System.out.println("new orBLk for blk " + currentBlock);
             ret = visit(it, true);
-//            System.out.println("return binary in blk " + currentBlock);
+            currentBlock.push_back(new define(new entity(ret.val), new entity(ret.val)));
             currentBlock.optOrBlk.push_back(new assign(new entity(ret.val), new entity(1)));
             currentBlock.optOrBlk.push_back(new jump(nxt));
             currentBlock.push_back(new jump(nxt));
