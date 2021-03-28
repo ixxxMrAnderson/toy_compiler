@@ -40,6 +40,9 @@ public class IRBuilder implements ASTVisitor {
     }
 
     public String defVar(String id){
+        if (currentScope.parentScope() == null && !id.startsWith("_NEW") && !id.startsWith("_DIM") && !id.startsWith("_FLAG") ){
+            return id;
+        }
         Integer index = 0;
         for (String i : varInFun.get(currentFun)){
             if (i.startsWith(id + "_")  && isNumeric(i.substring(id.length() + 1))) index++;
