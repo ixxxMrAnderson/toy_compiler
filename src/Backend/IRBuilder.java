@@ -498,21 +498,18 @@ public class IRBuilder implements ASTVisitor {
             currentBlock.push_back(new assign(new entity("_A0"), new entity(tmp_node.val)));
             currentBlock.push_back(new call("Mx_malloc"));
         }
-        String new_id = defVar("_NEW_" + it.size.size());
-        currentBlock.push_back(new define(new entity(new_id), new entity("_A0")));
         if (it.type.type.isClass()){
             String classId = it.type.type.class_id;
             if (getClass(classId).constructor != null && getClass(classId).constructor.size() > 0) {
                 currentBlock.push_back(new call(classId + "_memberFn_" + classId));
             }
         }
-        String dim_id = defVar("_DIM_" + it.size.size());
-        currentBlock.push_back(new define(new entity(dim_id), new entity(tmp_node.val)));
         if (it.size.size() > 1){
+            String new_id = defVar("_NEW_" + it.size.size());
+            currentBlock.push_back(new define(new entity(new_id), new entity("_A0")));
             String flag_id = defVar("_FLAG_" + it.size.size());
             currentBlock.push_back(new define(new entity(flag_id), new entity(tmp_node.val)));
-            entity x = new entity();
-            x.id += "_x";
+            entity x = new entity(), y = new entity();
             currentBlock.nxtBlock = new block();
             currentBlock = currentBlock.nxtBlock;
             block retBlk = currentBlock;
@@ -520,32 +517,30 @@ public class IRBuilder implements ASTVisitor {
             currentBlock.push_back(new branch(new entity(flag_id),null, outBlk));
             entity tmp_addr = new entity();
             entity tmp_val = new entity();
-            currentBlock.push_back(new binary(new entity(tmp_val), new entity(flag_id), new entity(1), binaryExprNode.Op.SUB));
-            currentBlock.push_back(new getPtr(flag_id, tmp_addr));
-            currentBlock.push_back(new store(new entity(tmp_addr), new entity(tmp_val)));
             newExprNode it_ = new newExprNode(null, it.type);
             for (int j = 1; j < it.size.size(); ++j){
                 it_.size.add(it.size.get(j));
             }
             it_ = visit(it_, true);
             currentBlock.push_back(
-                new binary(new entity(x), new entity(dim_id), new entity(flag_id), binaryExprNode.Op.SUB)
+                new binary(new entity(x), new entity(flag_id), new entity(2), binaryExprNode.Op.SLA)
             );
+            currentBlock.push_back(new getPtr(new_id, new entity(y)));
+            currentBlock.push_back(new load(new entity(y), new entity(y)));
             currentBlock.push_back(
-                new binary(new entity(x), new entity(x), new entity(2), binaryExprNode.Op.SLA)
-            );
-            currentBlock.push_back(new getPtr(new_id, new entity(it.val)));
-            currentBlock.push_back(new load(new entity(it.val), new entity(it.val)));
-            currentBlock.push_back(
-                new binary(new entity(x), new entity(x), new entity(it.val), binaryExprNode.Op.ADD)
+                new binary(new entity(x), new entity(x), new entity(y), binaryExprNode.Op.ADD)
             );
             currentBlock.push_back(new store(new entity(x), new entity(it_.val)));
+            currentBlock.push_back(new binary(new entity(tmp_val), new entity(flag_id), new entity(1), binaryExprNode.Op.SUB));
+            currentBlock.push_back(new getPtr(flag_id, tmp_addr));
+            currentBlock.push_back(new store(new entity(tmp_addr), new entity(tmp_val)));
             currentBlock.push_back(new jump(retBlk));
             currentBlock.nxtBlock = outBlk;
             currentBlock = outBlk;
-        } else {
             currentBlock.push_back(new getPtr(new_id, new entity(it.val)));
             currentBlock.push_back(new load(new entity(it.val), new entity(it.val)));
+        } else {
+            currentBlock.push_back(new assign(new entity(it.val), new entity("_A0")));
         }
         return it;
     }
