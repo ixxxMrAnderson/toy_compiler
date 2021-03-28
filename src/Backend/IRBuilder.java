@@ -642,7 +642,7 @@ public class IRBuilder implements ASTVisitor {
         return null;
     }
 
-    public binaryExprNode visit(binaryExprNode it, boolean flag) {
+    public binaryExprNode visit(binaryExprNode it, boolean recursion) {
         if (it.lhs instanceof binaryExprNode) it.lhs = visit((binaryExprNode) it.lhs, true);
         else it.lhs = (ExprNode) it.lhs.accept(this);
         entity value = new entity();

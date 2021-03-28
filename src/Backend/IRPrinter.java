@@ -62,7 +62,10 @@ public class IRPrinter implements Pass {
             blk.stmts.forEach(this::print);
             blk.successors().forEach(this::visitBlock);
             if (blk.optAndBlk != null) visitBlock(blk.optAndBlk);
-            if (blk.optOrBlk != null) visitBlock(blk.optOrBlk);
+            if (blk.optOrBlk != null) {
+//                System.out.println("optOr------------------------------------" + blk.optOrBlk);
+                visitBlock(blk.optOrBlk);
+            }
         }
     }
 

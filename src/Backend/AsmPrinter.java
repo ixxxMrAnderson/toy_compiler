@@ -109,7 +109,7 @@ public class AsmPrinter implements Pass{
                             System.out.println("\tbeq\t" + regIdentifier.get(b.flag.reg) + ",zero,"
                                     + getBlockName(b.falseBranch));
                         } else if (b.falseBranch == null){
-                            System.out.println("\tbnez\t" + regIdentifier.get(b.flag.reg) + ",zero,"
+                            System.out.println("\tbne\t" + regIdentifier.get(b.flag.reg) + ",zero,"
                                     + getBlockName(b.trueBranch));
                         } else {
                             System.out.println("\tbeq\t" + regIdentifier.get(b.flag.reg) + ",zero,"
