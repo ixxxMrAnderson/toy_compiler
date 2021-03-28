@@ -22,8 +22,8 @@ public class IRBuilder implements ASTVisitor {
     public HashMap<String, block> blocks;
     public HashMap<String, Integer> spillPara;
     public HashMap<String, HashSet<String>> varInFun = new HashMap<>();
-    public Stack<block> loopDes = new Stack<>();
-    public Stack<Integer> loopFlag = new Stack<>(); // 0: while, 1: for
+    public Stack<block> breakDes = new Stack<>();
+    public Stack<block> continueDes = new Stack<>();
 
     // todo: all the builtin shit
     // a.size() be like 'int Mx_array_size(int address_of_a)'
@@ -305,13 +305,13 @@ public class IRBuilder implements ASTVisitor {
         it.condition = (ExprNode) it.condition.accept(this);
         currentBlock.push_back(new branch(new entity(it.condition.val), body, nxt_blk));
         currentBlock = body;
-        loopDes.push(cond_blk);
-        loopFlag.push(0);
+        breakDes.push(nxt_blk);
+        continueDes.push(cond_blk);
         currentScope = new Scope(currentScope);
         if (it.body != null) it.body = (StmtNode) it.body.accept(this);
         currentScope = currentScope.parentScope();
-        loopDes.pop();
-        loopFlag.pop();
+        breakDes.pop();
+        continueDes.pop();
         currentBlock.push_back(new jump(cond_blk));
         currentBlock = nxt_blk;
         return it;
@@ -333,13 +333,13 @@ public class IRBuilder implements ASTVisitor {
         if (it.step != null) it.step = (ExprNode) it.step.accept(this);
         currentBlock.push_back(new jump(cond_blk));
         currentBlock = body;
-        loopDes.push(iter_blk);
-        loopFlag.push(1);
+        breakDes.push(nxt_blk);
+        continueDes.push(iter_blk);
         currentScope = new Scope(currentScope);
         if (it.body != null) it.body = (StmtNode) it.body.accept(this);
         currentScope = currentScope.parentScope();
-        loopDes.pop();
-        loopFlag.pop();
+        breakDes.pop();
+        continueDes.pop();
         currentBlock.push_back(new jump(iter_blk));
         currentBlock = nxt_blk;
         return it;
@@ -347,18 +347,13 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public breakStmtNode visit(breakStmtNode it) {
-        if (loopFlag.peek() == 1){
-            block cond = ((jump) loopDes.peek().tail()).destination;
-            currentBlock.push_back(new jump(((branch) cond.tail()).falseBranch));
-        } else {
-            currentBlock.push_back(new jump(((branch) loopDes.peek().tail()).falseBranch));
-        }
+        currentBlock.push_back(new jump(breakDes.peek()));
         return it;
     }
 
     @Override
     public continueStmtNode visit(continueStmtNode it) {
-        currentBlock.push_back(new jump(loopDes.peek()));
+        currentBlock.push_back(new jump(continueDes.peek()));
         return it;
     }
 
