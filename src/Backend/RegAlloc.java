@@ -43,6 +43,10 @@ public class RegAlloc implements Pass{
 //        System.out.println("------------------------------");
 //        System.out.println(id2reg);
         if (blk != null) {
+            for (String id : id2reg.keySet()){
+                reg2id.put(id2reg.get(id), null);
+            }
+            id2reg = new HashMap<>();
             for (currentIndex = 0; currentIndex < blk.stmts.size(); ++currentIndex) {
                 upload();
                 statement s = blk.stmts.get(currentIndex);

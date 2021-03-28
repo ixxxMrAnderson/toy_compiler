@@ -509,7 +509,6 @@ public class IRBuilder implements ASTVisitor {
             currentBlock.push_back(new define(new entity(new_id), new entity("_A0")));
             String flag_id = defVar("_FLAG_" + it.size.size());
             currentBlock.push_back(new define(new entity(flag_id), new entity(tmp_node.val)));
-            entity x = new entity(), y = new entity();
             currentBlock.nxtBlock = new block();
             currentBlock = currentBlock.nxtBlock;
             block retBlk = currentBlock;
@@ -522,6 +521,7 @@ public class IRBuilder implements ASTVisitor {
                 it_.size.add(it.size.get(j));
             }
             it_ = visit(it_, true);
+            entity x = new entity(), y = new entity();
             currentBlock.push_back(
                 new binary(new entity(x), new entity(flag_id), new entity(2), binaryExprNode.Op.SLA)
             );
