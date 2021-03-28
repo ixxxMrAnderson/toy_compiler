@@ -40,7 +40,6 @@ public class IRBuilder implements ASTVisitor {
     }
 
     public String defVar(String id){
-        if (currentScope.parentScope() == null) return id;
         Integer index = 0;
         for (String i : varInFun.get(currentFun)){
             if (i.startsWith(id + "_")  && isNumeric(i.substring(id.length() + 1))) index++;
@@ -99,6 +98,7 @@ public class IRBuilder implements ASTVisitor {
         for (int i = 0; i < it.sections.size(); ++i) {
             if (it.sections.get(i) instanceof varDefNode){
                 currentBlock = curMainBlk;
+                currentFun = "main";
 //                System.out.println(curMainBlk + "_2");
                 varDefNode v = (varDefNode) it.sections.get(i);
                 for (singleVarDefNode single_v : v.variables){
