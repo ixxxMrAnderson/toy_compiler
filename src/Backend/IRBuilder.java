@@ -635,8 +635,8 @@ public class IRBuilder implements ASTVisitor {
             currentBlock.push_back(new define(new entity(ret.val), new entity(ret.val)));
             entity addr = new entity(), val = new entity();
             currentBlock.optOrBlk.push_back(new getPtr(ret.val.id, new entity(addr)));
-            currentBlock.optAndBlk.push_back(new assign(new entity(val), new entity(1)));
-            currentBlock.optAndBlk.push_back(new store(new entity(addr), new entity(val)));
+            currentBlock.optOrBlk.push_back(new assign(new entity(val), new entity(1)));
+            currentBlock.optOrBlk.push_back(new store(new entity(addr), new entity(val)));
             currentBlock.optOrBlk.push_back(new jump(nxt));
             currentBlock.push_back(new jump(nxt));
             currentBlock = nxt;
