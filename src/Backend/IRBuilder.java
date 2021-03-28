@@ -494,15 +494,15 @@ public class IRBuilder implements ASTVisitor {
             Integer size_ = 4 * getClass(it.type.type.class_id).members.size();
             currentBlock.push_back(new assign(new entity("_A0"), new entity(size_)));
             currentBlock.push_back(new call("malloc"));
-        } else {
-            currentBlock.push_back(new assign(new entity("_A0"), new entity(tmp_node.val)));
-            currentBlock.push_back(new call("Mx_malloc"));
-        }
-        if (it.type.type.isClass()){
+            currentBlock.push_back(new assign(new entity(it.val), new entity("_A0")));
             String classId = it.type.type.class_id;
             if (getClass(classId).constructor != null && getClass(classId).constructor.size() > 0) {
                 currentBlock.push_back(new call(classId + "_memberFn_" + classId));
             }
+            return it;
+        } else {
+            currentBlock.push_back(new assign(new entity("_A0"), new entity(tmp_node.val)));
+            currentBlock.push_back(new call("Mx_malloc"));
         }
         if (it.size.size() > 1){
             String new_id = defVar("_NEW_" + it.size.size());

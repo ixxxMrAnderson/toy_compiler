@@ -1,163 +1,27 @@
-class Queue_int {
-  Queue_int() {
-    beg = 0;
-    end = 0;
-    storage = new int[16];
-  }
-
-  void push(int v) {
-    if (size() == storage.size() - 1) {
-      doubleStorage();
+class MY_INT{
+    int[] a;
+    MY_INT(){
+        int i;
+        a = new int [10];
+        for (i = 0; i < a.size(); ++i){
+            a[i] = i;
+        }
     }
-    storage[end] = v;
-    end = (end + 1) % storage.size();
-  }
-
-  int top() {
-    return storage[beg];
-  }
-
-  int pop() {
-    if (size() == 0) {
-      println("Warning: Queue_int::pop: empty queue");
+    void print_int(){
+        int i;
+        for (i = 0; i < a.size(); ++i){
+            print(toString(a[i]));
+            print(" ");
+        }
+        print("\n");
     }
-    int res = top();
-    beg = (beg + 1) % storage.size();
-    return res;
-  }
-
-  int size() {
-    return (end + storage.size() - beg) % storage.size();
-  }
-
-  void doubleStorage() {
-    int[] copy = storage;
-    int begCopy = beg;
-    int endCopy = end;
-
-    storage = new int[copy.size() * 2];
-    beg = 0;
-    end = 0;
-
-    int i = begCopy;
-    while (i != endCopy) {
-      storage[end] = copy[i];
-      end++;
-      i = (i + 1) % copy.size();
-    }
-  }
-
-
-  int[] storage;
-  int beg;
-  int end;
-};class Edge {
-  int from;
-  int to;
-  int weight;
 };
-
-class EdgeList {
-  void init(int n, int m) {
-    edges = new Edge[m];
-    next = new int[m];
-    first = new int[n];
-    int i;
-    for (i = 0; i < m; ++i)
-      next[i] = -1;
-    for (i = 0; i < n; ++i)
-      first[i] = -1;
-    size = 0;
-  }
-
-  void addEdge(int u, int v, int w) {
-    Edge e = new Edge();
-    e.from = u;
-    e.to = v;
-    e.weight = w;
-
-    edges[size] = e;
-    next[size] = first[u];
-    first[u] = size;
-    ++size;
-  }
-
-  int nVertices() {
-    return first.size();
-  }
-
-  int nEdges() {
-    return edges.size();
-  }
-
-
-  Edge[] edges;
-  int[] next;
-  int[] first;
-  int size;
-};
-
-int n;
-int m;
-EdgeList g;
-int INF = 10000000;
-
-void init() {
-  n = getInt();
-  m = getInt();
-  g = new EdgeList();
-  g.init(n, m);
-
-  int i;
-  for (i = 0; i < m; ++i) {
-    int u = getInt();
-    int v = getInt();
-    int w = getInt();
-    g.addEdge(u, v, w);
-  }
-}
-
-int[] spfa(int s) {
-  int[] d = new int[n];
-  int i;
-  for (i = 0; i < n; ++i) {
-    d[i] = INF;
-  }
-  d[s] = 0;
-
-  Queue_int q = new Queue_int();
-  q.push(s);
-  while (q.size() != 0) {
-    int u = q.pop();
-    int k;
-    for (k = g.first[u]; k != -1; k = g.next[k]) {
-      Edge e = g.edges[k];
-      int v = e.to;
-      if (d[v] > d[u] + e.weight) {
-        d[v] = d[u] + e.weight;
-        q.push(v);
-      }
-    }
-  }
-
-  return d;
-}
 
 int main() {
-  init();
+  MY_INT[] arr = new MY_INT [10];
   int i;
-  int j;
-  for (i = 0; i < n; ++i) {
-    int[] d = spfa(i);
-    for (j = 0; j < n; ++j) {
-      if (d[j] == INF) {
-        print("-1");
-      } else {
-        print(toString(d[j]));
-      }
-      print(" ");
-    }
-    println("");
+  for (i = 0; i < arr.size(); ++i){
+    arr[i].print_int();
   }
 
   return 0;
