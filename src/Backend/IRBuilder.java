@@ -441,6 +441,7 @@ public class IRBuilder implements ASTVisitor {
                     if (it.expr instanceof varExprNode && currentScope.isGlobl(((varExprNode) it.expr).id)){
                         it.val = new entity(((store) currentBlock.stmts.get(currentBlock.stmts.size() - 1)).value);
                     }
+                    if (!(it.expr instanceof  varExprNode)) it.val = tmp_b.val;
                     break;
                 case INCREASE:
                     tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.ADD, it.expr, new constExprNode(1, it.pos));
@@ -449,6 +450,7 @@ public class IRBuilder implements ASTVisitor {
                     if (it.expr instanceof varExprNode && currentScope.isGlobl(((varExprNode) it.expr).id)){
                         it.val = new entity(((store) currentBlock.stmts.get(currentBlock.stmts.size() - 1)).value);
                     }
+                    if (!(it.expr instanceof  varExprNode)) it.val = tmp_b.val;
                     break;
                 case NOT:
                     currentBlock.push_back(
@@ -497,12 +499,7 @@ public class IRBuilder implements ASTVisitor {
         currentBlock.push_back(new define(new entity(new_id), new entity("_A0")));
         if (it.type.type.isClass()){
             String classId = it.type.type.class_id;
-//            System.out.println(classId + "wtfffffffffffffffffffffff");
-//            for (funDefNode i : getClass(classId).functions){
-//                System.out.println(i.name + "wtf");
-//            }
             if (getClass(classId).constructor != null && getClass(classId).constructor.size() > 0) {
-//                System.out.println(classId + "wtfffffffffffffffffffffff");
                 currentBlock.push_back(new call(classId + "_memberFn_" + classId));
             }
         }
