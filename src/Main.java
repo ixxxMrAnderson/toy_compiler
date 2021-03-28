@@ -22,7 +22,7 @@ import java.util.HashMap;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/codegen/e9.mx";
+        String file_name = "./testcases/codegen/sorting/merge_sort.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 

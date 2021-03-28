@@ -736,6 +736,9 @@ public class IRBuilder implements ASTVisitor {
             if (currentClass != null && getClass(currentClass).containFunction(function_id)) {
                 memberExprNode tmp_mem = new memberExprNode(it.pos, new thisExprNode(it.pos), function_id);
                 funCallExprNode tmp = new funCallExprNode(it.pos, tmp_mem);
+                for (ExprNode i : it.parameters){
+                    tmp.parameters.add(i);
+                }
                 tmp = tmp.accept(this);
                 it.val = new entity(tmp.val);
                 return it;

@@ -30,7 +30,7 @@ void origin(int N)
 		c[i] = new int[N];
         for (j = 0; j < N; j ++ )
         c[i][j] = 0;
-    }	
+    }
 }
 
 int build(int start, int ending) {
