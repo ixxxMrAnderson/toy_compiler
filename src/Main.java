@@ -5,7 +5,6 @@ import Frontend.SemanticChecker;
 import Backend.IRBuilder;
 import Backend.IRPrinter;
 import Backend.AsmPrinter;
-import Backend.RegAlloc;
 import MIR.block;
 import Parser.MxLexer;
 import Parser.MxParser;
@@ -23,7 +22,7 @@ import java.util.HashMap;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/codegen/t47.mx";
+        String file_name = "./testcases/codegen/e10.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 

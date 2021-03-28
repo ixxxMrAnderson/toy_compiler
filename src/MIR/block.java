@@ -7,6 +7,8 @@ public class block {
     private terminalStmt tailStmt = null;
     public block nxtBlock = null;
     public block tailBlk = null;
+    public block optAndBlk = null;
+    public block optOrBlk = null;
 
     public block() {}
     public void push_back(statement stmt) {

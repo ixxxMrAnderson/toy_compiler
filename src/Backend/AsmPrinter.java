@@ -212,6 +212,8 @@ public class AsmPrinter implements Pass{
                 }
             }
             blk.successors().forEach(this::visitBlock);
+            if (blk.optAndBlk != null) visitBlock(blk.optAndBlk);
+            if (blk.optOrBlk != null) visitBlock(blk.optOrBlk);
         }
     }
 

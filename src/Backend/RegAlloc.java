@@ -63,22 +63,18 @@ public class RegAlloc implements Pass{
                     if (r.value != null && !r.value.is_constant) allocReg(r.value);
                 } else if (s instanceof assign) {
                     assign a = (assign) s;
-                    if (a.lhs.id != null && a.lhs.id.equals("_A0")){
-                        for (String id : id2reg.keySet()){
-                            if (isNumeric(id)) continue;
-                            entity assign = new entity();
-                            assign.reg = id2reg.get(id);
-                            if (!currentStack.containsKey(id)){
-                                sp += 4;
-                                currentStack.put(id, sp);
-                            }
-                            currentBlk.stmts.add(currentIndex++, new define(new entity(id), new entity(assign)));
-                        }
-                    }
                     if (!a.lhs.is_constant) allocReg(a.lhs, true);
                     if (!a.rhs.is_constant) allocReg(a.rhs);
                 } else if (s instanceof call) { // clear the table (no caller safe)
                     for (String id : id2reg.keySet()){
+                        if (isNumeric(id)) continue;
+                        entity assign = new entity();
+                        assign.reg = id2reg.get(id);
+                        if (!currentStack.containsKey(id)){
+                            sp += 4;
+                            currentStack.put(id, sp);
+                        }
+                        currentBlk.stmts.add(currentIndex++, new define(new entity(id), new entity(assign)));
                         reg2id.put(id2reg.get(id), null);
                     }
                     id2reg = new HashMap<>();
@@ -108,6 +104,8 @@ public class RegAlloc implements Pass{
                 }
             }
             blk.successors().forEach(this::visitBlock);
+            if (blk.optAndBlk != null) visitBlock(blk.optAndBlk);
+            if (blk.optOrBlk != null) visitBlock(blk.optOrBlk);
         }
     }
 

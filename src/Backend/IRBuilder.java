@@ -593,23 +593,71 @@ public class IRBuilder implements ASTVisitor {
         return it;
     }
 
+    public boolean containsAnd(binaryExprNode it){
+        if (it.op == binaryExprNode.Op.AND) return true;
+        if (it.lhs instanceof binaryExprNode && it.rhs instanceof binaryExprNode){
+            return containsAnd((binaryExprNode) it.lhs) || containsAnd((binaryExprNode) it.rhs);
+        } else if (it.lhs instanceof binaryExprNode){
+            return containsAnd((binaryExprNode) it.lhs);
+        } else if (it.rhs instanceof binaryExprNode){
+            return containsAnd((binaryExprNode) it.rhs);
+        } else {
+            return false;
+        }
+    }
+
+    public boolean containsOr(binaryExprNode it){
+        if (it.op == binaryExprNode.Op.OR) return true;
+        if (it.lhs instanceof binaryExprNode && it.rhs instanceof binaryExprNode){
+            return containsOr((binaryExprNode) it.lhs) || containsOr((binaryExprNode) it.rhs);
+        } else if (it.lhs instanceof binaryExprNode){
+            return containsOr((binaryExprNode) it.lhs);
+        } else if (it.rhs instanceof binaryExprNode){
+            return containsOr((binaryExprNode) it.rhs);
+        } else {
+            return false;
+        }
+    }
+
     @Override
     public binaryExprNode visit(binaryExprNode it) {
-        it.lhs = (ExprNode) it.lhs.accept(this);
-        entity value = new entity();
-        block tr_ = new block(), fa_ = new block(), nxt = new block(), cut_ = new block();
-        tr_.push_back(new assign(new entity(it.val), new entity(1)));
-        tr_.push_back(new jump(nxt));
-        fa_.push_back(new assign(new entity(it.val), new entity(0)));
-        fa_.push_back(new jump(nxt));
-        if (it.op == binaryExprNode.Op.AND){
-            currentBlock.push_back(new branch(it.lhs.val, cut_, fa_));
-            currentBlock = cut_;
-        } else if (it.op == binaryExprNode.Op.OR){
-            currentBlock.push_back(new branch(it.lhs.val, tr_, cut_));
-            currentBlock = cut_;
+        if (!containsAnd(it) && !containsOr(it)) return visit(it, true);
+        binaryExprNode ret;
+        block nxt = new block();
+        if (containsAnd(it)){
+            currentBlock.optAndBlk = new block();
+            ret = visit(it, true);
+            currentBlock.optAndBlk.push_back(new assign(new entity(ret.val), new entity(0)));
+            currentBlock.optAndBlk.push_back(new jump(nxt));
+            currentBlock.push_back(new jump(nxt));
+            currentBlock = nxt;
+            return ret;
         }
-        it.rhs = (ExprNode) it.rhs.accept(this);
+        if (containsOr(it)){
+            currentBlock.optOrBlk = new block();
+//            System.out.println("new orBLk for blk " + currentBlock);
+            ret = visit(it, true);
+//            System.out.println("return binary in blk " + currentBlock);
+            currentBlock.optOrBlk.push_back(new assign(new entity(ret.val), new entity(1)));
+            currentBlock.optOrBlk.push_back(new jump(nxt));
+            currentBlock.push_back(new jump(nxt));
+            currentBlock = nxt;
+            return ret;
+        }
+        return null;
+    }
+
+    public binaryExprNode visit(binaryExprNode it, boolean flag) {
+        if (it.lhs instanceof binaryExprNode) it.lhs = visit((binaryExprNode) it.lhs, true);
+        else it.lhs = (ExprNode) it.lhs.accept(this);
+        entity value = new entity();
+        if (it.op == binaryExprNode.Op.AND){
+            currentBlock.push_back(new branch(it.lhs.val, null, currentBlock.optAndBlk));
+        } else if (it.op == binaryExprNode.Op.OR){
+            currentBlock.push_back(new branch(it.lhs.val, currentBlock.optOrBlk, null));
+        }
+        if (it.rhs instanceof binaryExprNode) it.rhs = visit((binaryExprNode) it.rhs, true);
+        else it.rhs = (ExprNode) it.rhs.accept(this);
         it.val = value;
         binaryExprNode.Op op = it.op;
         if (it.rhs.expr_type.type == type.STRING && it.lhs.expr_type.type == type.STRING){
@@ -635,10 +683,6 @@ public class IRBuilder implements ASTVisitor {
             currentBlock.push_back(
                 new binary(new entity(value), new entity(it.lhs.val), new entity(it.rhs.val), op)
             );
-        }
-        if (it.op == binaryExprNode.Op.AND || it.op == binaryExprNode.Op.OR) {
-            currentBlock.push_back(new jump(nxt));
-            currentBlock = nxt;
         }
         return it;
     }
