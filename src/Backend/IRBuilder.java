@@ -799,17 +799,22 @@ public class IRBuilder implements ASTVisitor {
         entity ent_ = it.expr.val;
         Integer offset = 0;
         classDefNode node;
-        if (it.expr_type.type == type.STRING){
+        if (it.expr.expr_type.type == type.STRING){
             node = getClass("string");
-        } else if (it.expr_type.dimension > 0){
+        } else if (it.expr.expr_type.dimension > 0){
             node = getClass("*ARRAY");
         } else {
             node = getClass(it.expr.expr_type.class_id);
         }
+//        System.out.println("----------------------");
+//        if (it.expr instanceof varExprNode) System.out.println(((varExprNode) it.expr).id);
+//        System.out.println("class: " + node.id);
         for (int i = 0; i < node.members.size(); ++i){
+//            System.out.println("\t" + node.members.get(i).variables.get(0).id);
             if (node.members.get(i).variables.get(0).id.equals(it.member)) break;
             offset += 4;
         }
+//        System.out.println("member: " + it.member);
 //        System.out.println(offset);
         it.val = new entity(true);
         typeNode t_ = node.getMemberType(it.member);
