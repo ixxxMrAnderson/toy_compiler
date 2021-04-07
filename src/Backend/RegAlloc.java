@@ -89,8 +89,14 @@ public class RegAlloc implements Pass{
                         sp += 4;
                         currentStack.put(d.var.id, sp);
                     }
-                    if (d.assign != null && d.var.id.startsWith("@")) allocReg(d.var, true);
                     if (d.assign != null) allocReg(d.assign);
+                    if (d.assign != null && d.var.id.startsWith("@")) {
+                        allocReg(d.var, true);
+                        reg2id.put(id2reg.get(d.var.id), null);
+                        reg2id.put(d.assign.reg, d.var.id);
+                        id2reg.remove(d.assign.id);
+                        id2reg.put(d.var.id, d.assign.reg);
+                    }
 //                    System.out.println(currentIndex + "_out");
                 } else if (s instanceof load) {
                     load l = (load) s;
@@ -108,12 +114,16 @@ public class RegAlloc implements Pass{
                         allocReg(s_.value);
                     }
                     if (s_.addr != null && s_.addr.id.startsWith("@")) {
-                        reg2id.put(id2reg.get(s_.addr.id), s_.addr.id);
-                        id2reg.remove(s_.addr.id);
+                        reg2id.put(id2reg.get(s_.addr.id), null);
+                        reg2id.put(s_.value.reg, s_.addr.id);
+                        id2reg.remove(s_.value.id);
+                        id2reg.put(s_.addr.id, s_.value.reg);
                     }
                     if (s_.id != null) {
-                        reg2id.put(id2reg.get(s_.id.id), s_.id.id);
-                        id2reg.remove(s_.id.id);
+                        reg2id.put(id2reg.get(s_.id.id), null);
+                        reg2id.put(s_.value.reg, s_.id.id);
+                        id2reg.remove(s_.value.id);
+                        id2reg.put(s_.id.id, s_.value.reg);
                     }
                 }
             }
