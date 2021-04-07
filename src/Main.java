@@ -1,10 +1,7 @@
 import AST.programNode;
-import Backend.RegAlloc;
+import Backend.*;
 import Frontend.ASTBuilder;
 import Frontend.SemanticChecker;
-import Backend.IRBuilder;
-import Backend.IRPrinter;
-import Backend.AsmPrinter;
 import MIR.block;
 import Parser.MxLexer;
 import Parser.MxParser;
@@ -22,7 +19,7 @@ import java.util.HashMap;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/codegen/e6.mx";
+        String file_name = "./testcases/codegen/e1.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 
@@ -41,6 +38,8 @@ public class Main {
             HashMap<String, block> blocks = new HashMap<>();
             HashMap<String, Integer> spillPara = new HashMap<>();
             new IRBuilder(blocks, spillPara).visit(AST_root);
+//            new IRPrinter(blocks);
+//            new SSA(blocks);
             HashMap<String, HashMap<String, Integer>> stackAlloc = new HashMap<>();
             new RegAlloc(blocks, stackAlloc);
 //            new IRPrinter(blocks);

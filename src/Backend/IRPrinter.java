@@ -143,16 +143,22 @@ public class IRPrinter implements Pass {
             define d = (define) s;
             System.out.println("\tdefine " + getEntityString(d.var) + (d.assign == null ? "" :
                     (", assign " + getEntityString(d.assign)))+ ";");
-        } else if (s instanceof getPtr) {
-            getPtr g = (getPtr) s;
-            System.out.println("\tgetPtr " + g.id + getEntityString(g.ret) + ";");
         } else if (s instanceof load) {
             load l = (load) s;
-            System.out.println("\tload " + getEntityString(l.addr) + " on " + getEntityString(l.to) + ";");
+            if (l.addr != null) {
+                System.out.println("\tload " + getEntityString(l.addr) + " on " + getEntityString(l.to) + ";");
+            } else {
+                System.out.println("\tload " + getEntityString(l.id) + " on " + getEntityString(l.to) + ";");
+            }
         } else if (s instanceof store) {
             store s_ = (store) s;
-            System.out.println("\tstore " + getEntityString(s_.value) + " in "
-                    + getEntityString(s_.addr) + ";");
+            if (s_.addr != null) {
+                System.out.println("\tstore " + getEntityString(s_.value) + " in "
+                        + getEntityString(s_.addr) + ";");
+            } else {
+                System.out.println("\tstore " + getEntityString(s_.value) + " in "
+                        + getEntityString(s_.id) + ";");
+            }
         }
     }
 }

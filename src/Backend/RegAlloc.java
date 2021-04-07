@@ -99,10 +99,21 @@ public class RegAlloc implements Pass{
                     if (!l.to.is_constant) allocReg(l.to, true);
                 } else if (s instanceof store) {
                     store s_ = (store) s;
-                    if (s_.addr != null && !s_.addr.is_constant) allocReg(s_.addr);
+                    if (s_.addr != null && !s_.addr.is_constant){
+                        if (!s_.addr.id.startsWith("@")) allocReg(s_.addr);
+                        else allocReg(s_.addr, true);
+                    }
 //                    if (s_.id != null && !s_.id.is_constant) allocReg(s_.id);
                     if (!s_.value.is_constant) {
                         allocReg(s_.value);
+                    }
+                    if (s_.addr != null && s_.addr.id.startsWith("@")) {
+                        reg2id.put(id2reg.get(s_.addr.id), s_.addr.id);
+                        id2reg.remove(s_.addr.id);
+                    }
+                    if (s_.id != null) {
+                        reg2id.put(id2reg.get(s_.id.id), s_.id.id);
+                        id2reg.remove(s_.id.id);
                     }
                 }
             }
@@ -145,6 +156,7 @@ public class RegAlloc implements Pass{
                 var.id = "0";
             }
         }
+
         if (id2reg.containsKey(var.id)) {
             var.reg = id2reg.get(var.id);
             return;
@@ -156,11 +168,15 @@ public class RegAlloc implements Pass{
                 var.reg = i;
                 id2reg.put(var.id, i);
                 reg2id.put(i, var.id);
-                if (currentStack.containsKey(var.id) && !flag){
+                if ((currentStack.containsKey(var.id) || var.id.startsWith("@")) && !flag){
 //                    System.out.println("regAlloc---------" + currentStack);
                     entity to = new entity();
                     to.reg = i;
-                    currentBlk.stmts.add(currentIndex, new load(new entity(var.id), new entity(to), true));
+                    if (var.id.startsWith("@")){
+                        currentBlk.stmts.add(currentIndex, new load(new entity(var.id), new entity(to)));
+                    } else {
+                        currentBlk.stmts.add(currentIndex, new load(new entity(var.id), new entity(to), true));
+                    }
                     currentIndex += 1;
                 }
                 return;
@@ -179,11 +195,15 @@ public class RegAlloc implements Pass{
         id2reg.remove(reg2id.get(5));
         id2reg.put(var.id, 5);
         reg2id.put(5, var.id);
-        if (currentStack.containsKey(var.id) && !flag){
+        if ((currentStack.containsKey(var.id) || var.id.startsWith("@")) && !flag){
 //            System.out.println("regAlloc---------" + currentStack);
             entity to = new entity();
             to.reg = 5;
-            currentBlk.stmts.add(currentIndex, new load(new entity(var.id), new entity(to), true));
+            if (var.id.startsWith("@")){
+                currentBlk.stmts.add(currentIndex, new load(new entity(var.id), new entity(to)));
+            } else {
+                currentBlk.stmts.add(currentIndex, new load(new entity(var.id), new entity(to), true));
+            }
             currentIndex += 1;
         }
         return;
@@ -196,7 +216,7 @@ public class RegAlloc implements Pass{
 //                System.out.println("-----upload-------: " + reg2id.get(i));
                 boolean flag = false;
                 for (int j = currentIndex; j < currentBlk.stmts.size(); ++j){
-                    if (currentStack.containsKey(reg2id.get(i)) || reg2id.get(i).startsWith("@") || reg2id.get(i).startsWith("%")) break;
+//                    if (currentStack.containsKey(reg2id.get(i)) || reg2id.get(i).startsWith("@") || reg2id.get(i).startsWith("%")) break;
                     statement s = currentBlk.stmts.get(j);
                     if (s instanceof binary) {
                         binary b = (binary) s;
@@ -243,7 +263,7 @@ public class RegAlloc implements Pass{
                     }
                     if (flag) break;
                 }
-                if (!flag || reg2id.get(i).startsWith("@")){ // @var store its addr instead of value
+                if (!flag){ // @var store its addr instead of value
                     id2reg.remove(reg2id.get(i));
                     reg2id.put(i, null);
                 }

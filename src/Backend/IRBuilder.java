@@ -711,10 +711,10 @@ public class IRBuilder implements ASTVisitor {
         }
         it.expr_type = new Type(currentScope.getType(id, true));
         if (currentScope.isGlobl(id)){
-            it.val = new entity();
-            currentBlock.push_back(new load(new entity("@" + id), new entity(it.val)));
-        } else if (it.expr_type != null && (it.expr_type.dimension > 0 || it.expr_type.isClass() || it.expr_type.type == type.STRING)) {
-            it.val = new entity(id, true);
+            it.val = new entity("@" + id);
+            // todo: change
+//            it.val = new entity();
+//            currentBlock.push_back(new load(new entity("@" + id), new entity(it.val)));
         } else {
             it.val = new entity(id);
         }
