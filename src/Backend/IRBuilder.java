@@ -441,19 +441,19 @@ public class IRBuilder implements ASTVisitor {
                     tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.SUB, it.expr, new constExprNode(1, it.pos));
                     tmp_a = new assignExprNode(it.expr, tmp_b, it.pos);
                     visit(tmp_a);
-                    if (it.expr instanceof varExprNode && currentScope.isGlobl(((varExprNode) it.expr).id)){
-                        it.val = new entity(((store) currentBlock.stmts.get(currentBlock.stmts.size() - 1)).value);
-                    }
-                    if (!(it.expr instanceof  varExprNode)) it.val = tmp_b.val;
+//                    if (it.expr instanceof varExprNode && currentScope.isGlobl(((varExprNode) it.expr).id)){
+//                        it.val = new entity(((store) currentBlock.stmts.get(currentBlock.stmts.size() - 1)).value);
+//                    }
+                    if (!(it.expr instanceof varExprNode)) it.val = tmp_b.val;
                     break;
                 case INCREASE:
                     tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.ADD, it.expr, new constExprNode(1, it.pos));
                     tmp_a = new assignExprNode(it.expr, tmp_b, it.pos);
                     visit(tmp_a);
-                    if (it.expr instanceof varExprNode && currentScope.isGlobl(((varExprNode) it.expr).id)){
-                        it.val = new entity(((store) currentBlock.stmts.get(currentBlock.stmts.size() - 1)).value);
-                    }
-                    if (!(it.expr instanceof  varExprNode)) it.val = tmp_b.val;
+//                    if (it.expr instanceof varExprNode && currentScope.isGlobl(((varExprNode) it.expr).id)){
+//                        it.val = new entity(((store) currentBlock.stmts.get(currentBlock.stmts.size() - 1)).value);
+//                    }
+                    if (!(it.expr instanceof varExprNode)) it.val = tmp_b.val;
                     break;
                 case NOT:
                     currentBlock.push_back(
