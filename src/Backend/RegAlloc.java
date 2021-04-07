@@ -92,9 +92,6 @@ public class RegAlloc implements Pass{
                     if (d.assign != null && d.var.id.startsWith("@")) allocReg(d.var, true);
                     if (d.assign != null) allocReg(d.assign);
 //                    System.out.println(currentIndex + "_out");
-                } else if (s instanceof getPtr) {
-                    getPtr g = (getPtr) s;
-                    if (!g.ret.is_constant) allocReg(g.ret, true);
                 } else if (s instanceof load) {
                     load l = (load) s;
                     if (l.addr != null && !l.addr.is_constant) allocReg(l.addr);
@@ -234,8 +231,6 @@ public class RegAlloc implements Pass{
 //                            flag = false;
 //                            break;
 //                        }
-                    } else if (s instanceof getPtr) {
-
                     } else if (s instanceof load) {
                         load l = (load) s;
                         if (l.addr != null && l.addr.id != null && l.addr.id.equals(reg2id.get(i))) flag = true;

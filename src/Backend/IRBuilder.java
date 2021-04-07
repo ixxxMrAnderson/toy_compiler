@@ -570,10 +570,15 @@ public class IRBuilder implements ASTVisitor {
         } else {
             if (!(it.lhs instanceof prefixExprNode)) {
                 it.lhs = (ExprNode) it.lhs.accept(this);
-                if (it.lhs instanceof arrayExprNode || it.lhs instanceof memberExprNode) currentBlock.pop();
-                else currentBlock.push_back(new getPtr(it.lhs.val.id, new entity(it.lhs.val)));
+                if (it.lhs instanceof arrayExprNode || it.lhs instanceof memberExprNode) {
+                    currentBlock.pop();
+                    currentBlock.push_back(new store(new entity(it.lhs.val), new entity(rhs_)));
+                } else {
+                    currentBlock.push_back(new store(new entity(it.lhs.val.id), new entity(rhs_), true));
+                }
+            } else {
+                currentBlock.push_back(new store(new entity(it.lhs.val), new entity(rhs_)));
             }
-            currentBlock.push_back(new store(new entity(it.lhs.val), new entity(rhs_)));
         }
         return it;
     }
