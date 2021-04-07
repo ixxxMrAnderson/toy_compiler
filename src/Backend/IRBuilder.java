@@ -525,20 +525,17 @@ public class IRBuilder implements ASTVisitor {
             currentBlock.push_back(
                 new binary(new entity(x), new entity(flag_id), new entity(2), binaryExprNode.Op.SLA)
             );
-            currentBlock.push_back(new getPtr(new_id, new entity(y)));
-            currentBlock.push_back(new load(new entity(y), new entity(y)));
+            currentBlock.push_back(new load(new entity(new_id), new entity(y), true));
             currentBlock.push_back(
                 new binary(new entity(x), new entity(x), new entity(y), binaryExprNode.Op.ADD)
             );
             currentBlock.push_back(new store(new entity(x), new entity(it_.val)));
             currentBlock.push_back(new binary(new entity(tmp_val), new entity(flag_id), new entity(1), binaryExprNode.Op.SUB));
-            currentBlock.push_back(new getPtr(flag_id, tmp_addr));
-            currentBlock.push_back(new store(new entity(tmp_addr), new entity(tmp_val)));
+            currentBlock.push_back(new store(new entity(flag_id), new entity(tmp_val), true));
             currentBlock.push_back(new jump(retBlk));
             currentBlock.nxtBlock = outBlk;
             currentBlock = outBlk;
-            currentBlock.push_back(new getPtr(new_id, new entity(it.val)));
-            currentBlock.push_back(new load(new entity(it.val), new entity(it.val)));
+            currentBlock.push_back(new load(new entity(new_id), new entity(it.val), true));
         } else {
             currentBlock.push_back(new assign(new entity(it.val), new entity("_A0")));
         }
@@ -568,9 +565,7 @@ public class IRBuilder implements ASTVisitor {
                 // todo: assign value regardless of the relationship between register and varId
                 // todo: (should be atomic)
                 // todo: current solution is to clear the register table after every stmt
-                entity lhs_ = new entity();
-                currentBlock.push_back(new getPtr(id, new entity(lhs_)));
-                currentBlock.push_back(new store(new entity(lhs_), new entity(rhs_)));
+                currentBlock.push_back(new store(new entity(id), new entity(rhs_), true));
             }
         } else {
             if (!(it.lhs instanceof prefixExprNode)) {
@@ -618,10 +613,9 @@ public class IRBuilder implements ASTVisitor {
             currentBlock.optAndBlk = new block();
             ret = visit(it, true);
             currentBlock.push_back(new define(new entity(ret.val), new entity(ret.val)));
-            entity addr = new entity(), val = new entity();
-            currentBlock.optAndBlk.push_back(new getPtr(ret.val.id, new entity(addr)));
+            entity val = new entity();
             currentBlock.optAndBlk.push_back(new assign(new entity(val), new entity(0)));
-            currentBlock.optAndBlk.push_back(new store(new entity(addr), new entity(val)));
+            currentBlock.optAndBlk.push_back(new store(new entity(ret.val.id), new entity(val), true));
             currentBlock.optAndBlk.push_back(new jump(nxt));
             currentBlock.push_back(new jump(nxt));
             currentBlock = nxt;
@@ -631,10 +625,9 @@ public class IRBuilder implements ASTVisitor {
             currentBlock.optOrBlk = new block();
             ret = visit(it, true);
             currentBlock.push_back(new define(new entity(ret.val), new entity(ret.val)));
-            entity addr = new entity(), val = new entity();
-            currentBlock.optOrBlk.push_back(new getPtr(ret.val.id, new entity(addr)));
+            entity val = new entity();
             currentBlock.optOrBlk.push_back(new assign(new entity(val), new entity(1)));
-            currentBlock.optOrBlk.push_back(new store(new entity(addr), new entity(val)));
+            currentBlock.optOrBlk.push_back(new store(new entity(ret.val.id), new entity(val), true));
             currentBlock.optOrBlk.push_back(new jump(nxt));
             currentBlock.push_back(new jump(nxt));
             currentBlock = nxt;

@@ -97,11 +97,13 @@ public class RegAlloc implements Pass{
                     if (!g.ret.is_constant) allocReg(g.ret, true);
                 } else if (s instanceof load) {
                     load l = (load) s;
-                    if (!l.addr.is_constant) allocReg(l.addr);
+                    if (l.addr != null && !l.addr.is_constant) allocReg(l.addr);
+//                    if (l.id != null && !l.id.is_constant) allocReg(l.id);
                     if (!l.to.is_constant) allocReg(l.to, true);
                 } else if (s instanceof store) {
                     store s_ = (store) s;
-                    if (!s_.addr.is_constant) allocReg(s_.addr);
+                    if (s_.addr != null && !s_.addr.is_constant) allocReg(s_.addr);
+//                    if (s_.id != null && !s_.id.is_constant) allocReg(s_.id);
                     if (!s_.value.is_constant) {
                         allocReg(s_.value);
                     }
@@ -161,9 +163,8 @@ public class RegAlloc implements Pass{
 //                    System.out.println("regAlloc---------" + currentStack);
                     entity to = new entity();
                     to.reg = i;
-                    currentBlk.stmts.add(currentIndex, new load(new entity(to), new entity(to)));
-                    currentBlk.stmts.add(currentIndex, new getPtr(var.id, new entity(to)));
-                    currentIndex += 2;
+                    currentBlk.stmts.add(currentIndex, new load(new entity(var.id), new entity(to), true));
+                    currentIndex += 1;
                 }
                 return;
             }
@@ -185,9 +186,8 @@ public class RegAlloc implements Pass{
 //            System.out.println("regAlloc---------" + currentStack);
             entity to = new entity();
             to.reg = 5;
-            currentBlk.stmts.add(currentIndex, new load(new entity(to), new entity(to)));
-            currentBlk.stmts.add(currentIndex, new getPtr(var.id, new entity(to)));
-            currentIndex += 2;
+            currentBlk.stmts.add(currentIndex, new load(new entity(var.id), new entity(to), true));
+            currentIndex += 1;
         }
         return;
     }
@@ -238,10 +238,12 @@ public class RegAlloc implements Pass{
 
                     } else if (s instanceof load) {
                         load l = (load) s;
-                        if (l.addr.id != null && l.addr.id.equals(reg2id.get(i))) flag = true;
+                        if (l.addr != null && l.addr.id != null && l.addr.id.equals(reg2id.get(i))) flag = true;
+                        if (l.id != null && l.id.id != null && l.id.id.equals(reg2id.get(i))) flag = true;
                     } else if (s instanceof store) {
                         store s_ = (store) s;
-                        if (s_.addr.id != null && s_.addr.id.equals(reg2id.get(i))) flag = true;
+                        if (s_.addr != null && s_.addr.id != null && s_.addr.id.equals(reg2id.get(i))) flag = true;
+                        if (s_.id != null && s_.id.id != null && s_.id.id.equals(reg2id.get(i))) flag = true;
                         if (s_.value.id != null && s_.value.id.equals(reg2id.get(i))) flag = true;
                     }
                     if (flag) break;
