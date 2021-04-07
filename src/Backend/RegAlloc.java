@@ -74,11 +74,11 @@ public class RegAlloc implements Pass{
                         if (isNumeric(id)) continue;
                         entity assign = new entity();
                         assign.reg = id2reg.get(id);
-                        if (!currentStack.containsKey(id)){
+                        if (!currentStack.containsKey(id) && !id.startsWith("@")){
                             sp += 4;
                             currentStack.put(id, sp);
+                            currentBlk.stmts.add(currentIndex++, new define(new entity(id), new entity(assign)));
                         }
-                        currentBlk.stmts.add(currentIndex++, new define(new entity(id), new entity(assign)));
                         reg2id.put(id2reg.get(id), null);
                     }
                     id2reg = new HashMap<>();
