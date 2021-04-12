@@ -17,7 +17,7 @@ Origin Package: Codeforces 4A #57460997
 int w;
 int main(){
     w = getInt();
-    if ((w%2==0)&& (w>2))
+    if ((w%2==0)&& (w>2)) 
         print("YES");
     else
         print("NO");

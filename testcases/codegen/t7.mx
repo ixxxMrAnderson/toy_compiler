@@ -29,9 +29,16 @@ int main()
 	{
 		a[i] = 0;
 		b[i] = getInt();
+	}
+	for (i = 0; i < a.size(); i++)
+	{
 		print(toString(a[i]));
 	}
 	println("");
 	a=b;
+	for (i = 0; i < a.size(); i++)
+	{
+		print(toString(a[i]));
+	}
     return 0;
 }

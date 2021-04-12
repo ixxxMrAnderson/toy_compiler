@@ -86,7 +86,6 @@ public class AsmPrinter implements Pass{
                 System.out.println("\taddi\ts0,sp," + sp);
             }
             for (statement s : blk.stmts) {
-//                System.out.println("fuck: " + currentFun);
                 if (s instanceof binary) {
                     printBinaryIns((binary) s);
                 } else if (s instanceof jump) {
@@ -179,10 +178,8 @@ public class AsmPrinter implements Pass{
                         } else if (getEntityString(l.addr).startsWith("%")) {
                             Integer index = 0;
                             for (int i = 0; i < roList.size(); ++i) {
-//                            System.out.println("roList____" + getEntityString(roList.get(i).assign));
                                 if (getEntityString(roList.get(i).var).equals(getEntityString(l.addr))) {
                                     index = i;
-//                                System.out.println("roList_____________" + getEntityString(roList.get(i).assign) + i);
                                     break;
                                 }
                             }

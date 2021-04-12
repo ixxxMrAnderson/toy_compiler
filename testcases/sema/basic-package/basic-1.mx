@@ -6,11 +6,9 @@ Time: 2019-10-20
 Verdict: Success
 Origin Package: Semantic Extended
 */
-int k = 0;
 int main( ) {
-     int a = 4;
-     int b = "aaa";
-     int c = a + k;
-     // a[0][1] = new int[5];
-     // a[0][1][2] = 4;
+     int a;
+     int b;
+     a = 0; b = 0;
+     return a + b;
 }

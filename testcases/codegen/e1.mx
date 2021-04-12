@@ -22,9 +22,6 @@ int main() {
 	n = getInt();
 	p = getInt();
 	k = getInt();
-	int a_ = p + k;
-	int b_ = a_;
-	int c_ = a_;
 	if(p-k>1) print("<< ");
 	for(i= p-k; i<=p+k;i++)
 	      if(1<= i && i <= n) {

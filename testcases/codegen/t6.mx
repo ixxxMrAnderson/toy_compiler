@@ -15,10 +15,9 @@ Origin Package: Codegen Pretest-529
 
 int main() {
     int a = 5;
-    int b = a + 1;
+    int b;
     int c;
     c = a++;
     b = c;
-    bool d = b >= a;
     return a;
 }
