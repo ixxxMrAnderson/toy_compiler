@@ -96,7 +96,6 @@ public class RegAlloc implements Pass{
                         reg2id.put(d.assign.reg, d.var.id);
                         id2reg.remove(d.assign.id);
                         id2reg.put(d.var.id, d.assign.reg);
-                        currentBlk.stmts.remove(currentIndex--);
                     }
                 } else if (s instanceof load) {
                     load l = (load) s;
@@ -116,14 +115,12 @@ public class RegAlloc implements Pass{
                         reg2id.put(s_.value.reg, s_.addr.id);
                         id2reg.remove(s_.value.id);
                         id2reg.put(s_.addr.id, s_.value.reg);
-                        currentBlk.stmts.remove(currentIndex--);
                     }
                     if (s_.id != null) {
                         reg2id.put(id2reg.get(s_.id.id), null);
                         reg2id.put(s_.value.reg, s_.id.id);
                         id2reg.remove(s_.value.id);
                         id2reg.put(s_.id.id, s_.value.reg);
-                        currentBlk.stmts.remove(currentIndex--);
                     }
                 }
             }

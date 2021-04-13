@@ -13,13 +13,14 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/codegen/t68.mx";
+        String file_name = "./testcases/codegen/t35.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 
