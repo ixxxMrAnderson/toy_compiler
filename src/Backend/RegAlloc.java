@@ -84,10 +84,11 @@ public class RegAlloc implements Pass{
                     id2reg = new HashMap<>();
                 } else if (s instanceof define) {
                     define d = (define) s;
+                    String id = returnID(d.var.id);
 //                    System.out.println("REG----------define----------" + d.var.id + "--------" + currentStack);
-                    if (!d.var.id.startsWith("@") && !d.var.id.startsWith("%")){
+                    if (!id.startsWith("@") && !id.startsWith("%") && !currentStack.containsKey(id)){
                         sp += 4;
-                        currentStack.put(d.var.id, sp);
+                        currentStack.put(id, sp);
                     }
                     if (d.assign != null) {
                         allocReg(d.assign);
@@ -110,24 +111,33 @@ public class RegAlloc implements Pass{
                     if (!s_.value.is_constant) {
                         allocReg(s_.value);
                     }
-                    if (s_.addr != null && s_.addr.id.startsWith("@")) {
-                        reg2id.put(id2reg.get(s_.addr.id), null);
-                        reg2id.put(s_.value.reg, s_.addr.id);
-                        id2reg.remove(s_.value.id);
-                        id2reg.put(s_.addr.id, s_.value.reg);
-                    }
-                    if (s_.id != null) {
-                        reg2id.put(id2reg.get(s_.id.id), null);
-                        reg2id.put(s_.value.reg, s_.id.id);
-                        id2reg.remove(s_.value.id);
-                        id2reg.put(s_.id.id, s_.value.reg);
-                    }
+//                    if (s_.addr != null && s_.addr.id.startsWith("@")) {
+//                        reg2id.put(id2reg.get(s_.addr.id), null);
+//                        reg2id.put(s_.value.reg, s_.addr.id);
+//                        id2reg.remove(s_.value.id);
+//                        id2reg.put(s_.addr.id, s_.value.reg);
+//                    }
+//                    if (s_.id != null) {
+//                        reg2id.put(id2reg.get(s_.id.id), null);
+//                        reg2id.put(s_.value.reg, s_.id.id);
+//                        id2reg.remove(s_.value.id);
+//                        id2reg.put(s_.id.id, s_.value.reg);
+//                    }
                 }
             }
             blk.successors().forEach(this::visitBlock);
             if (blk.optAndBlk != null) visitBlock(blk.optAndBlk);
             if (blk.optOrBlk != null) visitBlock(blk.optOrBlk);
         }
+    }
+
+    public String returnID(String id){
+        for (int i = 1; i <= id.length(); ++i){
+            if (id.substring(0, i).contains("#")) {
+                return id.substring(0, i - 1);
+            }
+        }
+        return id;
     }
 
     public void allocReg(entity var){

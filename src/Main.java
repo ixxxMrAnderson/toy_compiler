@@ -20,7 +20,7 @@ import java.util.HashMap;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/codegen/t35.mx";
+        String file_name = "./testcases/codegen/e5.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 
@@ -39,8 +39,8 @@ public class Main {
             HashMap<String, block> blocks = new HashMap<>();
             HashMap<String, Integer> spillPara = new HashMap<>();
             new IRBuilder(blocks, spillPara).visit(AST_root);
+            new SSA(blocks);
 //            new IRPrinter(blocks);
-//            new SSA(blocks);
             HashMap<String, HashMap<String, Integer>> stackAlloc = new HashMap<>();
             new RegAlloc(blocks, stackAlloc);
 //            new IRPrinter(blocks);

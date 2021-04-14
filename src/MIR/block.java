@@ -9,6 +9,7 @@ public class block {
     public block tailBlk = null;
     public block optAndBlk = null;
     public block optOrBlk = null;
+    public Integer index;
 
     public block() {}
     public void push_back(statement stmt) {
@@ -23,14 +24,12 @@ public class block {
     }
     public ArrayList<block> successors() {
         ArrayList<block> ret = new ArrayList<>();
-        ret.add(nxtBlock);
+        if (nxtBlock != null) ret.add(nxtBlock);
         if (tailStmt instanceof branch) {
-            ret.add(((branch) tailStmt).trueBranch);
-            ret.add(((branch) tailStmt).falseBranch);
+            if (((branch) tailStmt).trueBranch != null) ret.add(((branch) tailStmt).trueBranch);
+            if (((branch) tailStmt).falseBranch != null) ret.add(((branch) tailStmt).falseBranch);
         } else if (tailStmt instanceof jump) {
-            if (((jump) tailStmt).destination == this) {
-                ret.add(nxtBlock);
-            } else {
+            if (((jump) tailStmt).destination != this) {
                 ret.add(((jump) tailStmt).destination);
             }
         }

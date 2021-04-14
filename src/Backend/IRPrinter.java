@@ -55,10 +55,10 @@ public class IRPrinter implements Pass {
     }
 
     public void visitBlock(block blk) {
-        if (printed.contains(getBlockName(blk))) return;
-        else printed.add(getBlockName(blk));
+        if (blk == null || printed.contains(getBlkName(blk))) return;
+        else printed.add(getBlkName(blk));
         if (blk != null) {
-            System.out.println(getBlockName(blk) + ":");
+            System.out.println(getBlkName(blk) + ":");
             blk.stmts.forEach(this::print);
             blk.successors().forEach(this::visitBlock);
             if (blk.optAndBlk != null) visitBlock(blk.optAndBlk);
@@ -69,12 +69,8 @@ public class IRPrinter implements Pass {
         }
     }
 
-    private String getBlockName(block b) {
-        if (blockIndex.containsKey(b)) return ".B" + blockIndex.get(b);
-        else {
-            blockIndex.put(b, blockCnt++);
-            return ".B" + (blockCnt - 1);
-        }
+    private String getBlkName(block b) {
+        return ".B" + b.index;
     }
 
     private String getOpString(binaryExprNode.Op op) {
@@ -99,6 +95,7 @@ public class IRPrinter implements Pass {
     }
 
     private String getEntityString(entity e){
+        if (e == null) return "null";
         if (e.is_constant){
             if (e.constant.expr_type.type == type.INT){
                 return Integer.toString(e.constant.int_value) + "(" + regIdentifier.get(e.reg) + ")";
@@ -123,11 +120,11 @@ public class IRPrinter implements Pass {
                     " " + getEntityString(b.op2) + ";");
         } else if (s instanceof jump) {
             jump j = (jump) s;
-            System.out.println("\tj " + getBlockName(j.destination) + ";");
+            System.out.println("\tj " + getBlkName(j.destination) + ";");
         } else if (s instanceof branch) {
             branch b = (branch) s;
             System.out.println("\tbr " + getEntityString(b.flag) + " " +
-                    getBlockName(b.trueBranch) + ", " + getBlockName(b.falseBranch) + ";");
+                    getBlkName(b.trueBranch) + ", " + getBlkName(b.falseBranch) + ";");
         } else if (s instanceof ret) {
             ret r = (ret) s;
             System.out.println("\tret" + (r.value == null ? "" :
@@ -158,6 +155,16 @@ public class IRPrinter implements Pass {
             } else {
                 System.out.println("\tstore " + getEntityString(s_.value) + " in "
                         + getEntityString(s_.id) + ";");
+            }
+        } else if (s instanceof phi){
+            phi p = (phi) s;
+            System.out.println("\tphi " + getEntityString(p.born));
+            if (p.varList != null && p.varList.size() > 0) {
+                System.out.println("[");
+                for (entity i : p.varList) {
+                    System.out.println(getEntityString(i) + ", ");
+                }
+                System.out.println("];");
             }
         }
     }

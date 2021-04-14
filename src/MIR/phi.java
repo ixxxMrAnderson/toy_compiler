@@ -1,11 +1,13 @@
 package MIR;
 
-public class phi extends statement{
-    public entity lhs, rhs, born;
+import java.util.ArrayList;
 
-    public phi(entity lhs, entity rhs, entity born){
-        this.lhs = new entity(lhs);
-        this.rhs = new entity(rhs);
+public class phi extends statement{
+    public entity born;
+    public ArrayList<entity> varList = new ArrayList<>();
+    public ArrayList<Integer> blkList = new ArrayList<>();
+
+    public phi(entity born){
         this.born = new entity(born);
     }
 }

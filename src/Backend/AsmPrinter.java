@@ -72,6 +72,15 @@ public class AsmPrinter implements Pass{
         }
     }
 
+    public String returnID(String id){
+        for (int i = 1; i <= id.length(); ++i){
+            if (id.substring(0, i).contains("#")) {
+                return id.substring(0, i - 1);
+            }
+        }
+        return id;
+    }
+
     public void visitBlock(block blk) {
         if (printed.contains(getBlockName(blk))) return;
         else printed.add(getBlockName(blk));
@@ -159,12 +168,12 @@ public class AsmPrinter implements Pass{
                         }
                         if (getEntityString(d.var).startsWith("@")) {
                             System.out.println("\tlui\t" + getReg(d.var) + ",%hi(.G"
-                                    + sbssIndex.get(getEntityString(d.var)) + ")");
+                                    + sbssIndex.get(returnID(getEntityString(d.var))) + ")");
                             System.out.println("\tsw\t" + regIdentifier.get(d.assign.reg) + ",%lo(.G"
-                                    + sbssIndex.get(getEntityString(d.var)) + ")(" + getReg(d.var) + ")");
+                                    + sbssIndex.get(returnID(getEntityString(d.var))) + ")(" + getReg(d.var) + ")");
                         } else {
                             System.out.println("\tsw\t" + regIdentifier.get(d.assign.reg) + ",-"
-                                    + (8 + stackAlloc.get(currentFun).get(getEntityString(d.var))) + "(s0)");
+                                    + (8 + stackAlloc.get(currentFun).get(returnID(getEntityString(d.var)))) + "(s0)");
                         }
                     }
                 } else if (s instanceof load) {
@@ -172,9 +181,9 @@ public class AsmPrinter implements Pass{
                     if (l.addr != null) {
                         if (getEntityString(l.addr).startsWith("@")) {
                             System.out.println("\tlui\t" + getReg(l.to) + ",%hi(.G"
-                                    + sbssIndex.get(getEntityString(l.addr)) + ")");
+                                    + sbssIndex.get(returnID(getEntityString(l.addr))) + ")");
                             System.out.println("\tlw\t" + getReg(l.to) + ",%lo(.G"
-                                    + sbssIndex.get(getEntityString(l.addr)) + ")(" + getReg(l.to) + ")");
+                                    + sbssIndex.get(returnID(getEntityString(l.addr))) + ")(" + getReg(l.to) + ")");
                         } else if (getEntityString(l.addr).startsWith("%")) {
                             Integer index = 0;
                             for (int i = 0; i < roList.size(); ++i) {
@@ -191,23 +200,23 @@ public class AsmPrinter implements Pass{
                         }
                     } else {
                         System.out.println("\tlw\t" + getReg(l.to) + ",-"
-                                + (8 + stackAlloc.get(currentFun).get(getEntityString(l.id))) + "(s0)");
+                                + (8 + stackAlloc.get(currentFun).get(returnID(getEntityString(l.id)))) + "(s0)");
                     }
                 } else if (s instanceof store) {
                     store s_ = (store) s;
                     if (s_.addr != null) {
                         if (getEntityString(s_.addr).startsWith("@")) {
                             System.out.println("\tlui\t" + getReg(s_.addr) + ",%hi(.G"
-                                    + sbssIndex.get(getEntityString(s_.addr)) + ")");
+                                    + sbssIndex.get(returnID(getEntityString(s_.addr))) + ")");
                             System.out.println("\tsw\t" + getReg(s_.value) + ",%lo(.G"
-                                    + sbssIndex.get(getEntityString(s_.addr)) + ")(" + getReg(s_.addr) + ")");
+                                    + sbssIndex.get(returnID(getEntityString(s_.addr))) + ")(" + getReg(s_.addr) + ")");
                         } else {
                             System.out.println("\tsw\t" + getReg(s_.value) + ",0("
                                     + getReg(s_.addr) + ")");
                         }
                     } else {
                         System.out.println("\tsw\t" + regIdentifier.get(s_.value.reg) + ",-"
-                                + (8 + stackAlloc.get(currentFun).get(getEntityString(s_.id))) + "(s0)");
+                                + (8 + stackAlloc.get(currentFun).get(returnID(getEntityString(s_.id)))) + "(s0)");
                     }
                 }
             }

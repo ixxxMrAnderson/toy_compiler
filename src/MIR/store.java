@@ -16,4 +16,16 @@ public class store extends statement{
         this.id = new entity(id);
         this.value = new entity(value);
     }
+
+    public store(entity id, boolean id_flag){
+        if (id_flag) {
+            this.addr = null;
+            this.id = new entity(id);
+            this.value = null;
+        } else {
+            this.addr = null;
+            this.id = null;
+            this.value = new entity(value);
+        }
+    }
 }
