@@ -99,10 +99,10 @@ public class SSA implements Pass{
             }
             rename(fun2entry.get(name));
         }
-        for (String name : b.keySet()){
-            if (name.equals("_VAR_DEF")) continue;
-            insertCopy(b.get(name).index);
-        }
+//        for (String name : b.keySet()){
+//            if (name.equals("_VAR_DEF")) continue;
+//            insertCopy(b.get(name).index);
+//        }
     }
 
     @Override

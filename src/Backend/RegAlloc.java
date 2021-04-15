@@ -212,6 +212,21 @@ public class RegAlloc implements Pass{
             return;
         }
 
+        String ret_id = null;
+        for (String id : id2reg.keySet()){
+            if (returnID(id).equals(returnID(var.id))){
+                ret_id = id;
+                break;
+            }
+        }
+        if (ret_id != null){
+            id2reg.put(var.id, id2reg.get(ret_id));
+            reg2id.put(id2reg.get(ret_id), var.id);
+            id2reg.remove(ret_id);
+            var.reg = id2reg.get(var.id);
+            return;
+        }
+
         for (int i = 5; i < 32; ++i){
             if (i >= 8 && i <= 17) continue;
             if (reg2id.get(i) == null){
