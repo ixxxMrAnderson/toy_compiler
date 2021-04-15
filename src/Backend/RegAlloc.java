@@ -124,6 +124,12 @@ public class RegAlloc implements Pass{
                     if (!s_.value.is_constant) {
                         allocReg(s_.value);
                     }
+                } else if (s instanceof phi){
+                    phi p = (phi) s;
+                    if (bornReg.containsKey(p.born.id)){
+                        id2reg.put(p.born.id, bornReg.get(p.born.id));
+                        reg2id.put(bornReg.get(p.born.id), p.born.id);
+                    }
                 }
             }
             blk.successors().forEach(this::visitBlock);
@@ -205,7 +211,7 @@ public class RegAlloc implements Pass{
                         currentIndex += 1;
                         if (!bornReg.containsKey(var.id)) bornReg.put(var.id, i);
                     } else {
-                        bornReg.put(var.id, i);
+                        if (!bornReg.containsKey(var.id)) bornReg.put(var.id, i);
                     }
                 }
                 return;
