@@ -591,8 +591,9 @@ public class IRBuilder implements ASTVisitor {
         if (containsAnd(it)){
             currentBlock.optAndBlk = new block();
             ret = visit(it, true);
+            statement s = currentBlock.stmts.get(currentBlock.stmts.size() - 1);
             ret.val.id = "_aND_FLAG";
-            currentBlock.push_back(new define(new entity(ret.val), new entity(ret.val)));
+            currentBlock.push_back(new define(new entity(ret.val), new entity(((binary) s).lhs)));
             entity val = new entity();
             currentBlock.optAndBlk.push_back(new assign(new entity(val), new entity(0)));
             currentBlock.optAndBlk.push_back(new store(new entity(ret.val.id), new entity(val), true));
@@ -604,8 +605,9 @@ public class IRBuilder implements ASTVisitor {
         if (containsOr(it)){
             currentBlock.optOrBlk = new block();
             ret = visit(it, true);
+            statement s = currentBlock.stmts.get(currentBlock.stmts.size() - 1);
             ret.val.id = "_OR_FLAG";
-            currentBlock.push_back(new define(new entity(ret.val), new entity(ret.val)));
+            currentBlock.push_back(new define(new entity(ret.val), new entity(((binary) s).lhs)));
             entity val = new entity();
             currentBlock.optOrBlk.push_back(new assign(new entity(val), new entity(1)));
             currentBlock.optOrBlk.push_back(new store(new entity(ret.val.id), new entity(val), true));
