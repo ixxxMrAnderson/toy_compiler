@@ -70,7 +70,7 @@ public class IRPrinter implements Pass {
     }
 
     private String getBlkName(block b) {
-        return ".B" + b.index;
+        return ".B" + (b==null?"null":b.index);
     }
 
     private String getOpString(binaryExprNode.Op op) {
