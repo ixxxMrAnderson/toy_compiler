@@ -14,6 +14,7 @@ public class RegAlloc implements Pass{
     public block currentBlk;
     public HashMap<String, Integer> currentStack = new HashMap<>();
     public HashSet<block> allocated = new HashSet<>();
+    public HashMap<String, Integer> bornReg = new HashMap<>();
 
     public RegAlloc(HashMap<String, block> blocks, HashMap<String, HashMap<String, Integer>> stackAlloc){
         for (int i = 0; i < 32; ++i) reg2id.put(i, null);
@@ -45,14 +46,17 @@ public class RegAlloc implements Pass{
 //        System.out.println(id2reg);
         if (blk != null) {
             for (String id : id2reg.keySet()){
-                reg2id.put(id2reg.get(id), null);
+                if (id.startsWith("_TMP")) reg2id.put(id2reg.get(id), null);
             }
             id2reg = new HashMap<>();
+            for (Integer reg : reg2id.keySet()){
+                if (reg2id.get(reg) != null) {
+                    id2reg.put(reg2id.get(reg), reg);
+                }
+            }
             for (currentIndex = 0; currentIndex < blk.stmts.size(); ++currentIndex) {
                 upload();
                 statement s = blk.stmts.get(currentIndex);
-//                System.out.println("----------" + s + "----------");
-//                System.out.println(id2reg);
                 if (s instanceof binary) {
                     binary b = (binary) s;
                     allocReg(b.op1);
@@ -93,11 +97,12 @@ public class RegAlloc implements Pass{
                     }
                     if (d.assign != null) {
                         allocReg(d.assign);
-                        if (d.var.id.startsWith("@")) allocReg(d.var, true);
-                        reg2id.put(id2reg.get(d.var.id), null);
-                        reg2id.put(d.assign.reg, d.var.id);
-                        id2reg.remove(d.assign.id);
-                        id2reg.put(d.var.id, d.assign.reg);
+                        allocReg(d.var, true);
+                        d.toAssign = true;
+//                        reg2id.put(id2reg.get(d.var.id), null);
+//                        reg2id.put(d.assign.reg, d.var.id);
+//                        id2reg.remove(d.assign.id);
+//                        id2reg.put(d.var.id, d.assign.reg);
                     }
                 } else if (s instanceof load) {
                     load l = (load) s;
@@ -112,18 +117,6 @@ public class RegAlloc implements Pass{
                     if (!s_.value.is_constant) {
                         allocReg(s_.value);
                     }
-//                    if (s_.addr != null && s_.addr.id.startsWith("@")) {
-//                        reg2id.put(id2reg.get(s_.addr.id), null);
-//                        reg2id.put(s_.value.reg, s_.addr.id);
-//                        id2reg.remove(s_.value.id);
-//                        id2reg.put(s_.addr.id, s_.value.reg);
-//                    }
-//                    if (s_.id != null) {
-//                        reg2id.put(id2reg.get(s_.id.id), null);
-//                        reg2id.put(s_.value.reg, s_.id.id);
-//                        id2reg.remove(s_.value.id);
-//                        id2reg.put(s_.id.id, s_.value.reg);
-//                    }
                 }
             }
             blk.successors().forEach(this::visitBlock);
@@ -150,6 +143,13 @@ public class RegAlloc implements Pass{
     // t0-t2 (5-7), t3-t6 (28-31)
     public void allocReg(entity var, boolean flag){ // todo: much more complicated than this...
         // flag: to load on, no need to pre-load
+
+        if ((currentStack.containsKey(returnID(var.id)) || var.id.startsWith("@"))){
+            if (flag && bornReg.containsKey(var.id)){
+                var.reg = bornReg.get(var.id);
+                return;
+            }
+        }
 
         if (var.id.startsWith("_A")) {
             var.reg = 10 + Integer.parseInt(var.id.substring(2, 3));
@@ -186,15 +186,20 @@ public class RegAlloc implements Pass{
                 var.reg = i;
                 id2reg.put(var.id, i);
                 reg2id.put(i, var.id);
-                if ((currentStack.containsKey(returnID(var.id)) || var.id.startsWith("@")) && !flag){
-                    entity to = new entity();
-                    to.reg = i;
-                    if (var.id.startsWith("@")){
-                        currentBlk.stmts.add(currentIndex, new load(new entity(var.id), new entity(to)));
+                if ((currentStack.containsKey(returnID(var.id)) || var.id.startsWith("@"))){
+                    if (!flag) {
+                        entity to = new entity();
+                        to.reg = i;
+                        if (var.id.startsWith("@")) {
+                            currentBlk.stmts.add(currentIndex, new load(new entity(var.id), new entity(to)));
+                        } else {
+                            currentBlk.stmts.add(currentIndex, new load(new entity(var.id), new entity(to), true));
+                        }
+                        currentIndex += 1;
+                        if (!bornReg.containsKey(var.id)) bornReg.put(var.id, i);
                     } else {
-                        currentBlk.stmts.add(currentIndex, new load(new entity(var.id), new entity(to), true));
+                        bornReg.put(var.id, i);
                     }
-                    currentIndex += 1;
                 }
                 return;
             }
@@ -213,14 +218,18 @@ public class RegAlloc implements Pass{
         id2reg.put(var.id, 5);
         reg2id.put(5, var.id);
         if ((currentStack.containsKey(returnID(var.id)) || var.id.startsWith("@")) && !flag){
-            entity to = new entity();
-            to.reg = 5;
-            if (var.id.startsWith("@")){
-                currentBlk.stmts.add(currentIndex, new load(new entity(var.id), new entity(to)));
+            if (!flag) {
+                entity to = new entity();
+                to.reg = 5;
+                if (var.id.startsWith("@")) {
+                    currentBlk.stmts.add(currentIndex, new load(new entity(var.id), new entity(to)));
+                } else {
+                    currentBlk.stmts.add(currentIndex, new load(new entity(var.id), new entity(to), true));
+                }
+                if (!bornReg.containsKey(var.id)) bornReg.put(var.id, 5);
             } else {
-                currentBlk.stmts.add(currentIndex, new load(new entity(var.id), new entity(to), true));
+                bornReg.put(var.id, 5);
             }
-            currentIndex += 1;
         }
         return;
     }
@@ -268,7 +277,7 @@ public class RegAlloc implements Pass{
                     }
                     if (flag) break;
                 }
-                if (!flag){ // @var store its addr instead of value
+                if (!flag && reg2id.get(i).startsWith("_TMP")){ // @var store its addr instead of value
                     id2reg.remove(reg2id.get(i));
                     reg2id.put(i, null);
                 }
