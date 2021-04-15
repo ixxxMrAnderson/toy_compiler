@@ -24,14 +24,25 @@ public class SSA implements Pass{
     private HashMap<String, HashMap<String, HashSet<Integer>>> definedVar = new HashMap<>();
     private HashMap<String, HashSet<varNode>> varNodes = new HashMap<>();
     private HashSet<Integer> inserted = new HashSet<>();
+    private HashSet<String> glblVars = new HashSet<>();
 
     public SSA(HashMap<String, block> b){
+        currentFun = "main";
+        definedVar.put(currentFun, new HashMap<>());
+        blks.put(currentFun, new HashSet<>());
+        visitBlock(b.get("main"));
         for (String name : b.keySet()){
-            if (name.equals("_VAR_DEF")) continue;
+            if (name.equals("_VAR_DEF") || name.equals("main")) continue;
             currentFun = name;
             definedVar.put(currentFun, new HashMap<>());
             blks.put(currentFun, new HashSet<>());
             visitBlock(b.get(name));
+            for (String var : glblVars){
+                if (!definedVar.get(name).containsKey(var)) {
+                    definedVar.get(name).put(var, new HashSet<>());
+                    definedVar.get(name).get(var).add(b.get(name).index);
+                }
+            }
 //            visitBlock(b.get(name).tailBlk);
         }
 //        System.out.println("definedVar:");
@@ -185,6 +196,7 @@ public class SSA implements Pass{
     }
 
     private void add_D(block blk, String id){
+        if (id.startsWith("@")) glblVars.add(id);
         if (!id.startsWith("_TMP") && !id.equals("_SP")  && !id.equals("_S0") ){
             if (!(id.startsWith("_A") && isNumeric(id.substring(2, 3)))){
                 definedVar.get(currentFun).get(id).add(getBlockName(blk));
@@ -276,13 +288,13 @@ public class SSA implements Pass{
                 }
             } else if (s instanceof assign) {
                 assign a = (assign) s;
-                if (a.rhs.id != null && a.rhs.id != "null") {
+                if (a.rhs.id != null && !a.rhs.is_constant) {
                     updateReachingDef_(a.rhs.id, blk);
                     if (getVarDef(a.rhs.id) != null) a.rhs.id = getVarDef(a.rhs.id).id;
                 }
             } else if (s instanceof define) {
                 define d = (define) s;
-                if (d.assign != null && d.assign.id != null && d.assign.id != "null") {
+                if (d.assign != null && !d.assign.is_constant) {
                     updateReachingDef_(d.assign.id, blk);
                     if (getVarDef(d.assign.id) != null) d.assign.id = getVarDef(d.assign.id).id;
                 }
