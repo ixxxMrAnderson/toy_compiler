@@ -62,6 +62,7 @@ public class RegAlloc implements Pass{
                 } else {
 //                    System.out.println(blk.stmts.size());
                 }
+//                System.out.println(blk.stmts.get(currentIndex));
                 upload();
                 statement s = blk.stmts.get(currentIndex);
                 if (s instanceof binary) {
@@ -106,9 +107,11 @@ public class RegAlloc implements Pass{
                         allocReg(d.assign);
                         allocReg(d.var, true);
                         d.toAssign = true;
-                        reg2id.put(id2reg.get(d.assign.id), null);
+                        if (returnID(d.var.id).equals(returnID(d.assign.id))) {
+                            reg2id.put(id2reg.get(d.assign.id), null);
 //                        reg2id.put(d.assign.reg, d.var.id);
-                        id2reg.remove(d.assign.id);
+                            id2reg.remove(d.assign.id);
+                        }
 //                        id2reg.put(d.var.id, d.assign.reg);
                     }
                 } else if (s instanceof load) {
@@ -156,6 +159,8 @@ public class RegAlloc implements Pass{
     // t0-t2 (5-7), t3-t6 (28-31)
     public void allocReg(entity var, boolean flag){ // todo: much more complicated than this...
         // flag: to load on, no need to pre-load
+//        System.out.println("allocate: " + var.id);
+//        System.out.println(id2reg);
 
         if ((currentStack.containsKey(returnID(var.id)) || var.id.startsWith("@"))){
             if (flag && bornReg.containsKey(var.id)){
@@ -291,6 +296,7 @@ public class RegAlloc implements Pass{
                     if (flag) break;
                 }
                 if (!flag){ // @var store its addr instead of value
+//                    System.out.println("remove: "+reg2id.get(i));
                     id2reg.remove(reg2id.get(i));
                     reg2id.put(i, null);
                 }
