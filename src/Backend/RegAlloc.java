@@ -141,7 +141,7 @@ public class RegAlloc implements Pass{
             }
             entity assign = new entity();
             assign.reg = id2reg.get(id);
-            if (!currentStack.containsKey(returnID(id)) && !id.startsWith("@") && call_flag) {
+            if (!currentStack.containsKey(returnID(id)) && !id.startsWith("@")  && !id.startsWith("%") && call_flag) {
                 sp += 4;
                 currentStack.put(returnID(id), sp);
                 currentBlk.stmts.add(currentIndex++, new define(new entity(id), new entity(assign)));
@@ -149,7 +149,7 @@ public class RegAlloc implements Pass{
                 entity addr = new entity(returnID(id));
                 addr.reg = 17;
                 currentBlk.stmts.add(currentIndex++, new store(new entity(addr), new entity(assign)));
-            } else {
+            } else if (currentStack.containsKey(returnID(id))) {
                 currentBlk.stmts.add(currentIndex++, new store(new entity(returnID(id)), new entity(assign), true));
             }
             reg2id.put(id2reg.get(id), null);
