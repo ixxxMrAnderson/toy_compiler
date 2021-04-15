@@ -14,7 +14,7 @@ public class RegAlloc implements Pass{
     public block currentBlk;
     public HashMap<String, Integer> currentStack = new HashMap<>();
     public HashSet<block> allocated = new HashSet<>();
-    public HashMap<String, Integer> bornReg = new HashMap<>();
+    public HashSet<String> defined = new HashSet<>();
 
     public RegAlloc(HashMap<String, block> blocks, HashMap<String, HashMap<String, Integer>> stackAlloc){
         for (int i = 0; i < 32; ++i) reg2id.put(i, null);
@@ -45,6 +45,7 @@ public class RegAlloc implements Pass{
 //        System.out.println("------------------------------");
 //        System.out.println(id2reg);
         if (blk != null) {
+            defined = new HashSet<>();
             for (String id : id2reg.keySet()){
                 reg2id.put(id2reg.get(id), null);
 //                if (id.startsWith("_TMP")) reg2id.put(id2reg.get(id), null);
@@ -86,8 +87,8 @@ public class RegAlloc implements Pass{
                     if (r.value != null && id2reg.containsKey(r.value.id)){
                         reg2id.put(id2reg.get(r.value.id), null);
                         id2reg.remove(r.value.id);
-                        clear();
                     }
+                    clear();
                 } else if (s instanceof assign) {
                     assign a = (assign) s;
                     if (!a.lhs.is_constant) allocReg(a.lhs, true);
@@ -103,6 +104,7 @@ public class RegAlloc implements Pass{
                         currentStack.put(returnID(id), sp);
                     }
                     if (d.assign != null) {
+                        defined.add(d.var.id);
                         allocReg(d.assign);
                         allocReg(d.var, true);
                         d.toAssign = true;
@@ -150,15 +152,16 @@ public class RegAlloc implements Pass{
                 sp += 4;
                 currentStack.put(returnID(id), sp);
                 currentBlk.stmts.add(currentIndex++, new define(new entity(id), new entity(assign)));
-            } else if (id.startsWith("@")) {
+            } else if (id.startsWith("@") && defined.contains(id)) {
                 entity addr = new entity(returnID(id));
                 addr.reg = 17;
                 currentBlk.stmts.add(currentIndex++, new store(new entity(addr), new entity(assign)));
-            } else if (currentStack.containsKey(returnID(id))) {
+            } else if (currentStack.containsKey(returnID(id)) && defined.contains(id)) {
                 currentBlk.stmts.add(currentIndex++, new store(new entity(returnID(id)), new entity(assign), true));
             }
             reg2id.put(id2reg.get(id), null);
         }
+        defined = new HashSet<>();
         id2reg = new HashMap<>();
     }
 
@@ -241,7 +244,6 @@ public class RegAlloc implements Pass{
                     } else {
                         currentBlk.stmts.add(currentIndex++, new load(new entity(var.id), new entity(to), true));
                     }
-                    if (!bornReg.containsKey(var.id)) bornReg.put(var.id, i);
                 }
                 return;
             }
