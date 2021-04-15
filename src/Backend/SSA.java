@@ -276,13 +276,13 @@ public class SSA implements Pass{
                 }
             } else if (s instanceof assign) {
                 assign a = (assign) s;
-                if (a.rhs.id != null) {
+                if (a.rhs.id != null && a.rhs.id != "null") {
                     updateReachingDef_(a.rhs.id, blk);
                     if (getVarDef(a.rhs.id) != null) a.rhs.id = getVarDef(a.rhs.id).id;
                 }
             } else if (s instanceof define) {
                 define d = (define) s;
-                if (d.assign != null && d.assign.id != null) {
+                if (d.assign != null && d.assign.id != null && d.assign.id != "null") {
                     updateReachingDef_(d.assign.id, blk);
                     if (getVarDef(d.assign.id) != null) d.assign.id = getVarDef(d.assign.id).id;
                 }
@@ -301,7 +301,7 @@ public class SSA implements Pass{
                 }
             } else if (s instanceof load) {
                 load l = (load) s;
-                if (l.addr != null && l.addr.id != null) {
+                if (l.addr != null && l.addr.id != null && !l.addr.id.startsWith("%")) {
                     updateReachingDef_(l.addr.id, blk);
                     if (getVarDef(l.addr.id) != null) l.addr.id = getVarDef(l.addr.id).id;
                 }
