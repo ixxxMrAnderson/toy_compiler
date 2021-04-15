@@ -83,6 +83,11 @@ public class RegAlloc implements Pass{
                 } else if (s instanceof ret) {
                     ret r = (ret) s;
                     if (r.value != null && !r.value.is_constant) allocReg(r.value);
+                    if (r.value != null && id2reg.containsKey(r.value.id)){
+                        reg2id.put(id2reg.get(r.value.id), null);
+                        id2reg.remove(r.value.id);
+                        clear();
+                    }
                 } else if (s instanceof assign) {
                     assign a = (assign) s;
                     if (!a.lhs.is_constant) allocReg(a.lhs, true);

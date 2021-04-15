@@ -20,7 +20,7 @@ import java.util.HashMap;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/sema/string-package/string-1.mx";
+        String file_name = "./testcases/codegen/t9.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 
