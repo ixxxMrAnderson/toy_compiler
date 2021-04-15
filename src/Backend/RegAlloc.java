@@ -76,11 +76,11 @@ public class RegAlloc implements Pass{
                 } else if (s instanceof branch) {
                     branch b = (branch) s;
                     allocReg(b.flag);
-                    if (currentIndex == blk.stmts.size() - 1) {
+//                    if (currentIndex == blk.stmts.size() - 1) {
                         reg2id.put(id2reg.get(b.flag.id), null);
                         id2reg.remove(b.flag.id);
                         clear();
-                    }
+//                    }
                 } else if (s instanceof ret) {
                     ret r = (ret) s;
                     if (r.value != null && !r.value.is_constant) allocReg(r.value);
