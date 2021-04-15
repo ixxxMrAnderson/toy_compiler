@@ -46,15 +46,22 @@ public class RegAlloc implements Pass{
 //        System.out.println(id2reg);
         if (blk != null) {
             for (String id : id2reg.keySet()){
-                if (id.startsWith("_TMP")) reg2id.put(id2reg.get(id), null);
+                reg2id.put(id2reg.get(id), null);
+//                if (id.startsWith("_TMP")) reg2id.put(id2reg.get(id), null);
             }
             id2reg = new HashMap<>();
-            for (Integer reg : reg2id.keySet()){
-                if (reg2id.get(reg) != null) {
-                    id2reg.put(reg2id.get(reg), reg);
-                }
-            }
+//            for (Integer reg : reg2id.keySet()){
+//                if (reg2id.get(reg) != null) {
+//                    id2reg.put(reg2id.get(reg), reg);
+//                }
+//            }
+//            System.out.println("index: " + blk.index);
             for (currentIndex = 0; currentIndex < blk.stmts.size(); ++currentIndex) {
+                if (blk.stmts.size() > 10000){
+                    break;
+                } else {
+//                    System.out.println(blk.stmts.size());
+                }
                 upload();
                 statement s = blk.stmts.get(currentIndex);
                 if (s instanceof binary) {
@@ -99,9 +106,9 @@ public class RegAlloc implements Pass{
                         allocReg(d.assign);
                         allocReg(d.var, true);
                         d.toAssign = true;
-//                        reg2id.put(id2reg.get(d.var.id), null);
+                        reg2id.put(id2reg.get(d.assign.id), null);
 //                        reg2id.put(d.assign.reg, d.var.id);
-//                        id2reg.remove(d.assign.id);
+                        id2reg.remove(d.assign.id);
 //                        id2reg.put(d.var.id, d.assign.reg);
                     }
                 } else if (s instanceof load) {
@@ -277,7 +284,7 @@ public class RegAlloc implements Pass{
                     }
                     if (flag) break;
                 }
-                if (!flag && reg2id.get(i).startsWith("_TMP")){ // @var store its addr instead of value
+                if (!flag){ // @var store its addr instead of value
                     id2reg.remove(reg2id.get(i));
                     reg2id.put(i, null);
                 }
