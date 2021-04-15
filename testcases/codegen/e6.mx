@@ -31,3 +31,36 @@ for(i=0;a[i]>=a[k-1]&&a[i] > 0&&i<m;i++);
 printInt(i);
 //printf("%d",i);
 }
+
+/*
+load @i#5(zero) on _TMP_137(t0);
+	_TMP_85(t2) = @i#5(t0) + 1(t1);
+	_TMP_85(t2) = _TMP_85(t2) << 2(s2);
+	load @a#0(zero) on _TMP_138(s3);
+	_TMP_84(s4) = _TMP_85(t2) + @a#0(s3);
+	load _TMP_84(s4) on _TMP_84(s4);
+	load @k#1(zero) on _TMP_139(t2);
+	_TMP_89(s5) = @k#1(t2) - 1(t1);
+	_TMP_93(s6) = _TMP_89(s5) + 1(t1);
+	_TMP_93(s6) = _TMP_93(s6) << 2(s2);
+	_TMP_92(s5) = _TMP_93(s6) + @a#0(s3);
+	load _TMP_92(s5) on _TMP_92(s5);
+	_TMP_88(s6) = _TMP_84(s4) >= _TMP_92(s5);
+	br _TMP_88(s6) .Bnull, .B10;
+	                                    load @i#5(zero) on _TMP_143(t0);
+	_TMP_98(t2) = @i#5(t0) + 1(t1);
+	_TMP_98(t2) = _TMP_98(t2) << 2(t1);
+	load @a#0(zero) on _TMP_144(t1);
+	_TMP_97(s2) = _TMP_98(t2) + @a#0(t1);
+	load _TMP_97(s2) on _TMP_97(s2);
+	_TMP_101(s3) = _TMP_97(s2) > 0(t2);
+	_TMP_96(s2) = _TMP_88(t2) && _TMP_101(s3);
+	br _TMP_96(s2) .Bnull, .B10;
+	load @i#5(zero) on _TMP_147(t0);
+	load @m#1(zero) on _TMP_148(t1);
+	_TMP_105(t2) = @i#5(t0) < @m#1(t1);
+	_TMP_104(s3) = _TMP_96(s2) && _TMP_105(t2);
+	_aND_FLAG#1(t2) = _TMP_104(s3);
+	store _TMP_151(t2) in _aND_FLAG(zero);
+	j .B6;
+*/

@@ -76,11 +76,23 @@ public class RegAlloc implements Pass{
                 } else if (s instanceof branch) {
                     branch b = (branch) s;
                     allocReg(b.flag);
-//                    if (currentIndex == blk.stmts.size() - 1) {
+                    if (currentIndex == blk.stmts.size() - 1) {
                         reg2id.put(id2reg.get(b.flag.id), null);
                         id2reg.remove(b.flag.id);
                         clear();
-//                    }
+                    } else {
+                        for (String id : id2reg.keySet()){
+                            entity assign = new entity();
+                            assign.reg = id2reg.get(id);
+                            if (id.startsWith("@") && defined.contains(id)) {
+                                entity addr = new entity(returnID(id));
+                                addr.reg = 17;
+                                currentBlk.stmts.add(currentIndex++, new store(new entity(addr), new entity(assign)));
+                            } else if (currentStack.containsKey(returnID(id)) && defined.contains(id)) {
+                                currentBlk.stmts.add(currentIndex++, new store(new entity(returnID(id)), new entity(assign), true));
+                            }
+                        }
+                    }
                 } else if (s instanceof ret) {
                     ret r = (ret) s;
                     if (r.value != null && !r.value.is_constant) allocReg(r.value);
