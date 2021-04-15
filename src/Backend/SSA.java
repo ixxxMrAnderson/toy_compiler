@@ -122,10 +122,7 @@ public class SSA implements Pass{
                 } else if (s instanceof define) {
                     define d = (define) s;
 //                    System.out.println("def: " + d.var.id);
-                    if (d.assign != null) {
-                        if (!d.assign.is_constant) add_U(blk, d.assign.id);
-                        add_D(blk, d.var.id);
-                    }
+                    add_D(blk, d.var.id);
                 } else if (s instanceof store) {
                     store s_ = (store) s;
 //                    System.out.println("store");
@@ -174,7 +171,7 @@ public class SSA implements Pass{
     }
 
     private void add_D(block blk, String id){
-//        System.out.println("add_D: "+id);
+//        System.out.println(currentFun + "_add_D: "+id);
         if (id.startsWith("@")) glblVars.add(id);
         if (!id.startsWith("_TMP") && !id.equals("_SP")  && !id.equals("_S0") ){
             if (!(id.startsWith("_A") && isNumeric(id.substring(2, 3)))){
@@ -278,7 +275,6 @@ public class SSA implements Pass{
                     updateReachingDef_(d.assign.id, blk);
                     if (getVarDef(d.assign.id) != null) d.assign.id = getVarDef(d.assign.id).id;
                 }
-                if (d.assign != null){
                     updateReachingDef_(d.var.id, blk);
                     String v_ = createCopy(d.var.id);
                     String pre_id = d.var.id;
@@ -288,9 +284,6 @@ public class SSA implements Pass{
                     for (varNode x : varNodes.get(currentFun)){
                         if (x.id.equals(pre_id)) x.def = new_v;
                     }
-                } else {
-                    index2blk.get(blk).stmts.remove(i);
-                }
             } else if (s instanceof load) {
                 load l = (load) s;
                 if (l.addr != null && l.addr.id != null && !l.addr.id.startsWith("%")) {

@@ -20,7 +20,7 @@ import java.util.HashMap;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/sema/scope-package/scope-2.mx";
+        String file_name = "./testcases/sema/array-package/array-1.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 
