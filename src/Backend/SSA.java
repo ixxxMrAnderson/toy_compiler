@@ -118,39 +118,17 @@ public class SSA implements Pass{
             for (statement s : blk.stmts) {
                 if (s instanceof binary) {
                     binary b = (binary) s;
-                    if (!b.op1.is_constant) add_U(blk, b.op1.id);
-                    if (!b.op2.is_constant) add_U(blk, b.op2.id);
                     if (!b.lhs.is_constant) add_D(blk, b.lhs.id);
-                } else if (s instanceof jump) {
-
-                } else if (s instanceof branch) {
-                    branch b = (branch) s;
-                    if (!b.flag.is_constant) add_U(blk, b.flag.id);
-                } else if (s instanceof ret) {
-                    ret r = (ret) s;
-                    if (r.value != null) {
-                        if (!r.value.is_constant) add_U(blk, r.value.id);
-                    }
-                    break;
-                } else if (s instanceof assign) {
-                    assign a = (assign) s;
-                    if (!a.rhs.is_constant) add_U(blk, a.rhs.id);
-                    if (!a.lhs.is_constant) add_D(blk, a.lhs.id);
-                } else if (s instanceof call) {
-
                 } else if (s instanceof define) {
                     define d = (define) s;
-                    definedVar.get(currentFun).put(d.var.id, new HashSet<>());
+//                    System.out.println("def: " + d.var.id);
                     if (d.assign != null) {
                         if (!d.assign.is_constant) add_U(blk, d.assign.id);
                         add_D(blk, d.var.id);
                     }
-                } else if (s instanceof load) {
-                    load l = (load) s;
-                    if (l.addr == null) add_U(blk, l.id.id);
                 } else if (s instanceof store) {
                     store s_ = (store) s;
-                    add_U(blk, s_.value.id);
+//                    System.out.println("store");
                     if (s_.addr == null) add_D(blk, s_.id.id);
                     if (s_.addr != null && s_.addr.id.startsWith("@")) add_D(blk, s_.addr.id);
                 }
@@ -196,9 +174,11 @@ public class SSA implements Pass{
     }
 
     private void add_D(block blk, String id){
+//        System.out.println("add_D: "+id);
         if (id.startsWith("@")) glblVars.add(id);
         if (!id.startsWith("_TMP") && !id.equals("_SP")  && !id.equals("_S0") ){
             if (!(id.startsWith("_A") && isNumeric(id.substring(2, 3)))){
+                if (!definedVar.get(currentFun).containsKey(id)) definedVar.get(currentFun).put(id, new HashSet<>());
                 definedVar.get(currentFun).get(id).add(getBlockName(blk));
             }
         }
@@ -266,23 +246,23 @@ public class SSA implements Pass{
             statement s = index2blk.get(blk).stmts.get(i);
             if (s instanceof binary) {
                 binary b = (binary) s;
-                if (b.op1.id != null) {
+                if (!b.op1.is_constant) {
                     updateReachingDef_(b.op1.id, blk);
                     if (getVarDef(b.op1.id) != null) b.op1.id = getVarDef(b.op1.id).id;
                 }
-                if (b.op2.id != null) {
+                if (!b.op2.is_constant) {
                     updateReachingDef_(b.op2.id, blk);
                     if (getVarDef(b.op2.id) != null) b.op2.id = getVarDef(b.op2.id).id;
                 }
             } else if (s instanceof branch) {
                 branch b = (branch) s;
-                if (b.flag.id != null) {
+                if (!b.flag.is_constant) {
                     updateReachingDef_(b.flag.id, blk);
                     if (getVarDef(b.flag.id) != null) b.flag.id = getVarDef(b.flag.id).id;
                 }
             } else if (s instanceof ret) {
                 ret r = (ret) s;
-                if (r.value != null && r.value.id != null) {
+                if (r.value != null && !r.value.is_constant) {
                     updateReachingDef_(r.value.id, blk);
                     if (getVarDef(r.value.id) != null) r.value.id = getVarDef(r.value.id).id;
                 }
@@ -403,11 +383,18 @@ public class SSA implements Pass{
                     if (var != null){
                         define deToInsert = new define(new entity(p.born), new entity(var));
                         block blkToInsert = index2blk.get(p.blkList.get(p.varList.indexOf(var)));
-                        if (blkToInsert.tail() instanceof jump || blkToInsert.tail() instanceof branch){
-                            blkToInsert.stmts.add(blkToInsert.stmts.size() - 1, deToInsert);
+                        Integer index = blkToInsert.stmts.size();
+                        for (int i = index - 1; i >= 0; --i){
+                            if (blkToInsert.stmts.get(i) instanceof jump || blkToInsert.stmts.get(i) instanceof branch){
+                                index --;
+                            } else {
+                                break;
+                            }
                         }
-                        if (blkToInsert.nxtBlock != null){
+                        if (index == blkToInsert.stmts.size()){
                             blkToInsert.stmts.add(deToInsert);
+                        } else {
+                            blkToInsert.stmts.add(index, deToInsert);
                         }
                     }
                 }
