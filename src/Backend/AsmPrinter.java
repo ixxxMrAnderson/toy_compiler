@@ -225,6 +225,7 @@ public class AsmPrinter implements Pass{
                                     + getReg(s_.addr) + ")");
                         }
                     } else {
+//                        System.out.println("wtf" + getEntityString(s_.id));
                         System.out.println("\tsw\t" + regIdentifier.get(s_.value.reg) + ",-"
                                 + (8 + stackAlloc.get(currentFun).get(returnID(getEntityString(s_.id)))) + "(s0)");
                     }
