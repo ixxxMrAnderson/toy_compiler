@@ -24,6 +24,7 @@ public class RegAlloc implements Pass{
             currentStack = new HashMap<>();
             sp = 0;
         }
+//        System.out.println(stackAlloc);
     }
 
     public boolean isNumeric(String str) {
@@ -74,9 +75,9 @@ public class RegAlloc implements Pass{
                         if (isNumeric(id)) continue;
                         entity assign = new entity();
                         assign.reg = id2reg.get(id);
-                        if (!currentStack.containsKey(id) && !id.startsWith("@")){
+                        if (!currentStack.containsKey(returnID(id)) && !id.startsWith("@")){
                             sp += 4;
-                            currentStack.put(id, sp);
+                            currentStack.put(returnID(id), sp);
                             currentBlk.stmts.add(currentIndex++, new define(new entity(id), new entity(assign)));
                         }
                         reg2id.put(id2reg.get(id), null);
@@ -86,9 +87,9 @@ public class RegAlloc implements Pass{
                     define d = (define) s;
                     String id = returnID(d.var.id);
 //                    System.out.println("REG----------define----------" + d.var.id + "--------" + currentStack);
-                    if (!id.startsWith("@") && !id.startsWith("%") && !currentStack.containsKey(id)){
+                    if (!id.startsWith("@") && !id.startsWith("%") && !currentStack.containsKey(returnID(id))){
                         sp += 4;
-                        currentStack.put(id, sp);
+                        currentStack.put(returnID(id), sp);
                     }
                     if (d.assign != null) {
                         allocReg(d.assign);
@@ -185,7 +186,7 @@ public class RegAlloc implements Pass{
                 var.reg = i;
                 id2reg.put(var.id, i);
                 reg2id.put(i, var.id);
-                if ((currentStack.containsKey(var.id) || var.id.startsWith("@")) && !flag){
+                if ((currentStack.containsKey(returnID(var.id)) || var.id.startsWith("@")) && !flag){
                     entity to = new entity();
                     to.reg = i;
                     if (var.id.startsWith("@")){
@@ -202,16 +203,16 @@ public class RegAlloc implements Pass{
         // spill t0
         entity assign = new entity();
         assign.reg = 5;
-        if (!currentStack.containsKey(reg2id.get(5))){
+        if (!currentStack.containsKey(returnID(reg2id.get(5)))){
             sp += 4;
-            currentStack.put(reg2id.get(5), sp);
+            currentStack.put(returnID(reg2id.get(5)), sp);
         }
         currentBlk.stmts.add(currentIndex++, new define(new entity(reg2id.get(5)), new entity(assign)));
         var.reg = 5;
         id2reg.remove(reg2id.get(5));
         id2reg.put(var.id, 5);
         reg2id.put(5, var.id);
-        if ((currentStack.containsKey(var.id) || var.id.startsWith("@")) && !flag){
+        if ((currentStack.containsKey(returnID(var.id)) || var.id.startsWith("@")) && !flag){
             entity to = new entity();
             to.reg = 5;
             if (var.id.startsWith("@")){

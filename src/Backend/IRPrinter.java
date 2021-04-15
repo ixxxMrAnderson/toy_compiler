@@ -157,15 +157,15 @@ public class IRPrinter implements Pass {
                         + getEntityString(s_.id) + ";");
             }
         } else if (s instanceof phi){
-            phi p = (phi) s;
-            System.out.println("\tphi " + getEntityString(p.born));
-            if (p.varList != null && p.varList.size() > 0) {
-                System.out.println("[");
-                for (entity i : p.varList) {
-                    System.out.println(getEntityString(i) + ", ");
-                }
-                System.out.println("];");
-            }
+//            phi p = (phi) s;
+//            System.out.println("\tphi " + getEntityString(p.born));
+//            if (p.varList != null && p.varList.size() > 0) {
+//                System.out.println("[");
+//                for (entity i : p.varList) {
+//                    System.out.println(getEntityString(i) + ", ");
+//                }
+//                System.out.println("];");
+//            }
         }
     }
 }
