@@ -56,33 +56,33 @@ public class SSA implements Pass{
         generateDF();
 //        System.out.println("DF:");
 //        System.out.println(DF);
-        for (String name : b.keySet()){ // insertingPhi
-            if (name.equals("_VAR_DEF")) continue;
-            for (String var : definedVar.get(name).keySet()){
-                HashSet<Integer> F = new HashSet<>();
-                HashSet<Integer> W = new HashSet<>();
-                for (Integer d : definedVar.get(name).get(var)){
-                    if (!W.contains(d)) W.add(d);
-                }
-                while (!W.isEmpty()){
-                    Integer x = 0;
-                    for (Integer w : W){
-                        x = w;
-                        W.remove(x);
-                        if (x == w) break;
-                    }
-                    if (DF.get(x) != null) {
-                        for (Integer y : DF.get(x)) {
-                            if (!F.contains(y)) {
-                                index2blk.get(y).stmts.add(0, new phi(new entity(var)));
-                                F.add(y);
-                                if (!definedVar.get(name).get(var).contains(y) && !W.contains(y)) W.add(y);
-                            }
-                        }
-                    }
-                }
-            }
-        }
+//        for (String name : b.keySet()){ // insertingPhi
+//            if (name.equals("_VAR_DEF")) continue;
+//            for (String var : definedVar.get(name).keySet()){
+//                HashSet<Integer> F = new HashSet<>();
+//                HashSet<Integer> W = new HashSet<>();
+//                for (Integer d : definedVar.get(name).get(var)){
+//                    if (!W.contains(d)) W.add(d);
+//                }
+//                while (!W.isEmpty()){
+//                    Integer x = 0;
+//                    for (Integer w : W){
+//                        x = w;
+//                        W.remove(x);
+//                        if (x == w) break;
+//                    }
+//                    if (DF.get(x) != null) {
+//                        for (Integer y : DF.get(x)) {
+//                            if (!F.contains(y)) {
+//                                index2blk.get(y).stmts.add(0, new phi(new entity(var)));
+//                                F.add(y);
+//                                if (!definedVar.get(name).get(var).contains(y) && !W.contains(y)) W.add(y);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
         for (Integer index : index2blk.keySet()){ // building dom tree
             if (fun2entry.containsValue(index)) continue;
             Integer dom = idom(index);
@@ -91,15 +91,15 @@ public class SSA implements Pass{
         }
 //        System.out.println("dom2sub:");
 //        System.out.println(dom2sub);
-        for (String name : b.keySet()){
-            if (name.equals("_VAR_DEF")) continue;
-            currentFun = name;
-            varNodes.put(name, new HashSet<>());
-            for (String id : definedVar.get(name).keySet()){
-                varNodes.get(name).add(new varNode(id));
-            }
-            rename(fun2entry.get(name));
-        }
+//        for (String name : b.keySet()){
+//            if (name.equals("_VAR_DEF")) continue;
+//            currentFun = name;
+//            varNodes.put(name, new HashSet<>());
+//            for (String id : definedVar.get(name).keySet()){
+//                varNodes.get(name).add(new varNode(id));
+//            }
+//            rename(fun2entry.get(name));
+//        }
 //        for (String name : b.keySet()){
 //            if (name.equals("_VAR_DEF")) continue;
 //            insertCopy(b.get(name).index);
