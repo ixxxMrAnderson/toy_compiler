@@ -15,12 +15,13 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/codegen/t25.mx";
+        String file_name = "./testcases/codegen/t27.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 
@@ -40,10 +41,12 @@ public class Main {
             HashMap<String, Integer> spillPara = new HashMap<>();
             new IRBuilder(blocks, spillPara).visit(AST_root);
 //            new IRPrinter(blocks);
-            new SSA(blocks);
+            HashMap<Integer, HashSet<Integer>> dom2sub = new HashMap<>();
+            new SSA(blocks, dom2sub);
 //            new IRPrinter(blocks);
             HashMap<String, HashMap<String, Integer>> stackAlloc = new HashMap<>();
             new RegAlloc(blocks, stackAlloc);
+//            new LinearScan(blocks, stackAlloc, dom2sub);
 //            new IRPrinter(blocks);
             new AsmPrinter(blocks, stackAlloc, spillPara);
         } catch (error er) {

@@ -100,7 +100,22 @@ public class RegAlloc implements Pass{
                         reg2id.put(id2reg.get(r.value.id), null);
                         id2reg.remove(r.value.id);
                     }
-                    clear();
+                    for (String id : id2reg.keySet()){
+                        if (isNumeric(id)) {
+                            reg2id.put(id2reg.get(id), null);
+                            continue;
+                        }
+                        entity assign = new entity();
+                        assign.reg = id2reg.get(id);
+                        if (id.startsWith("@") && defined.contains(id)) {
+                            entity addr = new entity(returnID(id));
+                            addr.reg = 17;
+                            currentBlk.stmts.add(currentIndex++, new store(new entity(addr), new entity(assign)));
+                        }
+                        reg2id.put(id2reg.get(id), null);
+                    }
+                    defined = new HashSet<>();
+                    id2reg = new HashMap<>();
                 } else if (s instanceof assign) {
                     assign a = (assign) s;
                     if (!a.lhs.is_constant) allocReg(a.lhs, true);

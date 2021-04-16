@@ -18,7 +18,7 @@ public class SSA implements Pass{
     private HashMap<Integer, HashSet<Integer>> preBlk = new HashMap<>();
     private HashMap<Integer, HashSet<Integer>> DT = new HashMap<>();
     private HashMap<String, Integer> fun2entry = new HashMap<>();
-    private HashMap<Integer, HashSet<Integer>> dom2sub = new HashMap<>();
+    private HashMap<Integer, HashSet<Integer>> dom2sub;
     private HashMap<Integer, HashSet<Integer>> DF = new HashMap<>();
     private String currentFun;
     private HashMap<String, HashMap<String, HashSet<Integer>>> definedVar = new HashMap<>();
@@ -26,8 +26,9 @@ public class SSA implements Pass{
     private HashSet<Integer> inserted = new HashSet<>();
     private HashSet<String> glblVars = new HashSet<>();
 
-    public SSA(HashMap<String, block> b){
+    public SSA(HashMap<String, block> b, HashMap<Integer, HashSet<Integer>> dom2sub){
         currentFun = "main";
+        this.dom2sub = dom2sub;
         definedVar.put(currentFun, new HashMap<>());
         blks.put(currentFun, new HashSet<>());
         visitBlock(b.get("main"));
