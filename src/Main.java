@@ -22,8 +22,8 @@ public class Main {
     public static void main(String[] args) throws Exception{
 
         String file_name = "./testcases/codegen/t27.mx";
-        InputStream input = new FileInputStream(file_name);
-//        InputStream input = System.in;
+//        InputStream input = new FileInputStream(file_name);
+        InputStream input = System.in;
 
         try {
             MxLexer lexer = new MxLexer(CharStreams.fromStream(input));

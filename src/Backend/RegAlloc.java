@@ -72,7 +72,7 @@ public class RegAlloc implements Pass{
                     allocReg(b.op2);
                     allocReg(b.lhs, true);
                 } else if (s instanceof jump) {
-                    if (currentIndex == blk.stmts.size() - 1) clear();
+                    clear();
                 } else if (s instanceof branch) {
                     branch b = (branch) s;
                     allocReg(b.flag);
