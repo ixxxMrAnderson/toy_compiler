@@ -138,12 +138,14 @@ public class IRPrinter implements Pass {
             System.out.println("\tcall " + c.funID + ";");
         } else if (s instanceof define) {
             define d = (define) s;
-            if (d.toAssign){
-                System.out.println("\t" + getEntityString(d.var) +
-                        " = " + getEntityString(d.assign) + ";");
-            } else {
-                System.out.println("\tdefine " + getEntityString(d.var) + (d.assign == null ? "" :
-                        (", assign " + getEntityString(d.assign))) + ";");
+            if (d.assign != null) {
+                if (d.toAssign) {
+                    System.out.println("\t" + getEntityString(d.var) +
+                            " = " + getEntityString(d.assign) + ";");
+                } else {
+                    System.out.println("\tdefine " + getEntityString(d.var) + (d.assign == null ? "" :
+                            (", assign " + getEntityString(d.assign))) + ";");
+                }
             }
         } else if (s instanceof load) {
             load l = (load) s;

@@ -65,6 +65,7 @@ public class RegAlloc implements Pass{
                 }
 //                System.out.println(blk.stmts.get(currentIndex));
                 upload();
+                clear_dead_vars();
                 statement s = blk.stmts.get(currentIndex);
                 if (s instanceof binary) {
                     binary b = (binary) s;
@@ -348,6 +349,63 @@ public class RegAlloc implements Pass{
                     id2reg.remove(reg2id.get(i));
                     reg2id.put(i, null);
                 }
+            }
+        }
+    }
+
+    public void clear_dead_vars(){
+        for (int i = 5; i < 32; ++i){
+            if (i >= 8 && i <= 17) continue;
+            if (reg2id.get(i) != null && !(reg2id.get(i).startsWith("_TMP") || isNumeric(reg2id.get(i)))){
+                boolean flag = false;
+                for (int j = currentIndex; j < currentBlk.stmts.size(); ++j){
+                    statement s = currentBlk.stmts.get(j);
+                    if (s instanceof binary) {
+                        binary b = (binary) s;
+                        if (b.op1.id != null && b.op1.id.equals(reg2id.get(i))) flag = true;
+                        if (b.op2.id != null && b.op2.id.equals(reg2id.get(i))) flag = true;
+                    } else if (s instanceof jump) {
+
+                    } else if (s instanceof branch) {
+                        branch b = (branch) s;
+                        if (b.flag.id != null && b.flag.id.equals(reg2id.get(i))) flag = true;
+                    } else if (s instanceof ret) {
+                        ret r = (ret) s;
+                        if (r.value != null && r.value.id != null && r.value.id.equals(reg2id.get(i))) flag = true;
+                    } else if (s instanceof assign) {
+                        assign a = (assign) s;
+                        if (a.rhs.id != null && a.rhs.id.equals(reg2id.get(i))) flag = true;
+//                        if (a.lhs.id != null && a.lhs.id.equals(reg2id.get(i))){
+//                            flag = false;
+//                            break;
+//                        }
+                    } else if (s instanceof call) {
+
+                    } else if (s instanceof define) {
+                        define d = (define) s;
+                        if (d.assign != null && d.assign.id != null && d.assign.id.equals(reg2id.get(i))) flag = true;
+                        if (returnID(d.var.id).equals(returnID(reg2id.get(i)))){
+                            id2reg.remove(reg2id.get(i));
+                            reg2id.put(i, null);
+                            break;
+                        }
+                    } else if (s instanceof load) {
+                        load l = (load) s;
+                        if (l.addr != null && l.addr.id != null && l.addr.id.equals(reg2id.get(i))) flag = true;
+                        if (l.id != null && l.id.id != null && l.id.id.equals(reg2id.get(i))) flag = true;
+                    } else if (s instanceof store) {
+                        store s_ = (store) s;
+                        if (s_.addr != null && s_.addr.id != null && s_.addr.id.equals(reg2id.get(i))) flag = true;
+                        if (s_.id != null && s_.id.id != null && s_.id.id.equals(reg2id.get(i))) flag = true;
+                        if (s_.value.id != null && s_.value.id.equals(reg2id.get(i))) flag = true;
+                    }
+                    if (flag) break;
+                }
+//                if (!flag && (reg2id.get(i).startsWith("_TMP") || isNumeric(reg2id.get(i)))){ // @var store its addr instead of value
+////                    System.out.println("remove: "+reg2id.get(i));
+//                    id2reg.remove(reg2id.get(i));
+//                    reg2id.put(i, null);
+//                }
             }
         }
     }
