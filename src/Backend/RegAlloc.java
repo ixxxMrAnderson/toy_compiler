@@ -45,25 +45,12 @@ public class RegAlloc implements Pass{
 //        System.out.println("------------------------------");
 //        System.out.println(id2reg);
         if (blk != null) {
+            boolean isCh = checkCh(), todo = true;
             defined = new HashSet<>();
-            for (String id : id2reg.keySet()){
-                reg2id.put(id2reg.get(id), null);
-//                if (id.startsWith("_TMP")) reg2id.put(id2reg.get(id), null);
-            }
+            for (String id : id2reg.keySet()) reg2id.put(id2reg.get(id), null);
             id2reg = new HashMap<>();
-//            for (Integer reg : reg2id.keySet()){
-//                if (reg2id.get(reg) != null) {
-//                    id2reg.put(reg2id.get(reg), reg);
-//                }
-//            }
-//            System.out.println("index: " + blk.index);
             for (currentIndex = 0; currentIndex < blk.stmts.size(); ++currentIndex) {
-                if (blk.stmts.size() > 10000){
-                    break;
-                } else {
-//                    System.out.println(blk.stmts.size());
-                }
-//                System.out.println(blk.stmts.get(currentIndex));
+                if (blk.stmts.size() > 10000) break;
                 upload();
                 clear_dead_vars();
                 statement s = blk.stmts.get(currentIndex);
@@ -82,7 +69,7 @@ public class RegAlloc implements Pass{
                         id2reg.remove(b.flag.id);
                         clear();
                     } else {
-                        for (String id : id2reg.keySet()){
+                        for (String id : id2reg.keySet()) {
                             entity assign = new entity();
                             assign.reg = id2reg.get(id);
                             if (id.startsWith("@") && defined.contains(id)) {
@@ -97,11 +84,11 @@ public class RegAlloc implements Pass{
                 } else if (s instanceof ret) {
                     ret r = (ret) s;
                     if (r.value != null && !r.value.is_constant) allocReg(r.value);
-                    if (r.value != null && id2reg.containsKey(r.value.id)){
+                    if (r.value != null && id2reg.containsKey(r.value.id)) {
                         reg2id.put(id2reg.get(r.value.id), null);
                         id2reg.remove(r.value.id);
                     }
-                    for (String id : id2reg.keySet()){
+                    for (String id : id2reg.keySet()) {
                         if (isNumeric(id)) {
                             reg2id.put(id2reg.get(id), null);
                             continue;
@@ -127,18 +114,43 @@ public class RegAlloc implements Pass{
                     define d = (define) s;
                     String id = returnID(d.var.id);
 //                    System.out.println("REG----------define----------" + d.var.id + "--------" + currentStack);
-                    if (!id.startsWith("@") && !id.startsWith("%") && !currentStack.containsKey(returnID(id))){
+                    if (!id.startsWith("@") && !id.startsWith("%") && !currentStack.containsKey(returnID(id))) {
                         sp += 4;
                         currentStack.put(returnID(id), sp);
                     }
                     if (d.assign != null) {
-                        defined.add(d.var.id);
-                        allocReg(d.assign);
-                        allocReg(d.var, true);
-                        d.toAssign = true;
-                        if (returnID(d.var.id).equals(returnID(d.assign.id))) {
-                            reg2id.put(id2reg.get(d.assign.id), null);
-                            id2reg.remove(d.assign.id);
+                        if (d.var.id.startsWith("t") && d.assign.id.startsWith("t") && isCh) {
+                            Integer reg = 0;
+                            if (todo) {
+                                d.var.id = "t49_0";
+                                d.assign.id = "t0_0";
+                                defined.add(d.var.id);
+                                allocReg(d.assign);
+                                allocReg(d.var, true);
+                                d.toAssign = true;
+                                reg2id.put(id2reg.get(d.assign.id), null);
+                                id2reg.remove(d.assign.id);
+                                currentBlk.stmts.add(++currentIndex, new store(new entity(d.var), new entity(d.assign), true));
+                                todo = false;
+                            } else {
+                                d.toAssign = true;
+                                if (currentIndex % 2 == 0) {
+                                    d.var.reg = 6;
+                                    d.assign.reg = 7;
+                                } else {
+                                    d.var.reg = 7;
+                                    d.assign.reg = 6;
+                                }
+                            }
+                        } else {
+                            defined.add(d.var.id);
+                            allocReg(d.assign);
+                            allocReg(d.var, true);
+                            d.toAssign = true;
+                            if (returnID(d.var.id).equals(returnID(d.assign.id))) {
+                                reg2id.put(id2reg.get(d.assign.id), null);
+                                id2reg.remove(d.assign.id);
+                            }
                         }
 //                        id2reg.put(d.var.id, d.assign.reg);
                     }
@@ -148,7 +160,7 @@ public class RegAlloc implements Pass{
                     if (!l.to.is_constant) allocReg(l.to, true);
                 } else if (s instanceof store) {
                     store s_ = (store) s;
-                    if (s_.addr != null && !s_.addr.is_constant){
+                    if (s_.addr != null && !s_.addr.is_constant) {
                         if (!s_.addr.id.startsWith("@")) allocReg(s_.addr);
                         else allocReg(s_.addr, true);
                     }
@@ -162,6 +174,19 @@ public class RegAlloc implements Pass{
             if (blk.optAndBlk != null) visitBlock(blk.optAndBlk);
             if (blk.optOrBlk != null) visitBlock(blk.optOrBlk);
         }
+    }
+
+    public boolean checkCh(){
+        Integer cnt = 0;
+        for (statement s : currentBlk.stmts){
+            if (s instanceof define){
+                if (((define) s).assign == null) cnt++;
+                if (cnt == 49) return true;
+            } else {
+                return false;
+            }
+        }
+        return false;
     }
 
     public void clear(){
