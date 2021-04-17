@@ -25,11 +25,17 @@ public class block {
     public ArrayList<block> successors() {
         ArrayList<block> ret = new ArrayList<>();
         if (nxtBlock != null) ret.add(nxtBlock);
+        if (optOrBlk != null) ret.add(optOrBlk);
+        if (optAndBlk != null) ret.add(optAndBlk);
         if (tailStmt instanceof branch) {
-            if (((branch) tailStmt).trueBranch != null) ret.add(((branch) tailStmt).trueBranch);
-            if (((branch) tailStmt).falseBranch != null) ret.add(((branch) tailStmt).falseBranch);
+            if (((branch) tailStmt).trueBranch != null && !ret.contains(((branch) tailStmt).trueBranch)) {
+                ret.add(((branch) tailStmt).trueBranch);
+            }
+            if (((branch) tailStmt).falseBranch != null && !ret.contains(((branch) tailStmt).falseBranch)) {
+                ret.add(((branch) tailStmt).falseBranch);
+            }
         } else if (tailStmt instanceof jump) {
-            if (((jump) tailStmt).destination != this) {
+            if (((jump) tailStmt).destination != this && !ret.contains(((jump) tailStmt).destination)) {
                 ret.add(((jump) tailStmt).destination);
             }
         }

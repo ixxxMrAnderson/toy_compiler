@@ -96,7 +96,7 @@ public class IRBuilder implements ASTVisitor {
                 currentFun = "main";
                 varDefNode v = (varDefNode) it.sections.get(i);
                 for (singleVarDefNode single_v : v.variables){
-                    blocks.get("_VAR_DEF").push_back(new define(new entity("@" + single_v.id), null));
+                    blocks.get("_VAR_DEF").push_back(new assign(new entity("@" + single_v.id), null));
                 }
             }
             tmp.add((SectionNode) it.sections.get(i).accept(this));
@@ -143,7 +143,7 @@ public class IRBuilder implements ASTVisitor {
         blocks.put(currentFun, currentBlock);
         varInFun.put(currentFun, new HashSet<>());
         spillPara.put(currentFun, 0);
-        currentBlock.push_back(new define(new entity("_THIS"), new entity("_A0")));
+        currentBlock.push_back(new assign(new entity("_THIS"), new entity("_A0")));
         currentScope = new Scope(currentScope);
         for (int i = 0; i < it.parameters_type.size(); ++i){
             String id = defVar(it.parameters.get(i).id);
@@ -170,7 +170,7 @@ public class IRBuilder implements ASTVisitor {
             currentBlock = new block();
             if (currentClass != null) {
                 currentFun = currentClass + "_memberFn_" + it.name;
-                currentBlock.push_back(new define(new entity("_THIS"), new entity("_A" + paraNum++)));
+                currentBlock.push_back(new assign(new entity("_THIS"), new entity("_A" + paraNum++)));
             }
             blocks.put(currentFun, currentBlock);
             spillPara.put(currentFun, 0);
@@ -185,13 +185,13 @@ public class IRBuilder implements ASTVisitor {
             String para_id = defVar(it.parameters.get(i).id);
             currentScope.defineVariable(para_id, it.parameters_type.get(i).type, null);
             if (paraNum <= 6){
-                currentBlock.push_back(new define(new entity(para_id), new entity("_A" + paraNum)));
+                currentBlock.push_back(new assign(new entity(para_id), new entity("_A" + paraNum)));
             } else {
                 currentBlock.push_back(
                     new binary(new entity(tmp), new entity("_S0"), new entity((paraNum - 7) * 4), binaryExprNode.Op.ADD)
                 );
                 currentBlock.push_back(new load(new entity(tmp), new entity(tmp)));
-                currentBlock.push_back(new define(new entity(para_id), new entity(tmp)));
+                currentBlock.push_back(new assign(new entity(para_id), new entity(tmp)));
             }
             paraNum ++;
         }
@@ -229,15 +229,15 @@ public class IRBuilder implements ASTVisitor {
             if (it.expr.val.is_constant) currentBlock.push_back(new assign(new entity(rhs_), new entity(it.expr.val)));
             else rhs_ = new entity(it.expr.val);
             if (currentScope.parentScope() == null){
-                currentBlock.push_back(new define(new entity("@" + id), new entity(rhs_)));
+                currentBlock.push_back(new assign(new entity("@" + id), new entity(rhs_)));
             } else {
-                currentBlock.push_back(new define(new entity(id), new entity(rhs_)));
+                currentBlock.push_back(new assign(new entity(id), new entity(rhs_)));
             }
         } else {
             if (currentScope.parentScope() == null){
-                currentBlock.push_back(new define(new entity("@" + id), null));
+                currentBlock.push_back(new assign(new entity("@" + id), null));
             } else {
-                currentBlock.push_back(new define(new entity(id), null));
+                currentBlock.push_back(new assign(new entity(id), null));
             }
         }
         return it;
@@ -482,29 +482,29 @@ public class IRBuilder implements ASTVisitor {
             currentBlock.push_back(new assign(new entity("_A0"), new entity(tmp_node.val)));
             currentBlock.push_back(new call("Mx_malloc"));
         }
-        if (it.size.size() > 1){
+        if (it.size.size() > 1 && it.size.size() < 7){
             String new_id = defVar("_NEW_" + it.size.size());
-            currentBlock.push_back(new define(new entity(new_id), new entity("_A0")));
+            currentBlock.push_back(new assign(new entity(new_id), new entity("_A0")));
             String flag_id = defVar("_FLAG_" + it.size.size());
-            currentBlock.push_back(new define(new entity(flag_id), new entity(tmp_node.val)));
+            currentBlock.push_back(new assign(new entity(flag_id), new entity(tmp_node.val)));
             currentBlock.nxtBlock = new block();
             currentBlock = currentBlock.nxtBlock;
             block retBlk = currentBlock;
             block outBlk = new block();
             currentBlock.push_back(new branch(new entity(flag_id),null, outBlk));
-            entity tmp_addr = new entity();
             entity tmp_val = new entity();
             newExprNode it_ = new newExprNode(null, it.type);
             for (int j = 1; j < it.size.size(); ++j){
                 it_.size.add(it.size.get(j));
             }
             it_ = visit(it_, true);
-            entity x = new entity();
+            entity x = new entity(), y = new entity();
             currentBlock.push_back(
                 new binary(new entity(x), new entity(flag_id), new entity(2), binaryExprNode.Op.SLA)
             );
+            currentBlock.push_back(new assign(new entity(y), new entity(new_id)));
             currentBlock.push_back(
-                new binary(new entity(x), new entity(x), new entity(new_id), binaryExprNode.Op.ADD)
+                new binary(new entity(x), new entity(x), new entity(y), binaryExprNode.Op.ADD)
             );
             currentBlock.push_back(new store(new entity(x), new entity(it_.val)));
             currentBlock.push_back(new binary(new entity(tmp_val), new entity(flag_id), new entity(1), binaryExprNode.Op.SUB));
@@ -592,7 +592,7 @@ public class IRBuilder implements ASTVisitor {
             ret = visit(it, true);
             statement s = currentBlock.stmts.get(currentBlock.stmts.size() - 1);
             ret.val.id = "_aND_FLAG";
-            currentBlock.push_back(new define(new entity(ret.val), new entity(((binary) s).lhs)));
+            currentBlock.push_back(new assign(new entity(ret.val), new entity(((binary) s).lhs)));
             entity val = new entity();
             currentBlock.optAndBlk.push_back(new assign(new entity(val), new entity(0)));
             currentBlock.optAndBlk.push_back(new assign(new entity(ret.val.id), new entity(val)));
@@ -606,7 +606,7 @@ public class IRBuilder implements ASTVisitor {
             ret = visit(it, true);
             statement s = currentBlock.stmts.get(currentBlock.stmts.size() - 1);
             ret.val.id = "_OR_FLAG";
-            currentBlock.push_back(new define(new entity(ret.val), new entity(((binary) s).lhs)));
+            currentBlock.push_back(new assign(new entity(ret.val), new entity(((binary) s).lhs)));
             entity val = new entity();
             currentBlock.optOrBlk.push_back(new assign(new entity(val), new entity(1)));
             currentBlock.optOrBlk.push_back(new assign(new entity(ret.val.id), new entity(val)));
@@ -665,7 +665,7 @@ public class IRBuilder implements ASTVisitor {
             tmp.id = "%" + tmp.id;
             entity ret = new entity(true);
             currentBlock.push_back(new load(new entity(tmp.id), new entity(ret), true));
-            blocks.get("_VAR_DEF").push_back(new define(new entity(tmp), new entity(it)));
+            blocks.get("_VAR_DEF").push_back(new assign(new entity(tmp), new entity(it)));
             it.val = new entity(ret);
         } else {
             it.val = new entity(it);

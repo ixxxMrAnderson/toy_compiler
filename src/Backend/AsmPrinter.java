@@ -11,7 +11,7 @@ public class AsmPrinter implements Pass{
     private int blockCnt = 0, sbssCnt = 0;
     private HashMap<block, Integer> blockIndex = new HashMap<>();
     private HashSet<String> printed = new HashSet<>();
-    private ArrayList<define> roList = new ArrayList<>();
+    private ArrayList<assign> roList = new ArrayList<>();
     private HashMap<String, Integer> sbssIndex = new HashMap<>();
     public ArrayList<String> regIdentifier = new ArrayList<>();
     public String currentFun;
@@ -71,15 +71,6 @@ public class AsmPrinter implements Pass{
             visitBlock(b.get(name).tailBlk);
         }
     }
-
-//    public String returnID(String id){
-//        for (int i = 1; i <= id.length(); ++i){
-//            if (id.substring(0, i).contains("#")) {
-//                return id.substring(0, i - 1);
-//            }
-//        }
-//        return id;
-//    }
 
     public void visitBlock(block blk) {
         if (printed.contains(getBlockName(blk))) return;
@@ -150,43 +141,18 @@ public class AsmPrinter implements Pass{
                     break;
                 } else if (s instanceof assign) {
                     assign a = (assign) s;
-                    if (a.rhs.is_constant){
-                        System.out.println("\tli\t" + getReg(a.lhs) + ","
-                                + getReg(a.rhs));
-                    } else if (a.lhs.reg != a.rhs.reg) {
-                        System.out.println("\tmv\t" + getReg(a.lhs) + ","
-                                + getReg(a.rhs));
+                    if (a.rhs != null) {
+                        if (a.rhs.is_constant) {
+                            System.out.println("\tli\t" + getReg(a.lhs) + ","
+                                    + getReg(a.rhs));
+                        } else if (a.lhs.reg != a.rhs.reg) {
+                            System.out.println("\tmv\t" + getReg(a.lhs) + ","
+                                    + getReg(a.rhs));
+                        }
                     }
                 } else if (s instanceof call) {
                     call c = (call) s;
                     System.out.println("\tcall\t" + c.funID);
-                } else if (s instanceof define) {
-                    define d = (define) s;
-                    if (d.assign != null) {
-                        if (!d.toAssign) {
-                            System.out.println("I dont know wtf is going on");
-//                            if (d.assign.is_constant) {
-//                                System.out.println("\tli\t" + regIdentifier.get(d.assign.reg) + "," + getReg(d.assign));
-//                            }
-//                            if (getEntityString(d.var).startsWith("@")) {
-//                                System.out.println("\tlui\t" + getReg(d.var) + ",%hi(.G"
-//                                        + sbssIndex.get(returnID(getEntityString(d.var))) + ")");
-//                                System.out.println("\tsw\t" + regIdentifier.get(d.assign.reg) + ",%lo(.G"
-//                                        + sbssIndex.get(returnID(getEntityString(d.var))) + ")(" + getReg(d.var) + ")");
-//                            } else {
-//                                System.out.println("\tsw\t" + regIdentifier.get(d.assign.reg) + ",-"
-//                                        + (8 + stackAlloc.get(currentFun).get(returnID(getEntityString(d.var)))) + "(s0)");
-//                            }
-                        } else {
-                            if (d.assign.is_constant){
-                                System.out.println("\tli\t" + getReg(d.var) + ","
-                                        + getReg(d.assign));
-                            } else if (d.var.reg != d.assign.reg) {
-                                System.out.println("\tmv\t" + getReg(d.var) + ","
-                                        + getReg(d.assign));
-                            }
-                        }
-                    }
                 } else if (s instanceof load) {
                     load l = (load) s;
                     if (l.addr != null) {
@@ -195,7 +161,7 @@ public class AsmPrinter implements Pass{
                         if (getEntityString(l.id).startsWith("%")) {
                             Integer index = 0;
                             for (int i = 0; i < roList.size(); ++i) {
-                                if (getEntityString(roList.get(i).var).equals(getEntityString(l.id))) {
+                                if (getEntityString(roList.get(i).lhs).equals(getEntityString(l.id))) {
                                     index = i;
                                     break;
                                 }
@@ -232,17 +198,15 @@ public class AsmPrinter implements Pass{
                 }
             }
             blk.successors().forEach(this::visitBlock);
-            if (blk.optAndBlk != null) visitBlock(blk.optAndBlk);
-            if (blk.optOrBlk != null) visitBlock(blk.optOrBlk);
         }
     }
 
     private void handleGlobl(block globlDef){
         for (statement i : globlDef.stmts){
-            if (((define) i).assign != null){
-                roList.add((define) i);
+            if (((assign) i).rhs != null){
+                roList.add((assign) i);
             } else {
-                sbssIndex.put(((define) i).var.id, sbssCnt++);
+                sbssIndex.put(((assign) i).lhs.id, sbssCnt++);
             }
         }
         System.out.println("\t.text");
@@ -250,7 +214,7 @@ public class AsmPrinter implements Pass{
         for (int i = 0; i < roList.size(); ++i){
             System.out.println("\t.align\t2");
             System.out.println(".S" + i + ":");
-            System.out.println("\t.string\t" + getEntityString(roList.get(i).assign));
+            System.out.println("\t.string\t" + getEntityString(roList.get(i).rhs));
         }
         System.out.println("\t.text");
         System.out.println("\t.section\t.sbss,\"aw\",@nobits");
@@ -419,10 +383,6 @@ public class AsmPrinter implements Pass{
                 return "1";
             } else {
                 return "0";
-            }
-        } else {
-            if (e.reg == 0) {
-//                System.out.println("wtffffffffffffffffffffffffffffffffffffffffffffffffffff");
             }
         }
         return regIdentifier.get(e.reg);

@@ -74,7 +74,10 @@ public class RegAllocate {
     public void setReg(){
         for (Integer blk : blklist){
             HashSet<String> live = new HashSet<>();
-            for (String id : out.get(blk)) live.add(id);
+            HashMap<Integer, HashSet<String>> tmp_in = new HashMap<>();
+            HashMap<Integer, HashSet<String>> tmp_out = new HashMap<>();
+            new LivenessAnalysis(blocks, tmp_in, tmp_out);
+            for (String id : tmp_out.get(blk)) live.add(id);
             for (int i = index2blk.get(blk).stmts.size() - 1; i >= 0; --i) {
                 statement s = index2blk.get(blk).stmts.get(i);
                 HashSet<String> use = new HashSet<>();
@@ -103,20 +106,9 @@ public class RegAllocate {
                         use.add(r.value.id);
                         r.value.reg = color.get(r.value.id);
                     }
-                } else if (s instanceof define) {
-                    define d = (define) s;
-                    if (d.assign != null) {
-                        if (!d.assign.is_constant) {
-                            use.add(d.assign.id);
-                            d.assign.reg = color.get(d.assign.id);
-                        }
-                        d.var.reg = color.get(d.var.id);
-                        def = d.var.id;
-                        d.toAssign = true;
-                    }
                 } else if (s instanceof assign) {
                     assign a = (assign) s;
-                    if (!a.rhs.is_constant) {
+                    if (a.rhs != null &&!a.rhs.is_constant) {
                         use.add(a.rhs.id);
                         a.rhs.reg = color.get(a.rhs.id);
                     }
@@ -128,8 +120,7 @@ public class RegAllocate {
                         use.add(l.addr.id);
                         l.addr.reg = color.get(l.addr.id);
                     }
-                    if (l.addr != null) use.add(l.to.id);
-                    else def = l.to.id;
+                    def = l.to.id;
                     l.to.reg = color.get(l.to.id);
                 } else if (s instanceof store) {
                     store s_ = (store) s;
@@ -149,6 +140,8 @@ public class RegAllocate {
                             currentStack.put(id, sp);
                         } else id = stackAlias.get(currentFun).get(id);
                         entity reg = new entity();
+                        System.out.println(color);
+                        System.out.println(id);
                         reg.reg = color.get(id);
                         index2blk.get(blk).stmts.add(i+1, new load(new entity(id), new entity(reg), true));
                     }
@@ -159,7 +152,7 @@ public class RegAllocate {
                         reg.reg = color.get(id);
                         index2blk.get(blk).stmts.add(i, new store(new entity(id), new entity(reg), true));
                     }
-                    // todo
+                    // todo LiveAnalysis again
                 }
                 if (precolored.contains(def)) def = null;
                 for (String id : use) {
@@ -182,11 +175,11 @@ public class RegAllocate {
             else break;
 //            System.out.println("________________________________________________________________");
 //            System.out.println("simplifyList");
-//            System.out.println(simplifyList);
+//            System.out.println(simplifyList.size());
 //            System.out.println("freezelist");
-//            System.out.println(freezeList);
+//            System.out.println(freezeList.size());
 //            System.out.println("spilllist");
-//            System.out.println(spillList);
+//            System.out.println(spillList.size());
 //            System.out.println("wtfffffffffffffffffffffffffffff");
 //            System.out.println(adjSet);
         }
@@ -198,6 +191,7 @@ public class RegAllocate {
 //        System.out.println(spilledNodes);
         if (!spilledNodes.isEmpty()){
             RewriteProgram();
+            System.out.println("rewritten: ");
             Allocate();
         }
     }
@@ -242,35 +236,24 @@ public class RegAllocate {
                     def = b.lhs.id;
                 } else if (s instanceof branch) {
                     branch b = (branch) s;
-                    use.add(b.flag.id);
+                    if (!b.flag.is_constant) use.add(b.flag.id);
                 } else if (s instanceof ret) {
                     ret r = (ret) s;
                     if (r.value != null && !r.value.is_constant) use.add(r.value.id);
-                } else if (s instanceof define){
-                    define d = (define) s;
-                    if (d.assign != null){
-                        if (!d.assign.is_constant) {
-                            use.add(d.assign.id);
-                            if (!precolored.contains(d.var.id) && !precolored.contains(d.assign.id)) moveFlag = true;
-                        }
-                        def = d.var.id;
-                    }
                 } else if (s instanceof assign){
                     assign a = (assign) s;
-                    if (!a.rhs.is_constant) {
+                    if (a.rhs != null && !a.rhs.is_constant) {
                         use.add(a.rhs.id);
                         if (!precolored.contains(a.rhs.id) && !precolored.contains(a.lhs.id)) moveFlag = true;
                     }
                     def = a.lhs.id;
                 } else if (s instanceof load) {
                     load l = (load) s;
-                    if (l.addr != null) {
-                        use.add(l.addr.id);
-                        use.add(l.to.id);
-                    } else def = l.to.id;
+                    if (l.addr != null) use.add(l.addr.id);
+                    def = l.to.id;
                 } else if (s instanceof store) {
                     store s_ = (store) s;
-                    if (s_.addr != null && !s_.addr.is_constant) use.add(s_.addr.id);
+                    if (s_.addr != null) use.add(s_.addr.id);
                     if (!s_.value.is_constant) use.add(s_.value.id);
                 }
                 if (precolored.contains(def)) def = null;
@@ -302,11 +285,7 @@ public class RegAllocate {
 
     public void printMoveSet(HashSet<statement> set){
         for (statement s : set){
-            if (s instanceof define){
-                System.out.println(((define) s).var.id + " = " + ((define) s).assign.id);
-            } else {
-                System.out.println(((assign) s).lhs.id + " = " + ((assign) s).rhs.id);
-            }
+            System.out.println(((assign) s).lhs.id + " = " + ((assign) s).rhs.id);
         }
     }
 
@@ -339,6 +318,7 @@ public class RegAllocate {
 
     public void MakeWorkList(){
         for (String id : initial){
+            if (id == null) System.out.println("make work list");
             if (precolored.contains(id)) continue;
             if (degree.containsKey(id) && degree.get(id) >= K) spillList.add(id);
             else if (MoveRelated(id)) freezeList.add(id);
@@ -398,6 +378,7 @@ public class RegAllocate {
             break;
         }
         simplifyList.remove(n);
+        if (n == null) System.out.println("______________________________SIM");
         selectStack.push(n);
         for (String m : Adjacent(n)) DecrementDegree(m);
 //        System.out.println("______________after_simplify_____________________");
@@ -443,15 +424,10 @@ public class RegAllocate {
             break;
         }
         String x = null, y = null, u = null, v = null;
-        if (m instanceof define){ // todo: copy(x, y) = mv x, y
-            define d = (define) m;
-            x =  d.var.id;
-            y = d.assign.id;
-        } else {
-            assign a = (assign) m;
-            x = a.lhs.id;
-            y = a.rhs.id;
-        }
+        // todo: copy(x, y) = mv x, y
+        assign a = (assign) m;
+        x = a.lhs.id;
+        y = a.rhs.id;
         x = GetAlias(x);
         y = GetAlias(y);
         if (precolored.contains(y)){
@@ -497,6 +473,8 @@ public class RegAllocate {
     }
 
     public void AddWorkList(String u){
+
+        if (u == null) System.out.println("addWork list");
         if (!precolored.contains(u) && !MoveRelated(u) && (!degree.containsKey(u) || degree.get(u) < K)){
             freezeList.remove(u);
             simplifyList.add(u);
@@ -524,6 +502,7 @@ public class RegAllocate {
 //        System.out.println("___________________COMBINE__"+u+" and " +v+"_________________");
         if (freezeList.contains(v)) freezeList.remove(v);
         else spillList.remove(v);
+        if (v == null) System.out.println("_________________________________________________-");
         coalescedNodes.add(v);
         alias.put(v, u);
 //        for (String id : worklistMoves.get(v).keyset()) nodeMoves.get(u).add(id);
@@ -531,6 +510,7 @@ public class RegAllocate {
             AddEdge(t, u);
             DecrementDegree(t);
         }
+        if (u == null) System.out.println("combine");
         if (degree.containsKey(u) && degree.get(u) >= K && freezeList.contains(u)){
             freezeList.remove(u);
             simplifyList.add(u);
@@ -545,6 +525,7 @@ public class RegAllocate {
             break;
         }
         freezeList.remove(u);
+        if (u == null) System.out.println("freeze");
         simplifyList.add(u);
         FreezeMoves(u);
 //        System.out.println("___________________Freeze_end___________________");
@@ -553,20 +534,16 @@ public class RegAllocate {
     public void FreezeMoves(String u) {
         for (statement m : NodeMoves(u)){
             String x = null, y = null, v = null;
-            if (m instanceof define){ // todo: copy(x, y) = mv x, y
-                define d = (define) m;
-                x =  d.var.id;
-                y = d.assign.id;
-            } else {
-                assign a = (assign) m;
-                x = a.lhs.id;
-                y = a.rhs.id;
-            }
+            // todo: copy(x, y) = mv x, y
+            assign a = (assign) m;
+            x = a.lhs.id;
+            y = a.rhs.id;
             if (GetAlias(y).equals(GetAlias(u))) v = GetAlias(x);
-            else GetAlias(y);
+            else v = GetAlias(y);
             activeMoves.remove(m);
             frozenMoves.add(m);
-            if (NodeMoves(v).isEmpty() && degree.get(v) < K){
+            if (v == null) System.out.println("freeze move");
+            if (NodeMoves(v).isEmpty() && (!degree.containsKey(v) || degree.get(v) < K)){
                 freezeList.remove(v);
                 simplifyList.add(v);
             }
@@ -580,6 +557,7 @@ public class RegAllocate {
             break;
         }
         spillList.remove(m);
+        if (m == null) System.out.println("spill");
         simplifyList.add(m);
         FreezeMoves(m);
     }
@@ -665,21 +643,9 @@ public class RegAllocate {
                             r.value = new entity();
                             use.add(r.value.id);
                         }
-                    } else if (s instanceof define) {
-                        define d = (define) s;
-                        if (d.assign != null) {
-                            if (!d.assign.is_constant && d.assign.id.equals(v)){
-                                d.assign = new entity();
-                                use.add(d.assign.id);
-                            }
-                            if (d.var.id.equals(v)) {
-                                d.var = new entity();
-                                def = d.var.id;
-                            }
-                        }
                     } else if (s instanceof assign) {
                         assign a = (assign) s;
-                        if (!a.rhs.is_constant && a.rhs.id.equals(v)){
+                        if (a.rhs != null && !a.rhs.is_constant && a.rhs.id.equals(v)){
                             a.rhs = new entity();
                             use.add(a.rhs.id);
                         }
@@ -695,8 +661,7 @@ public class RegAllocate {
                         }
                         if (l.to.id.equals(v)){
                             l.to = new entity();
-                            if (l.addr != null) use.add(l.to.id);
-                            else def = l.to.id;
+                            def = l.to.id;
                         }
                     } else if (s instanceof store) {
                         store s_ = (store) s;
@@ -754,16 +719,10 @@ public class RegAllocate {
                 if (!b.flag.is_constant) initial.add(b.flag.id);
             } else if (s instanceof ret) {
                 ret r = (ret) s;
-                if (r.value != null && !r.value.is_constant) initial.add(r.value.id);
-            } else if (s instanceof define){
-                define d = (define) s;
-                if (d.assign != null){
-                    if (!d.assign.is_constant) initial.add(d.assign.id);
-                    initial.add(d.var.id);
-                }
+                if (r.value != null && !r.value.is_constant && !precolored.contains(r.value.id)) initial.add(r.value.id);
             } else if (s instanceof assign){
                 assign a = (assign) s;
-                if (!a.rhs.is_constant && !precolored.contains(a.rhs.id)) initial.add(a.rhs.id);
+                if (a.rhs != null && !a.rhs.is_constant && !precolored.contains(a.rhs.id)) initial.add(a.rhs.id);
                 if (!precolored.contains(a.lhs.id)) initial.add(a.lhs.id);
             } else if (s instanceof load) {
                 load l = (load) s;
@@ -771,14 +730,12 @@ public class RegAllocate {
                 initial.add(l.to.id);
             } else if (s instanceof store) {
                 store s_ = (store) s;
-                if (s_.addr != null && !s_.addr.is_constant) initial.add(s_.addr.id);
+                if (s_.addr != null) initial.add(s_.addr.id);
                 if (!s_.value.is_constant) initial.add(s_.value.id);
             }
         }
         for (block b : blk.successors()){
             if (b != null && !blklist.contains(b.index)) buildList(b);
         }
-        if (blk.optAndBlk != null && !blklist.contains(blk.optAndBlk)) buildList(blk.optAndBlk);
-        if (blk.optOrBlk != null && !blklist.contains(blk.optOrBlk)) buildList(blk.optOrBlk);
     }
 }

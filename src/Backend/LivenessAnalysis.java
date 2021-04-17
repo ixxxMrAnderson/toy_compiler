@@ -35,17 +35,10 @@ public class LivenessAnalysis {
                 for (String name : out.get(i)) {
                     if (!def.get(i).contains(name)) in.get(i).add(name);
                 }
-//                for (String name : def.get(i)) in.get(i).remove(name);
                 for (String name : use.get(i)) in.get(i).add(name);
                 out.put(i, new HashSet<>());
                 for (block b : index2blk.get(i).successors()){
                     for (String name : in.get(b.index)) out.get(i).add(name);
-                }
-                if (index2blk.get(i).optAndBlk != null){
-                    for (String name : in.get(index2blk.get(i).optAndBlk.index)) out.get(i).add(name);
-                }
-                if (index2blk.get(i).optOrBlk != null){
-                    for (String name : in.get(index2blk.get(i).optOrBlk.index)) out.get(i).add(name);
                 }
             }
 
@@ -82,43 +75,52 @@ public class LivenessAnalysis {
         for (statement s : blk.stmts){
             if (s instanceof binary) {
                 binary b = (binary) s;
-                if (!b.op1.is_constant && !def.get(blk.index).contains(b.op1.id)) use.get(blk.index).add(b.op1.id);
-                if (!b.op2.is_constant && !def.get(blk.index).contains(b.op2.id)) use.get(blk.index).add(b.op2.id);
-                if (!use.get(blk.index).contains(b.lhs.id)) def.get(blk.index).add(b.lhs.id);
+                if (!b.op1.is_constant) addU(blk.index, b.op1.id);
+                if (!b.op2.is_constant) addU(blk.index, b.op2.id);
+                addD(blk.index, b.lhs.id);
             } else if (s instanceof branch) {
                 branch b = (branch) s;
-                if (!def.get(blk.index).contains(b.flag.id)) use.get(blk.index).add(b.flag.id);
+                if (!b.flag.is_constant) addU(blk.index, b.flag.id);
             } else if (s instanceof ret) {
                 ret r = (ret) s;
-                if (r.value != null && !r.value.is_constant && !def.get(blk.index).contains(r.value.id)) use.get(blk.index).add(r.value.id);
+                if (r.value != null && !r.value.is_constant) addU(blk.index, r.value.id);
             } else if (s instanceof assign) {
                 assign a = (assign) s;
-                if (!a.rhs.is_constant && !def.get(blk.index).contains(a.rhs.id)) use.get(blk.index).add(a.rhs.id);
-                if (!use.get(blk.index).contains(a.lhs.id)) def.get(blk.index).add(a.lhs.id);
-            } else if (s instanceof define) {
-                define d = (define) s;
-                if (d.assign != null) {
-                    if (!d.assign.is_constant && !def.get(blk.index).contains(d.assign.id)) use.get(blk.index).add(d.assign.id);
-                    if (!def.get(blk.index).contains(d.var.id)) def.get(blk.index).add(d.var.id);
-                }
+                if (a.rhs != null && !a.rhs.is_constant) addU(blk.index, a.rhs.id);
+                addD(blk.index, a.lhs.id);
             } else if (s instanceof load) {
                 load l = (load) s;
-                if (l.addr != null && !def.get(blk.index).contains(l.addr.id)) {
-                    if (!def.get(blk.index).contains(l.to.id)) use.get(blk.index).add(l.to.id);
-                    use.get(blk.index).add(l.addr.id);
-                } else {
-                    if (!use.get(blk.index).contains(l.to.id)) def.get(blk.index).add(l.to.id);
-                }
+                if (l.addr != null) addU(blk.index, l.addr.id);
+                addD(blk.index, l.to.id);
             } else if (s instanceof store) {
                 store s_ = (store) s;
-                if (s_.addr != null && !s_.addr.is_constant && !def.get(blk.index).contains(s_.addr.id)) use.get(blk.index).add(s_.addr.id);
-                if (!s_.value.is_constant && !def.get(blk.index).contains(s_.value.id)) use.get(blk.index).add(s_.value.id);
+                if (s_.addr != null) addU(blk.index, s_.addr.id);
+                if (!s_.value.is_constant) addU(blk.index, s_.value.id);
             }
         }
         for (block b : blk.successors()){
             if (b != null && !blklist.contains(b.index)) buildList(b);
         }
-        if (blk.optAndBlk != null && !blklist.contains(blk.optAndBlk)) buildList(blk.optAndBlk);
-        if (blk.optOrBlk != null && !blklist.contains(blk.optOrBlk)) buildList(blk.optOrBlk);
+    }
+
+    public boolean isNumeric(String str) {
+        try {
+            Double.parseDouble(str);
+            return true;
+        } catch(Exception e){
+            return false;
+        }
+    }
+
+    public void addU(Integer key, String val){
+        if (!def.get(key).contains(val) && !(val.startsWith("_A") && isNumeric(val.substring(2, 3)))){
+            if (!val.equals("_SP") && !val.equals("_S0")) use.get(key).add(val);
+        }
+    }
+
+    public void addD(Integer key, String val){
+        if (!use.get(key).contains(val) && !(val.startsWith("_A") && isNumeric(val.substring(2, 3)))){
+            if (!val.equals("_SP") && !val.equals("_S0")) def.get(key).add(val);
+        }
     }
 }

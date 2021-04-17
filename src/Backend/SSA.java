@@ -115,13 +115,13 @@ public class SSA implements Pass{
             for (statement s : blk.stmts) {
                 if (s instanceof binary) {
                     binary b = (binary) s;
-                    if (!b.lhs.is_constant) add_D(blk, b.lhs.id);
-                } else if (s instanceof define) {
-                    define d = (define) s;
-                    add_D(blk, d.var.id);
-                } else if (s instanceof store) {
-                    store s_ = (store) s;
-                    if (s_.addr != null && s_.addr.id.startsWith("@")) add_D(blk, s_.addr.id);
+                    add_D(blk, b.lhs.id);
+                } else if (s instanceof assign) {
+                    assign a = (assign) s;
+                    add_D(blk, a.lhs.id);
+                } else if (s instanceof load) {
+                    load l = (load) s;
+                    add_D(blk, l.to.id);
                 }
             }
             for (block b_ : blk.successors()){
@@ -131,18 +131,6 @@ public class SSA implements Pass{
                     preBlk.get(getBlockName(b_)).add(getBlockName(blk));
                     visitBlock(b_);
                 }
-            }
-            if (blk.optAndBlk != null) {
-                if (preBlk.get(getBlockName(blk.optAndBlk)) == null)
-                    preBlk.put(getBlockName(blk.optAndBlk), new HashSet<>());
-                preBlk.get(getBlockName(blk.optAndBlk)).add(getBlockName(blk));
-                visitBlock(blk.optAndBlk);
-            }
-            if (blk.optOrBlk != null) {
-                if (preBlk.get(getBlockName(blk.optOrBlk)) == null)
-                    preBlk.put(getBlockName(blk.optOrBlk), new HashSet<>());
-                preBlk.get(getBlockName(blk.optOrBlk)).add(getBlockName(blk));
-                visitBlock(blk.optOrBlk);
             }
         }
     }
@@ -159,7 +147,7 @@ public class SSA implements Pass{
     private void add_D(block blk, String id){
 //        System.out.println(currentFun + "_add_D: "+id);
         if (id.startsWith("@")) glblVars.add(id);
-        if (!id.startsWith("_TMP") && !id.equals("_SP")  && !id.equals("_S0") ){
+        if (!id.equals("_SP")  && !id.equals("_S0") ){
             if (!(id.startsWith("_A") && isNumeric(id.substring(2, 3)))){
                 if (!definedVar.get(currentFun).containsKey(id)) definedVar.get(currentFun).put(id, new HashSet<>());
                 definedVar.get(currentFun).get(id).add(getBlockName(blk));
@@ -237,6 +225,15 @@ public class SSA implements Pass{
                     updateReachingDef_(b.op2.id, blk);
                     if (getVarDef(b.op2.id) != null) b.op2.id = getVarDef(b.op2.id).id;
                 }
+                updateReachingDef_(b.lhs.id, blk);
+                String v_ = createCopy(b.lhs.id);
+                String pre_id = b.lhs.id;
+                b.lhs.id = v_;
+                varNode new_v = new varNode(v_, blk, getVarDef(pre_id));
+                varNodes.get(currentFun).add(new_v);
+                for (varNode x : varNodes.get(currentFun)){
+                    if (x.id.equals(pre_id)) x.def = new_v;
+                }
             } else if (s instanceof branch) {
                 branch b = (branch) s;
                 if (!b.flag.is_constant) {
@@ -251,56 +248,43 @@ public class SSA implements Pass{
                 }
             } else if (s instanceof assign) {
                 assign a = (assign) s;
-                if (a.rhs.id != null && !a.rhs.is_constant) {
+                if (a.rhs != null && !a.rhs.is_constant) {
                     updateReachingDef_(a.rhs.id, blk);
                     if (getVarDef(a.rhs.id) != null) a.rhs.id = getVarDef(a.rhs.id).id;
                 }
-            } else if (s instanceof define) {
-                define d = (define) s;
-                if (d.assign != null && !d.assign.is_constant) {
-                    updateReachingDef_(d.assign.id, blk);
-                    if (getVarDef(d.assign.id) != null) d.assign.id = getVarDef(d.assign.id).id;
+                updateReachingDef_(a.lhs.id, blk);
+                String v_ = createCopy(a.lhs.id);
+                String pre_id = a.lhs.id;
+                a.lhs.id = v_;
+                varNode new_v = new varNode(v_, blk, getVarDef(pre_id));
+                varNodes.get(currentFun).add(new_v);
+                for (varNode x : varNodes.get(currentFun)){
+                    if (x.id.equals(pre_id)) x.def = new_v;
                 }
-                    updateReachingDef_(d.var.id, blk);
-                    String v_ = createCopy(d.var.id);
-                    String pre_id = d.var.id;
-                    d.var.id = v_;
+            } else if (s instanceof load) {
+                load l = (load) s;
+                if (l.addr != null) {
+                    updateReachingDef_(l.addr.id, blk);
+                    if (getVarDef(l.addr.id) != null) l.addr.id = getVarDef(l.addr.id).id;
+                }
+                    updateReachingDef_(l.to.id, blk);
+                    String v_ = createCopy(l.to.id);
+                    String pre_id = l.to.id;
+                    l.to.id = v_;
                     varNode new_v = new varNode(v_, blk, getVarDef(pre_id));
                     varNodes.get(currentFun).add(new_v);
                     for (varNode x : varNodes.get(currentFun)){
                         if (x.id.equals(pre_id)) x.def = new_v;
                     }
-            } else if (s instanceof load) {
-                load l = (load) s;
-                if (l.addr != null && l.addr.id != null && !l.addr.id.startsWith("%")) {
-                    updateReachingDef_(l.addr.id, blk);
-                    if (getVarDef(l.addr.id) != null) l.addr.id = getVarDef(l.addr.id).id;
-                }
-                if (l.to != null && l.to.id != null) {
-                    updateReachingDef_(l.to.id, blk);
-                    if (getVarDef(l.to.id) != null) l.to.id = getVarDef(l.to.id).id;
-                }
             } else if (s instanceof store) {
                 store s_ = (store) s;
-                if (s_.value != null && s_.value.id != null){
+                if (s_.value != null && !s_.value.is_constant){
                     updateReachingDef_(s_.value.id, blk);
                     if (getVarDef(s_.value.id) != null) s_.value.id = getVarDef(s_.value.id).id;
                 }
-                if (s_.addr != null && s_.addr.id.startsWith("@")){
+                if (s_.addr != null){
                     updateReachingDef_(s_.addr.id, blk);
-                    String v_ = createCopy(s_.addr.id);
-                    String pre_id = s_.addr.id;
-                    s_.addr.id = v_;
-                    varNode new_v = new varNode(v_, blk, getVarDef(pre_id));
-                    varNodes.get(currentFun).add(new_v);
-                    for (varNode x : varNodes.get(currentFun)){
-                        if (x.id.equals(pre_id)) {
-                            x.def = new_v;
-//                            System.out.println("update def of " + x.id );
-                        }
-                    }
-                    index2blk.get(blk).stmts.remove(i);
-                    index2blk.get(blk).stmts.add(i, new define(new entity(s_.addr), new entity(s_.value)));
+                    if (getVarDef(s_.addr.id) != null) s_.addr.id = getVarDef(s_.addr.id).id;
                 }
             } else if (s instanceof phi){
                 phi p = (phi) s;
@@ -343,7 +327,7 @@ public class SSA implements Pass{
                 phi p = (phi) s;
                 for (entity var : p.varList){
                     if (var != null){
-                        define deToInsert = new define(new entity(p.born), new entity(var));
+                        assign stToInsert = new assign(new entity(p.born), new entity(var));
                         block blkToInsert = index2blk.get(p.blkList.get(p.varList.indexOf(var)));
                         Integer index = blkToInsert.stmts.size();
                         for (int i = index - 1; i >= 0; --i){
@@ -354,9 +338,9 @@ public class SSA implements Pass{
                             }
                         }
                         if (index == blkToInsert.stmts.size()){
-                            blkToInsert.stmts.add(deToInsert);
+                            blkToInsert.stmts.add(stToInsert);
                         } else {
-                            blkToInsert.stmts.add(index, deToInsert);
+                            blkToInsert.stmts.add(index, stToInsert);
                         }
                     }
                 }
@@ -368,7 +352,7 @@ public class SSA implements Pass{
     }
 
     public void updateReachingDef_(String id, Integer i){
-        if (!id.startsWith("_TMP") && !id.equals("_SP")  && !id.equals("_S0") && !isNumeric(id)){
+        if (!id.equals("_SP")  && !id.equals("_S0") && !isNumeric(id)){
             if (!(id.startsWith("_A") && isNumeric(id.substring(2, 3)))){
                 updateReachingDef(id, i);
             }

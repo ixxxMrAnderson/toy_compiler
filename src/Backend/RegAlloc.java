@@ -109,25 +109,25 @@ public class RegAlloc implements Pass{
                     if (!a.rhs.is_constant) allocReg(a.rhs);
                 } else if (s instanceof call) { // clear the table (no caller safe)
                     clear(true);
-                } else if (s instanceof define) {
-                    define d = (define) s;
-                    String id = returnID(d.var.id);
-//                    System.out.println("REG----------define----------" + d.var.id + "--------" + currentStack);
-                    if (!id.startsWith("@") && !id.startsWith("%") && !currentStack.containsKey(returnID(id))) {
-                        sp += 4;
-                        currentStack.put(returnID(id), sp);
-                    }
-                    if (d.assign != null) {
-                        defined.add(d.var.id);
-                        allocReg(d.assign);
-                        allocReg(d.var, true);
-                        d.toAssign = true;
-                        if (returnID(d.var.id).equals(returnID(d.assign.id))) {
-                            reg2id.put(id2reg.get(d.assign.id), null);
-                            id2reg.remove(d.assign.id);
-                        }
-//                        id2reg.put(d.var.id, d.assign.reg);
-                    }
+//                } else if (s instanceof define) {
+//                    define d = (define) s;
+//                    String id = returnID(d.var.id);
+////                    System.out.println("REG----------define----------" + d.var.id + "--------" + currentStack);
+//                    if (!id.startsWith("@") && !id.startsWith("%") && !currentStack.containsKey(returnID(id))) {
+//                        sp += 4;
+//                        currentStack.put(returnID(id), sp);
+//                    }
+//                    if (d.assign != null) {
+//                        defined.add(d.var.id);
+//                        allocReg(d.assign);
+//                        allocReg(d.var, true);
+//                        d.toAssign = true;
+//                        if (returnID(d.var.id).equals(returnID(d.assign.id))) {
+//                            reg2id.put(id2reg.get(d.assign.id), null);
+//                            id2reg.remove(d.assign.id);
+//                        }
+////                        id2reg.put(d.var.id, d.assign.reg);
+//                    }
                 } else if (s instanceof load) {
                     load l = (load) s;
                     if (l.addr != null && !l.addr.is_constant) allocReg(l.addr);
@@ -165,7 +165,7 @@ public class RegAlloc implements Pass{
             if (!currentStack.containsKey(returnID(id)) && !id.startsWith("@")  && !id.startsWith("%") && call_flag) {
                 sp += 4;
                 currentStack.put(returnID(id), sp);
-                currentBlk.stmts.add(currentIndex++, new define(new entity(id), new entity(assign)));
+                currentBlk.stmts.add(currentIndex++, new assign(new entity(id), new entity(assign)));
             } else if (id.startsWith("@") && defined.contains(id)) {
                 entity addr = new entity(returnID(id));
                 addr.reg = 17;
@@ -270,7 +270,7 @@ public class RegAlloc implements Pass{
             sp += 4;
             currentStack.put(returnID(reg2id.get(5)), sp);
         }
-        currentBlk.stmts.add(currentIndex++, new define(new entity(reg2id.get(5)), new entity(assign)));
+        currentBlk.stmts.add(currentIndex++, new assign(new entity(reg2id.get(5)), new entity(assign)));
         var.reg = 5;
         id2reg.remove(reg2id.get(5));
         id2reg.put(var.id, 5);
@@ -315,9 +315,9 @@ public class RegAlloc implements Pass{
                         }
                     } else if (s instanceof call) {
 
-                    } else if (s instanceof define) {
-                        define d = (define) s;
-                        if (d.assign != null && d.assign.id != null && d.assign.id.equals(reg2id.get(i))) flag = true;
+//                    } else if (s instanceof define) {
+//                        define d = (define) s;
+//                        if (d.assign != null && d.assign.id != null && d.assign.id.equals(reg2id.get(i))) flag = true;
                     } else if (s instanceof load) {
                         load l = (load) s;
                         if (l.addr != null && l.addr.id != null && l.addr.id.equals(reg2id.get(i))) flag = true;
@@ -359,14 +359,14 @@ public class RegAlloc implements Pass{
                     } else if (s instanceof assign) {
                         assign a = (assign) s;
                         if (a.rhs.id != null && a.rhs.id.equals(reg2id.get(i))) flag = true;
-                    } else if (s instanceof define) {
-                        define d = (define) s;
-                        if (d.assign != null && d.assign.id != null && d.assign.id.equals(reg2id.get(i))) flag = true;
-                        if (returnID(d.var.id).equals(returnID(reg2id.get(i)))){
-                            id2reg.remove(reg2id.get(i));
-                            reg2id.put(i, null);
-                            break;
-                        }
+//                    } else if (s instanceof define) {
+//                        define d = (define) s;
+//                        if (d.assign != null && d.assign.id != null && d.assign.id.equals(reg2id.get(i))) flag = true;
+//                        if (returnID(d.var.id).equals(returnID(reg2id.get(i)))){
+//                            id2reg.remove(reg2id.get(i));
+//                            reg2id.put(i, null);
+//                            break;
+//                        }
                     } else if (s instanceof load) {
                         load l = (load) s;
                         if (l.addr != null && l.addr.id != null && l.addr.id.equals(reg2id.get(i))) flag = true;

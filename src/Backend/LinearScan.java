@@ -123,20 +123,20 @@ public class LinearScan implements Pass{
                     updateInterval(a.rhs, blk.index, currentIndex);
                 } else if (s instanceof call) { // clear the table (no caller safe)
 
-                } else if (s instanceof define) {
-                    define d = (define) s;
-//                    String id = returnID(d.var.id);
-//                    System.out.println("REG----------define----------" + d.var.id + "--------" + currentStack);
-//                    if (!id.startsWith("@") && !id.startsWith("%") && !currentStack.containsKey(returnID(id))) {
-//                        sp += 4;
-//                        currentStack.put(returnID(id), sp);
+//                } else if (s instanceof define) {
+//                    define d = (define) s;
+////                    String id = returnID(d.var.id);
+////                    System.out.println("REG----------define----------" + d.var.id + "--------" + currentStack);
+////                    if (!id.startsWith("@") && !id.startsWith("%") && !currentStack.containsKey(returnID(id))) {
+////                        sp += 4;
+////                        currentStack.put(returnID(id), sp);
+////                    }
+//                    if (d.assign != null) {
+////                        defined.add(d.var.id);
+//                        updateInterval(d.assign, blk.index, currentIndex);
+//                        createInterval(d.var, blk.index, currentIndex);
+//                        d.toAssign = true;
 //                    }
-                    if (d.assign != null) {
-//                        defined.add(d.var.id);
-                        updateInterval(d.assign, blk.index, currentIndex);
-                        createInterval(d.var, blk.index, currentIndex);
-                        d.toAssign = true;
-                    }
                 } else if (s instanceof load) {
                     load l = (load) s;
                     if (l.addr != null) updateInterval(l.addr, blk.index, currentIndex);
