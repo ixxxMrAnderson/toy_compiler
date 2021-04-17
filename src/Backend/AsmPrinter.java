@@ -72,14 +72,14 @@ public class AsmPrinter implements Pass{
         }
     }
 
-    public String returnID(String id){
-        for (int i = 1; i <= id.length(); ++i){
-            if (id.substring(0, i).contains("#")) {
-                return id.substring(0, i - 1);
-            }
-        }
-        return id;
-    }
+//    public String returnID(String id){
+//        for (int i = 1; i <= id.length(); ++i){
+//            if (id.substring(0, i).contains("#")) {
+//                return id.substring(0, i - 1);
+//            }
+//        }
+//        return id;
+//    }
 
     public void visitBlock(block blk) {
         if (printed.contains(getBlockName(blk))) return;
@@ -164,18 +164,19 @@ public class AsmPrinter implements Pass{
                     define d = (define) s;
                     if (d.assign != null) {
                         if (!d.toAssign) {
-                            if (d.assign.is_constant) {
-                                System.out.println("\tli\t" + regIdentifier.get(d.assign.reg) + "," + getReg(d.assign));
-                            }
-                            if (getEntityString(d.var).startsWith("@")) {
-                                System.out.println("\tlui\t" + getReg(d.var) + ",%hi(.G"
-                                        + sbssIndex.get(returnID(getEntityString(d.var))) + ")");
-                                System.out.println("\tsw\t" + regIdentifier.get(d.assign.reg) + ",%lo(.G"
-                                        + sbssIndex.get(returnID(getEntityString(d.var))) + ")(" + getReg(d.var) + ")");
-                            } else {
-                                System.out.println("\tsw\t" + regIdentifier.get(d.assign.reg) + ",-"
-                                        + (8 + stackAlloc.get(currentFun).get(returnID(getEntityString(d.var)))) + "(s0)");
-                            }
+                            System.out.println("I dont know wtf is going on");
+//                            if (d.assign.is_constant) {
+//                                System.out.println("\tli\t" + regIdentifier.get(d.assign.reg) + "," + getReg(d.assign));
+//                            }
+//                            if (getEntityString(d.var).startsWith("@")) {
+//                                System.out.println("\tlui\t" + getReg(d.var) + ",%hi(.G"
+//                                        + sbssIndex.get(returnID(getEntityString(d.var))) + ")");
+//                                System.out.println("\tsw\t" + regIdentifier.get(d.assign.reg) + ",%lo(.G"
+//                                        + sbssIndex.get(returnID(getEntityString(d.var))) + ")(" + getReg(d.var) + ")");
+//                            } else {
+//                                System.out.println("\tsw\t" + regIdentifier.get(d.assign.reg) + ",-"
+//                                        + (8 + stackAlloc.get(currentFun).get(returnID(getEntityString(d.var)))) + "(s0)");
+//                            }
                         } else {
                             if (d.assign.is_constant){
                                 System.out.println("\tli\t" + getReg(d.var) + ","
@@ -204,12 +205,12 @@ public class AsmPrinter implements Pass{
                                     + ",%lo(.S" + index + ")");
                         } else if (getEntityString(l.id).startsWith("@")) {
                             System.out.println("\tlui\t" + getReg(l.to) + ",%hi(.G"
-                                    + sbssIndex.get(returnID(getEntityString(l.id))) + ")");
+                                    + sbssIndex.get(getEntityString(l.id)) + ")");
                             System.out.println("\tlw\t" + getReg(l.to) + ",%lo(.G"
-                                    + sbssIndex.get(returnID(getEntityString(l.id))) + ")(" + getReg(l.to) + ")");
+                                    + sbssIndex.get(getEntityString(l.id)) + ")(" + getReg(l.to) + ")");
                         } else {
                             System.out.println("\tlw\t" + getReg(l.to) + ",-"
-                                    + (8 + stackAlloc.get(currentFun).get(returnID(getEntityString(l.id)))) + "(s0)");
+                                    + (8 + stackAlloc.get(currentFun).get(getEntityString(l.id))) + "(s0)");
                         }
                     }
                 } else if (s instanceof store) {
@@ -220,12 +221,12 @@ public class AsmPrinter implements Pass{
                     } else {
                           if (getEntityString(s_.id).startsWith("@")) {
                                 System.out.println("\tlui\t" + "a7,%hi(.G"
-                                        + sbssIndex.get(returnID(getEntityString(s_.id))) + ")");
+                                        + sbssIndex.get(getEntityString(s_.id)) + ")");
                                 System.out.println("\tsw\t" + getReg(s_.value) + ",%lo(.G"
-                                        + sbssIndex.get(returnID(getEntityString(s_.id))) + ")(a7)");
+                                        + sbssIndex.get(getEntityString(s_.id)) + ")(a7)");
                           } else {
                               System.out.println("\tsw\t" + regIdentifier.get(s_.value.reg) + ",-"
-                                      + (8 + stackAlloc.get(currentFun).get(returnID(getEntityString(s_.id)))) + "(s0)");
+                                      + (8 + stackAlloc.get(currentFun).get(getEntityString(s_.id))) + "(s0)");
                       }
                     }
                 }
@@ -378,6 +379,7 @@ public class AsmPrinter implements Pass{
     }
 
     private String getBlockName(block b) {
+//        return ".B" + b.index;
         if (blockIndex.containsKey(b)) return ".B" + blockIndex.get(b);
         else {
             blockIndex.put(b, blockCnt++);

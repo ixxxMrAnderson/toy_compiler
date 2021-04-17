@@ -630,8 +630,10 @@ public class RegAllocate {
     public void RewriteProgram(){
         initial = new HashSet<>();
         for (String v : spilledNodes){
-            sp += 4;
-            currentStack.put(v, sp);
+            if (!currentStack.containsKey(v)) {
+                sp += 4;
+                currentStack.put(v, sp);
+            }
             for (Integer blk : blklist){
                 for (int i = 0; i < index2blk.get(blk).stmts.size(); ++i) {
                     statement s = index2blk.get(blk).stmts.get(i);
