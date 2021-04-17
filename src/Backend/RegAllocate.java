@@ -606,7 +606,7 @@ public class RegAllocate {
     public void RewriteProgram(){
         initial = new HashSet<>();
         for (String v : spilledNodes){
-            System.out.println("SPILL: "+v);
+//            System.out.println("SPILL: "+v);
             sp += 4;
             for (Integer blk : blklist){
                 for (int i = 0; i < index2blk.get(blk).stmts.size(); ++i) {
@@ -672,7 +672,7 @@ public class RegAllocate {
                     }
                     if (!use.isEmpty()){
                         for (String id : use) {
-                            System.out.println("NEW_USE_" + id);
+//                            System.out.println("NEW_USE_" + id);
                             if (!precolored.contains(id)) {
                                 initial.add(id);
                                 index2blk.get(blk).stmts.add(i++, new load(sp, new entity(id)));
@@ -680,7 +680,7 @@ public class RegAllocate {
                         }
                     }
                     if (def != null){
-                        System.out.println("NEW_DEF_" + def);
+//                        System.out.println("NEW_DEF_" + def);
                         if (!precolored.contains(def)) {
                             initial.add(def);
                             index2blk.get(blk).stmts.add(++i, new store(sp, new entity(def)));

@@ -482,7 +482,7 @@ public class IRBuilder implements ASTVisitor {
             currentBlock.push_back(new assign(new entity("_A0"), new entity(tmp_node.val)));
             currentBlock.push_back(new call("Mx_malloc"));
         }
-        if (it.size.size() > 1 && it.size.size() < 7){
+        if (it.size.size() > 1 && it.size.size() < 3){
             String new_id = defVar("_NEW_" + it.size.size());
             currentBlock.push_back(new assign(new entity(new_id), new entity("_A0")));
             String flag_id = defVar("_FLAG_" + it.size.size());

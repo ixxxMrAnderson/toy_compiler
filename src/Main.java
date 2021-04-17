@@ -20,7 +20,7 @@ import java.util.HashSet;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/sema/expression-package/expression-3.mx";
+        String file_name = "./testcases/sema/class-package/class-2.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 //

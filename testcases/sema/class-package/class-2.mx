@@ -49,14 +49,5 @@ int main()
 {
   naive[] Shanghai = new naive[233];
   interesting[][] Beijing = new interesting[12][34];
-  // ++Beijing[1][1].second = ((Beijing[0][0].second))*(((((((((((((((((((((23333)))))))))))))))))))));
-  // ++++++++--------++++++------++++++++Beijing[2][2].second ;
-  {}
-  {
-  {}
-  {
-    
-  }
-  }
   return 0;
 }
