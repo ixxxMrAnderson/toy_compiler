@@ -77,6 +77,7 @@ public class RegAllocate {
             HashMap<Integer, HashSet<String>> tmp_in = new HashMap<>();
             HashMap<Integer, HashSet<String>> tmp_out = new HashMap<>();
             new LivenessAnalysis(blocks, tmp_in, tmp_out);
+//            System.out.println(tmp_out);
             for (String id : tmp_out.get(blk)) live.add(id);
             for (int i = index2blk.get(blk).stmts.size() - 1; i >= 0; --i) {
                 statement s = index2blk.get(blk).stmts.get(i);
@@ -135,21 +136,22 @@ public class RegAllocate {
                 } else if (s instanceof call) {
 //                    System.out.println(live);
                     for (String id : live){
+                        entity reg = new entity("_S0");
+//                        System.out.println(color);
+//                        System.out.println(id);
+                        reg.reg = color.get(id);
                         if (!stackAlias.get(currentFun).containsKey(id)) {
                             sp += 4;
                             currentStack.put(id, sp);
+//                            System.out.println("not_contain");
                         } else id = stackAlias.get(currentFun).get(id);
-                        entity reg = new entity();
-                        System.out.println(color);
-                        System.out.println(id);
-                        reg.reg = color.get(id);
                         index2blk.get(blk).stmts.add(i+1, new load(new entity(id), new entity(reg), true));
                     }
 //                    System.out.println();
                     for (String id : live){
-                        if (stackAlias.get(currentFun).containsKey(id)) id = stackAlias.get(currentFun).get(id);
-                        entity reg = new entity();
+                        entity reg = new entity("_S0");
                         reg.reg = color.get(id);
+//                        id = stackAlias.get(currentFun).get(id);
                         index2blk.get(blk).stmts.add(i, new store(new entity(id), new entity(reg), true));
                     }
                     // todo LiveAnalysis again
@@ -191,7 +193,6 @@ public class RegAllocate {
 //        System.out.println(spilledNodes);
         if (!spilledNodes.isEmpty()){
             RewriteProgram();
-            System.out.println("rewritten: ");
             Allocate();
         }
     }
@@ -676,6 +677,7 @@ public class RegAllocate {
                     }
                     if (!use.isEmpty()){
                         for (String id : use) {
+//                            System.out.println("NEW_USE_" + id);
                             if (!precolored.contains(id)) {
                                 stackAlias.get(currentFun).put(id, v);
                                 initial.add(id);
@@ -684,6 +686,7 @@ public class RegAllocate {
                         }
                     }
                     if (def != null){
+//                        System.out.println("NEW_DEF_" + def);
                         if (!precolored.contains(def)) {
                             stackAlias.get(currentFun).put(def, v);
                             initial.add(def);
@@ -703,6 +706,7 @@ public class RegAllocate {
         }
         coloredNodes = new HashSet<>();
         coalescedNodes = new HashSet<>();
+        stackAlias.put(currentFun, new HashMap<>());
     }
 
     public void buildList(block blk){

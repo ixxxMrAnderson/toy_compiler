@@ -252,14 +252,16 @@ public class SSA implements Pass{
                     updateReachingDef_(a.rhs.id, blk);
                     if (getVarDef(a.rhs.id) != null) a.rhs.id = getVarDef(a.rhs.id).id;
                 }
-                updateReachingDef_(a.lhs.id, blk);
-                String v_ = createCopy(a.lhs.id);
-                String pre_id = a.lhs.id;
-                a.lhs.id = v_;
-                varNode new_v = new varNode(v_, blk, getVarDef(pre_id));
-                varNodes.get(currentFun).add(new_v);
-                for (varNode x : varNodes.get(currentFun)){
-                    if (x.id.equals(pre_id)) x.def = new_v;
+                if (!(a.lhs.id.startsWith("_A") && isNumeric(a.lhs.id.substring(2, 3)))) {
+                    updateReachingDef_(a.lhs.id, blk);
+                    String v_ = createCopy(a.lhs.id);
+                    String pre_id = a.lhs.id;
+                    a.lhs.id = v_;
+                    varNode new_v = new varNode(v_, blk, getVarDef(pre_id));
+                    varNodes.get(currentFun).add(new_v);
+                    for (varNode x : varNodes.get(currentFun)) {
+                        if (x.id.equals(pre_id)) x.def = new_v;
+                    }
                 }
             } else if (s instanceof load) {
                 load l = (load) s;

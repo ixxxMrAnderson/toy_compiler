@@ -365,9 +365,11 @@ public class AsmPrinter implements Pass{
                 return "false";
             }
         }
-        if (e.id.startsWith("_A")) return "a" + e.id.substring(2, 3);
-        if (e.id.equals("_SP")) return "sp";
-        if (e.id.equals("_S0")) return "s0";
+        if (e.id != null) {
+            if (e.id.startsWith("_A")) return "a" + e.id.substring(2, 3);
+            if (e.id.equals("_SP")) return "sp";
+            if (e.id.equals("_S0")) return "s0";
+        }
         return e.id;
     }
 
