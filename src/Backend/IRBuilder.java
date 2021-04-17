@@ -499,21 +499,20 @@ public class IRBuilder implements ASTVisitor {
                 it_.size.add(it.size.get(j));
             }
             it_ = visit(it_, true);
-            entity x = new entity(), y = new entity();
+            entity x = new entity();
             currentBlock.push_back(
                 new binary(new entity(x), new entity(flag_id), new entity(2), binaryExprNode.Op.SLA)
             );
-            currentBlock.push_back(new load(new entity(new_id), new entity(y), true));
             currentBlock.push_back(
-                new binary(new entity(x), new entity(x), new entity(y), binaryExprNode.Op.ADD)
+                new binary(new entity(x), new entity(x), new entity(new_id), binaryExprNode.Op.ADD)
             );
             currentBlock.push_back(new store(new entity(x), new entity(it_.val)));
             currentBlock.push_back(new binary(new entity(tmp_val), new entity(flag_id), new entity(1), binaryExprNode.Op.SUB));
-            currentBlock.push_back(new store(new entity(flag_id), new entity(tmp_val), true));
+            currentBlock.push_back(new assign(new entity(flag_id), new entity(tmp_val)));
             currentBlock.push_back(new jump(retBlk));
             currentBlock.nxtBlock = outBlk;
             currentBlock = outBlk;
-            currentBlock.push_back(new load(new entity(new_id), new entity(it.val), true));
+            currentBlock.push_back(new assign(new entity(it.val), new entity(new_id)));
         } else {
             currentBlock.push_back(new assign(new entity(it.val), new entity("_A0")));
         }
@@ -539,7 +538,7 @@ public class IRBuilder implements ASTVisitor {
                 currentBlock.pop();
                 currentBlock.push_back(new store(new entity(tmp_mem.val), new entity(rhs_)));
             } else {
-                currentBlock.push_back(new store(new entity(id), new entity(rhs_), true));
+                currentBlock.push_back(new assign(new entity(id), new entity(rhs_)));
             }
         } else {
             if (!(it.lhs instanceof prefixExprNode)) {
@@ -548,7 +547,7 @@ public class IRBuilder implements ASTVisitor {
                     currentBlock.pop();
                     currentBlock.push_back(new store(new entity(it.lhs.val), new entity(rhs_)));
                 } else {
-                    currentBlock.push_back(new store(new entity(it.lhs.val.id), new entity(rhs_), true));
+                    currentBlock.push_back(new assign(new entity(it.lhs.val.id), new entity(rhs_)));
                 }
             } else {
                 currentBlock.push_back(new store(new entity(it.lhs.val), new entity(rhs_)));
@@ -596,7 +595,7 @@ public class IRBuilder implements ASTVisitor {
             currentBlock.push_back(new define(new entity(ret.val), new entity(((binary) s).lhs)));
             entity val = new entity();
             currentBlock.optAndBlk.push_back(new assign(new entity(val), new entity(0)));
-            currentBlock.optAndBlk.push_back(new store(new entity(ret.val.id), new entity(val), true));
+            currentBlock.optAndBlk.push_back(new assign(new entity(ret.val.id), new entity(val)));
             currentBlock.optAndBlk.push_back(new jump(nxt));
             currentBlock.push_back(new jump(nxt));
             currentBlock = nxt;
@@ -610,7 +609,7 @@ public class IRBuilder implements ASTVisitor {
             currentBlock.push_back(new define(new entity(ret.val), new entity(((binary) s).lhs)));
             entity val = new entity();
             currentBlock.optOrBlk.push_back(new assign(new entity(val), new entity(1)));
-            currentBlock.optOrBlk.push_back(new store(new entity(ret.val.id), new entity(val), true));
+            currentBlock.optOrBlk.push_back(new assign(new entity(ret.val.id), new entity(val)));
             currentBlock.optOrBlk.push_back(new jump(nxt));
             currentBlock.push_back(new jump(nxt));
             currentBlock = nxt;
@@ -665,7 +664,7 @@ public class IRBuilder implements ASTVisitor {
             entity tmp = new entity(true);
             tmp.id = "%" + tmp.id;
             entity ret = new entity(true);
-            currentBlock.push_back(new load(new entity(tmp.id), new entity(ret)));
+            currentBlock.push_back(new load(new entity(tmp.id), new entity(ret), true));
             blocks.get("_VAR_DEF").push_back(new define(new entity(tmp), new entity(it)));
             it.val = new entity(ret);
         } else {

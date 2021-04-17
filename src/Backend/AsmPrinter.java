@@ -189,10 +189,12 @@ public class AsmPrinter implements Pass{
                 } else if (s instanceof load) {
                     load l = (load) s;
                     if (l.addr != null) {
-                        if (getEntityString(l.addr).startsWith("%")) {
+                        System.out.println("\tlw\t" + getReg(l.to) + ",0(" + getReg(l.addr) + ")");
+                    } else {
+                        if (getEntityString(l.id).startsWith("%")) {
                             Integer index = 0;
                             for (int i = 0; i < roList.size(); ++i) {
-                                if (getEntityString(roList.get(i).var).equals(getEntityString(l.addr))) {
+                                if (getEntityString(roList.get(i).var).equals(getEntityString(l.id))) {
                                     index = i;
                                     break;
                                 }
@@ -200,11 +202,7 @@ public class AsmPrinter implements Pass{
                             System.out.println("\tlui\t" + getReg(l.to) + ",%hi(.S" + index + ")");
                             System.out.println("\taddi\t" + getReg(l.to) + "," + getReg(l.to)
                                     + ",%lo(.S" + index + ")");
-                        } else {
-                            System.out.println("\tlw\t" + getReg(l.to) + ",0(" + getReg(l.addr) + ")");
-                        }
-                    } else {
-                        if (getEntityString(l.id).startsWith("@")) {
+                        } else if (getEntityString(l.id).startsWith("@")) {
                             System.out.println("\tlui\t" + getReg(l.to) + ",%hi(.G"
                                     + sbssIndex.get(returnID(getEntityString(l.id))) + ")");
                             System.out.println("\tlw\t" + getReg(l.to) + ",%lo(.G"
