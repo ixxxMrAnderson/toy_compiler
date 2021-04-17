@@ -45,7 +45,6 @@ public class RegAlloc implements Pass{
 //        System.out.println("------------------------------");
 //        System.out.println(id2reg);
         if (blk != null) {
-            boolean isCh = checkCh(), todo = true;
             defined = new HashSet<>();
             for (String id : id2reg.keySet()) reg2id.put(id2reg.get(id), null);
             id2reg = new HashMap<>();
@@ -119,38 +118,13 @@ public class RegAlloc implements Pass{
                         currentStack.put(returnID(id), sp);
                     }
                     if (d.assign != null) {
-                        if (d.var.id.startsWith("t") && d.assign.id.startsWith("t") && isCh) {
-                            Integer reg = 0;
-                            if (todo) {
-                                d.var.id = "t49_0";
-                                d.assign.id = "t0_0";
-                                defined.add(d.var.id);
-                                allocReg(d.assign);
-                                allocReg(d.var, true);
-                                d.toAssign = true;
-                                reg2id.put(id2reg.get(d.assign.id), null);
-                                id2reg.remove(d.assign.id);
-                                currentBlk.stmts.add(++currentIndex, new store(new entity(d.var), new entity(d.assign), true));
-                                todo = false;
-                            } else {
-                                d.toAssign = true;
-                                if (currentIndex % 2 == 0) {
-                                    d.var.reg = 6;
-                                    d.assign.reg = 7;
-                                } else {
-                                    d.var.reg = 7;
-                                    d.assign.reg = 6;
-                                }
-                            }
-                        } else {
-                            defined.add(d.var.id);
-                            allocReg(d.assign);
-                            allocReg(d.var, true);
-                            d.toAssign = true;
-                            if (returnID(d.var.id).equals(returnID(d.assign.id))) {
-                                reg2id.put(id2reg.get(d.assign.id), null);
-                                id2reg.remove(d.assign.id);
-                            }
+                        defined.add(d.var.id);
+                        allocReg(d.assign);
+                        allocReg(d.var, true);
+                        d.toAssign = true;
+                        if (returnID(d.var.id).equals(returnID(d.assign.id))) {
+                            reg2id.put(id2reg.get(d.assign.id), null);
+                            id2reg.remove(d.assign.id);
                         }
 //                        id2reg.put(d.var.id, d.assign.reg);
                     }
@@ -174,19 +148,6 @@ public class RegAlloc implements Pass{
             if (blk.optAndBlk != null) visitBlock(blk.optAndBlk);
             if (blk.optOrBlk != null) visitBlock(blk.optOrBlk);
         }
-    }
-
-    public boolean checkCh(){
-        Integer cnt = 0;
-        for (statement s : currentBlk.stmts){
-            if (s instanceof define){
-                if (((define) s).assign == null) cnt++;
-                if (cnt == 49) return true;
-            } else {
-                return false;
-            }
-        }
-        return false;
     }
 
     public void clear(){
@@ -389,8 +350,6 @@ public class RegAlloc implements Pass{
                         binary b = (binary) s;
                         if (b.op1.id != null && b.op1.id.equals(reg2id.get(i))) flag = true;
                         if (b.op2.id != null && b.op2.id.equals(reg2id.get(i))) flag = true;
-                    } else if (s instanceof jump) {
-
                     } else if (s instanceof branch) {
                         branch b = (branch) s;
                         if (b.flag.id != null && b.flag.id.equals(reg2id.get(i))) flag = true;
@@ -400,12 +359,6 @@ public class RegAlloc implements Pass{
                     } else if (s instanceof assign) {
                         assign a = (assign) s;
                         if (a.rhs.id != null && a.rhs.id.equals(reg2id.get(i))) flag = true;
-//                        if (a.lhs.id != null && a.lhs.id.equals(reg2id.get(i))){
-//                            flag = false;
-//                            break;
-//                        }
-                    } else if (s instanceof call) {
-
                     } else if (s instanceof define) {
                         define d = (define) s;
                         if (d.assign != null && d.assign.id != null && d.assign.id.equals(reg2id.get(i))) flag = true;
@@ -426,11 +379,6 @@ public class RegAlloc implements Pass{
                     }
                     if (flag) break;
                 }
-//                if (!flag && (reg2id.get(i).startsWith("_TMP") || isNumeric(reg2id.get(i)))){ // @var store its addr instead of value
-////                    System.out.println("remove: "+reg2id.get(i));
-//                    id2reg.remove(reg2id.get(i));
-//                    reg2id.put(i, null);
-//                }
             }
         }
     }

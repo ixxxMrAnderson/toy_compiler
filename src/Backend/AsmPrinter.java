@@ -153,7 +153,7 @@ public class AsmPrinter implements Pass{
                     if (a.rhs.is_constant){
                         System.out.println("\tli\t" + getReg(a.lhs) + ","
                                 + getReg(a.rhs));
-                    } else {
+                    } else if (a.lhs.reg != a.rhs.reg) {
                         System.out.println("\tmv\t" + getReg(a.lhs) + ","
                                 + getReg(a.rhs));
                     }
@@ -180,7 +180,7 @@ public class AsmPrinter implements Pass{
                             if (d.assign.is_constant){
                                 System.out.println("\tli\t" + getReg(d.var) + ","
                                         + getReg(d.assign));
-                            } else {
+                            } else if (d.var.reg != d.assign.reg) {
                                 System.out.println("\tmv\t" + getReg(d.var) + ","
                                         + getReg(d.assign));
                             }
@@ -189,12 +189,7 @@ public class AsmPrinter implements Pass{
                 } else if (s instanceof load) {
                     load l = (load) s;
                     if (l.addr != null) {
-                        if (getEntityString(l.addr).startsWith("@")) {
-                            System.out.println("\tlui\t" + getReg(l.to) + ",%hi(.G"
-                                    + sbssIndex.get(returnID(getEntityString(l.addr))) + ")");
-                            System.out.println("\tlw\t" + getReg(l.to) + ",%lo(.G"
-                                    + sbssIndex.get(returnID(getEntityString(l.addr))) + ")(" + getReg(l.to) + ")");
-                        } else if (getEntityString(l.addr).startsWith("%")) {
+                        if (getEntityString(l.addr).startsWith("%")) {
                             Integer index = 0;
                             for (int i = 0; i < roList.size(); ++i) {
                                 if (getEntityString(roList.get(i).var).equals(getEntityString(l.addr))) {
@@ -209,25 +204,31 @@ public class AsmPrinter implements Pass{
                             System.out.println("\tlw\t" + getReg(l.to) + ",0(" + getReg(l.addr) + ")");
                         }
                     } else {
-                        System.out.println("\tlw\t" + getReg(l.to) + ",-"
-                                + (8 + stackAlloc.get(currentFun).get(returnID(getEntityString(l.id)))) + "(s0)");
+                        if (getEntityString(l.id).startsWith("@")) {
+                            System.out.println("\tlui\t" + getReg(l.to) + ",%hi(.G"
+                                    + sbssIndex.get(returnID(getEntityString(l.id))) + ")");
+                            System.out.println("\tlw\t" + getReg(l.to) + ",%lo(.G"
+                                    + sbssIndex.get(returnID(getEntityString(l.id))) + ")(" + getReg(l.to) + ")");
+                        } else {
+                            System.out.println("\tlw\t" + getReg(l.to) + ",-"
+                                    + (8 + stackAlloc.get(currentFun).get(returnID(getEntityString(l.id)))) + "(s0)");
+                        }
                     }
                 } else if (s instanceof store) {
                     store s_ = (store) s;
                     if (s_.addr != null) {
-                        if (getEntityString(s_.addr).startsWith("@")) {
-                            System.out.println("\tlui\t" + getReg(s_.addr) + ",%hi(.G"
-                                    + sbssIndex.get(returnID(getEntityString(s_.addr))) + ")");
-                            System.out.println("\tsw\t" + getReg(s_.value) + ",%lo(.G"
-                                    + sbssIndex.get(returnID(getEntityString(s_.addr))) + ")(" + getReg(s_.addr) + ")");
-                        } else {
                             System.out.println("\tsw\t" + getReg(s_.value) + ",0("
                                     + getReg(s_.addr) + ")");
-                        }
                     } else {
-//                        System.out.println("wtf" + getEntityString(s_.id));
-                        System.out.println("\tsw\t" + regIdentifier.get(s_.value.reg) + ",-"
-                                + (8 + stackAlloc.get(currentFun).get(returnID(getEntityString(s_.id)))) + "(s0)");
+                          if (getEntityString(s_.id).startsWith("@")) {
+                                System.out.println("\tlui\t" + "a7,%hi(.G"
+                                        + sbssIndex.get(returnID(getEntityString(s_.id))) + ")");
+                                System.out.println("\tsw\t" + getReg(s_.value) + ",%lo(.G"
+                                        + sbssIndex.get(returnID(getEntityString(s_.id))) + ")(a7)");
+                          } else {
+                              System.out.println("\tsw\t" + regIdentifier.get(s_.value.reg) + ",-"
+                                      + (8 + stackAlloc.get(currentFun).get(returnID(getEntityString(s_.id)))) + "(s0)");
+                      }
                     }
                 }
             }
@@ -271,11 +272,13 @@ public class AsmPrinter implements Pass{
         entity rop = new entity();
         rop.reg = binaryIns.op2.reg;
         if (binaryIns.op1.is_constant){
+            lop.reg = 16;
             System.out.println("\tli\t" + getReg(lop) + "," + getReg(binaryIns.op1));
         } else {
             lop = new entity(binaryIns.op1);
         }
         if (binaryIns.op2.is_constant){
+            rop.reg = 17;
             System.out.println("\tli\t" + getReg(rop) + "," + getReg(binaryIns.op2));
         } else {
             rop = new entity(binaryIns.op2);

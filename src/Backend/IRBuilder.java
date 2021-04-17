@@ -532,7 +532,7 @@ public class IRBuilder implements ASTVisitor {
         if (it.lhs instanceof varExprNode){
             String id = currentScope.getName(((varExprNode) it.lhs).id);
             if (currentScope.isGlobl(id)) {
-                currentBlock.push_back(new store(new entity("@" + id), new entity(rhs_)));
+                currentBlock.push_back(new store(new entity("@" + id), new entity(rhs_), true));
             } else if (currentScope.isMember(((varExprNode) it.lhs).id)){
                 memberExprNode tmp_mem = new memberExprNode(it.pos, new thisExprNode(it.pos), ((varExprNode) it.lhs).id);
                 tmp_mem = tmp_mem.accept(this);
@@ -685,7 +685,8 @@ public class IRBuilder implements ASTVisitor {
         }
         it.expr_type = new Type(currentScope.getType(id, true));
         if (currentScope.isGlobl(id)){
-            it.val = new entity("@" + id);
+            it.val = new entity();
+            currentBlock.push_back(new load(new entity("@" + id), new entity(it.val), true));
         } else {
             it.val = new entity(id);
         }
