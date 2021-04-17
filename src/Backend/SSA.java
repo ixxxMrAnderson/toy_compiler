@@ -147,7 +147,7 @@ public class SSA implements Pass{
     private void add_D(block blk, String id){
 //        System.out.println(currentFun + "_add_D: "+id);
         if (id.startsWith("@")) glblVars.add(id);
-        if (!id.equals("_SP")  && !id.equals("_S0") ){
+        if (!id.startsWith("_TMP") && !id.equals("_SP")  && !id.equals("_S0") ){
             if (!(id.startsWith("_A") && isNumeric(id.substring(2, 3)))){
                 if (!definedVar.get(currentFun).containsKey(id)) definedVar.get(currentFun).put(id, new HashSet<>());
                 definedVar.get(currentFun).get(id).add(getBlockName(blk));
@@ -290,6 +290,7 @@ public class SSA implements Pass{
                 }
             } else if (s instanceof phi){
                 phi p = (phi) s;
+//                if (p.born.id.startsWith("_TMP")) System.out.println("SSA WTF");
                 updateReachingDef_(p.born.id, blk);
                 String v_ = createCopy(p.born.id);
                 String pre_id = p.born.id;
@@ -354,7 +355,7 @@ public class SSA implements Pass{
     }
 
     public void updateReachingDef_(String id, Integer i){
-        if (!id.equals("_SP")  && !id.equals("_S0") && !isNumeric(id)){
+        if (!id.startsWith("_TMP") && !id.equals("_SP")  && !id.equals("_S0") && !isNumeric(id)){
             if (!(id.startsWith("_A") && isNumeric(id.substring(2, 3)))){
                 updateReachingDef(id, i);
             }

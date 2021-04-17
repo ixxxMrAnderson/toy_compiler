@@ -2,30 +2,26 @@ package MIR;
 
 public class store extends statement{
     public entity addr;
-    public entity id;
+    public Integer sp;
     public entity value;
+    public entity id;
 
     public store(entity addr, entity value){
         this.addr = new entity(addr);
-        this.id = null;
         this.value = new entity(value);
+        this.id = null;
     }
 
-    public store(entity id, entity value, boolean id_flag){
+    public store(entity id, entity value, boolean flag){
         this.addr = null;
         this.id = new entity(id);
         this.value = new entity(value);
     }
 
-    public store(entity id, boolean id_flag){
-        if (id_flag) {
-            this.addr = null;
-            this.id = new entity(id);
-            this.value = null;
-        } else {
-            this.addr = null;
-            this.id = null;
-            this.value = new entity(value);
-        }
+    public store(Integer sp, entity value){
+        this.addr = null;
+        this.id = null;
+        this.sp = sp;
+        this.value = new entity(value);
     }
 }

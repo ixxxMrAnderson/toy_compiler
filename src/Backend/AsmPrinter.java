@@ -15,11 +15,11 @@ public class AsmPrinter implements Pass{
     private HashMap<String, Integer> sbssIndex = new HashMap<>();
     public ArrayList<String> regIdentifier = new ArrayList<>();
     public String currentFun;
-    public HashMap<String, HashMap<String, Integer>> stackAlloc;
+    public HashMap<String, Integer> stackAlloc;
     public HashMap<String, Integer> spillPara;
 
     public AsmPrinter(HashMap<String, block> b, HashMap<String
-            , HashMap<String, Integer>> stackAlloc, HashMap<String, Integer> spillPara){
+            , Integer> stackAlloc, HashMap<String, Integer> spillPara){
 
         regIdentifier.add("zero"); // 0
         regIdentifier.add("ra");   // 1
@@ -79,7 +79,7 @@ public class AsmPrinter implements Pass{
             if (blk.tailBlk == null){
                 System.out.println(getBlockName(blk) + ":");
             } else {
-                Integer sp = spillPara.get(currentFun) * 4 + stackAlloc.get(currentFun).size() * 4 + 12;
+                Integer sp = spillPara.get(currentFun) * 4 + stackAlloc.get(currentFun) + 12;
                 System.out.println("\taddi\tsp,sp,-" + sp);
                 System.out.println("\tsw\ts0," + (sp - 4) + "(sp)");
                 System.out.println("\tsw\tra," + (sp - 8) + "(sp)");
@@ -91,7 +91,7 @@ public class AsmPrinter implements Pass{
                 } else if (s instanceof jump) {
                     jump j = (jump) s;
                     if (j.destination == null){
-                        Integer sp = spillPara.get(currentFun) * 4 + stackAlloc.get(currentFun).size() * 4 + 12;
+                        Integer sp = spillPara.get(currentFun) * 4 + stackAlloc.get(currentFun) + 12;
                         System.out.println("\tlw\ts0," + (sp - 4) + "(sp)");
                         System.out.println("\tlw\tra," + (sp - 8) + "(sp)");
                         System.out.println("\taddi\tsp,sp," + sp);
@@ -158,7 +158,7 @@ public class AsmPrinter implements Pass{
                     if (l.addr != null) {
                         System.out.println("\tlw\t" + getReg(l.to) + ",0(" + getReg(l.addr) + ")");
                     } else {
-                        if (getEntityString(l.id).startsWith("%")) {
+                        if (l.id != null && getEntityString(l.id).startsWith("%")) {
                             Integer index = 0;
                             for (int i = 0; i < roList.size(); ++i) {
                                 if (getEntityString(roList.get(i).lhs).equals(getEntityString(l.id))) {
@@ -169,14 +169,13 @@ public class AsmPrinter implements Pass{
                             System.out.println("\tlui\t" + getReg(l.to) + ",%hi(.S" + index + ")");
                             System.out.println("\taddi\t" + getReg(l.to) + "," + getReg(l.to)
                                     + ",%lo(.S" + index + ")");
-                        } else if (getEntityString(l.id).startsWith("@")) {
+                        } else if (l.id != null && getEntityString(l.id).startsWith("@")) {
                             System.out.println("\tlui\t" + getReg(l.to) + ",%hi(.G"
                                     + sbssIndex.get(getEntityString(l.id)) + ")");
                             System.out.println("\tlw\t" + getReg(l.to) + ",%lo(.G"
                                     + sbssIndex.get(getEntityString(l.id)) + ")(" + getReg(l.to) + ")");
                         } else {
-                            System.out.println("\tlw\t" + getReg(l.to) + ",-"
-                                    + (8 + stackAlloc.get(currentFun).get(getEntityString(l.id))) + "(s0)");
+                            System.out.println("\tlw\t" + getReg(l.to) + ",-" + l.sp + "(s0)");
                         }
                     }
                 } else if (s instanceof store) {
@@ -185,14 +184,13 @@ public class AsmPrinter implements Pass{
                             System.out.println("\tsw\t" + getReg(s_.value) + ",0("
                                     + getReg(s_.addr) + ")");
                     } else {
-                          if (getEntityString(s_.id).startsWith("@")) {
+                          if (s_.id != null && getEntityString(s_.id).startsWith("@")) {
                                 System.out.println("\tlui\t" + "a7,%hi(.G"
                                         + sbssIndex.get(getEntityString(s_.id)) + ")");
                                 System.out.println("\tsw\t" + getReg(s_.value) + ",%lo(.G"
                                         + sbssIndex.get(getEntityString(s_.id)) + ")(a7)");
                           } else {
-                              System.out.println("\tsw\t" + regIdentifier.get(s_.value.reg) + ",-"
-                                      + (8 + stackAlloc.get(currentFun).get(getEntityString(s_.id))) + "(s0)");
+                              System.out.println("\tsw\t" + regIdentifier.get(s_.value.reg) + ",-" + s_.sp + "(s0)");
                       }
                     }
                 }

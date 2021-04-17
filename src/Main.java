@@ -20,7 +20,7 @@ import java.util.HashSet;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/sema/codeforces-package/1145A.mx";
+        String file_name = "./testcases/sema/expression-package/expression-3.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 //
@@ -50,7 +50,7 @@ public class Main {
 //            System.out.println("OUT");
 //            System.out.println(out);
 //            new IRPrinter(blocks);
-            HashMap<String, HashMap<String, Integer>> stackAlloc = new HashMap<>();
+            HashMap<String, Integer> stackAlloc = new HashMap<>();
             new RegAllocate(blocks, in, out, stackAlloc);
 //            new IRPrinter(blocks);
             new AsmPrinter(blocks, stackAlloc, spillPara);

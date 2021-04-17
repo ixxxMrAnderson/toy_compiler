@@ -12,7 +12,7 @@ public class RegAllocate {
     public HashMap<String, block> blocks;
     public HashMap<Integer, HashSet<String>> in;
     public HashMap<Integer, HashSet<String>> out;
-    public HashMap<String, HashMap<String, Integer>> stackAlloc;
+    public HashMap<String, Integer> stackAlloc;
     public HashMap<String, HashSet<statement>> moveList = new HashMap<>();
     public HashSet<String> spillList = new HashSet<>();
     public HashSet<String> freezeList = new HashSet<>();
@@ -34,16 +34,15 @@ public class RegAllocate {
     public HashSet<String> coloredNodes = new HashSet<>();
     public HashMap<String, String> alias = new HashMap<>();
     public HashMap<String, Integer> color = new HashMap<>();
-    public HashMap<String, HashMap<String, String>> stackAlias = new HashMap<>();
     public HashMap<String, Integer> currentStack = new HashMap<>();
     public String currentFun;
     public Integer sp = 0;
-    public Integer K = 18;
+    public Integer K = 3;
 
     public RegAllocate(HashMap<String, block> blocks,
                     HashMap<Integer, HashSet<String>> in,
                     HashMap<Integer, HashSet<String>> out,
-                    HashMap<String, HashMap<String, Integer>> stackAlloc){
+                    HashMap<String, Integer> stackAlloc){
         precolored.add("_A0");
         precolored.add("_A1");
         precolored.add("_A2");
@@ -61,12 +60,10 @@ public class RegAllocate {
         for (String name : blocks.keySet()){
             currentFun = name;
             buildList(blocks.get(name));
-            currentStack = new HashMap<>();
-            stackAlias.put(currentFun, new HashMap<>());
             sp = 0;
             Allocate();
             setReg();
-            stackAlloc.put(name, currentStack);
+            stackAlloc.put(name, sp);
             Clear();
         }
     }
@@ -135,24 +132,26 @@ public class RegAllocate {
                     }
                 } else if (s instanceof call) {
 //                    System.out.println(live);
+                    HashMap<String, Integer> tmp_stack = new HashMap<>();
                     for (String id : live){
                         entity reg = new entity("_S0");
 //                        System.out.println(color);
 //                        System.out.println(id);
                         reg.reg = color.get(id);
-                        if (!stackAlias.get(currentFun).containsKey(id)) {
+//                        if (!stackAlias.get(currentFun).containsKey(id)) {
                             sp += 4;
-                            currentStack.put(id, sp);
+//                            currentStack.put(id, sp);
 //                            System.out.println("not_contain");
-                        } else id = stackAlias.get(currentFun).get(id);
-                        index2blk.get(blk).stmts.add(i+1, new load(new entity(id), new entity(reg), true));
+//                        } else id = stackAlias.get(currentFun).get(id);
+                        tmp_stack.put(id, sp);
+                        index2blk.get(blk).stmts.add(i+1, new load(sp, new entity(reg)));
                     }
 //                    System.out.println();
                     for (String id : live){
                         entity reg = new entity("_S0");
                         reg.reg = color.get(id);
 //                        id = stackAlias.get(currentFun).get(id);
-                        index2blk.get(blk).stmts.add(i, new store(new entity(id), new entity(reg), true));
+                        index2blk.get(blk).stmts.add(i, new store(tmp_stack.get(id), new entity(reg)));
                     }
                     // todo LiveAnalysis again
                 }
@@ -572,10 +571,8 @@ public class RegAllocate {
         while (!selectStack.isEmpty()){
             String n = selectStack.pop();
             HashSet<Integer> okColors = new HashSet<>();
-            for (int i = 5; i < 31; ++i) {
-                if ((i <= 17 && i >= 10) || i == 8){
-
-                } else {
+            for (int i = 5; i <= 31; ++i) {
+                if (i >= 29){
                     okColors.add(i);
                 }
             }
@@ -609,10 +606,8 @@ public class RegAllocate {
     public void RewriteProgram(){
         initial = new HashSet<>();
         for (String v : spilledNodes){
-            if (!currentStack.containsKey(v)) {
-                sp += 4;
-                currentStack.put(v, sp);
-            }
+            System.out.println("SPILL: "+v);
+            sp += 4;
             for (Integer blk : blklist){
                 for (int i = 0; i < index2blk.get(blk).stmts.size(); ++i) {
                     statement s = index2blk.get(blk).stmts.get(i);
@@ -677,20 +672,18 @@ public class RegAllocate {
                     }
                     if (!use.isEmpty()){
                         for (String id : use) {
-//                            System.out.println("NEW_USE_" + id);
+                            System.out.println("NEW_USE_" + id);
                             if (!precolored.contains(id)) {
-                                stackAlias.get(currentFun).put(id, v);
                                 initial.add(id);
-                                index2blk.get(blk).stmts.add(i++, new load(new entity(v), new entity(id), true));
+                                index2blk.get(blk).stmts.add(i++, new load(sp, new entity(id)));
                             }
                         }
                     }
                     if (def != null){
-//                        System.out.println("NEW_DEF_" + def);
+                        System.out.println("NEW_DEF_" + def);
                         if (!precolored.contains(def)) {
-                            stackAlias.get(currentFun).put(def, v);
                             initial.add(def);
-                            index2blk.get(blk).stmts.add(i++, new load(new entity(v), new entity(def), true));
+                            index2blk.get(blk).stmts.add(++i, new store(sp, new entity(def)));
                         }
                     }
                 }
@@ -706,7 +699,6 @@ public class RegAllocate {
         }
         coloredNodes = new HashSet<>();
         coalescedNodes = new HashSet<>();
-        stackAlias.put(currentFun, new HashMap<>());
     }
 
     public void buildList(block blk){

@@ -131,8 +131,10 @@ public class IRPrinter implements Pass {
                     (" " + getEntityString(r.value))) + ";");
         } else if (s instanceof assign) {
             assign a = (assign) s;
-            System.out.println("\t" + getEntityString(a.lhs) +
-                    " = " + getEntityString(a.rhs) + ";");
+            if (a.rhs != null) {
+                System.out.println("\t" + getEntityString(a.lhs) +
+                        " = " + getEntityString(a.rhs) + ";");
+            }
         } else if (s instanceof call) {
             call c = (call) s;
             System.out.println("\tcall " + c.funID + ";");
@@ -152,7 +154,11 @@ public class IRPrinter implements Pass {
             if (l.addr != null) {
                 System.out.println("\tload " + getEntityString(l.addr) + " on " + getEntityString(l.to) + ";");
             } else {
-                System.out.println("\tload " + getEntityString(l.id) + " on " + getEntityString(l.to) + ";");
+                if (l.id != null) {
+                    System.out.println("\tload " + getEntityString(l.id) + " on " + getEntityString(l.to) + ";");
+                } else {
+                    System.out.println("\tload " + l.sp + " on " + getEntityString(l.to) + ";");
+                }
             }
         } else if (s instanceof store) {
             store s_ = (store) s;
@@ -160,8 +166,13 @@ public class IRPrinter implements Pass {
                 System.out.println("\tstore " + getEntityString(s_.value) + " in "
                         + getEntityString(s_.addr) + ";");
             } else {
-                System.out.println("\tstore " + getEntityString(s_.value) + " in "
-                        + getEntityString(s_.id) + ";");
+                if (s_.id != null) {
+                    System.out.println("\tstore " + getEntityString(s_.value) + " in "
+                            + getEntityString(s_.id) + ";");
+                } else {
+                    System.out.println("\tstore " + getEntityString(s_.value) + " in "
+                            + s_.sp + ";");
+                }
             }
         } else if (s instanceof phi){
 //            phi p = (phi) s;
