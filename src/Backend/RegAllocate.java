@@ -166,6 +166,7 @@ public class RegAllocate {
                     if (!precolored.contains(id)) live.add(id);
                 }
                 if (def != null) live.remove(def);
+                for (String id : precolored) live.remove(id);
             }
         }
     }
@@ -290,6 +291,7 @@ public class RegAllocate {
                     if (!precolored.contains(id)) live.add(id);
                 }
                 if (def != null) live.remove(def);
+                for (String id : precolored) live.remove(id);
             }
         }
 
@@ -508,7 +510,7 @@ public class RegAllocate {
     public boolean Conservatve(HashSet<String> nodes){
         Integer k = 0;
         for (String n : nodes){
-            if (degree.get(n) >= K) k++;
+            if (degree.containsKey(n) && degree.get(n) >= K) k++;
         }
         return k < K;
     }
