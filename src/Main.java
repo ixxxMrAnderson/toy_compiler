@@ -20,7 +20,7 @@ import java.util.HashSet;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/codegen/t55.mx"; // 55 68
+        String file_name = "./testcases/sema/basic-package/basic-53.mx"; // 55 68
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 //
@@ -39,21 +39,23 @@ public class Main {
             HashMap<String, block> blocks = new HashMap<>();
             HashMap<String, Integer> spillPara = new HashMap<>();
             new IRBuilder(blocks, spillPara).visit(AST_root);
+            if (blocks.containsKey("main")) {
 //            new IRPrinter(blocks);
-            HashMap<Integer, HashSet<Integer>> dom2sub = new HashMap<>();
-            new SSA(blocks, dom2sub);
-            HashMap<Integer, HashSet<String>> in = new HashMap<>();
-            HashMap<Integer, HashSet<String>> out = new HashMap<>();
-            new LivenessAnalysis(blocks, in, out);
+                HashMap<Integer, HashSet<Integer>> dom2sub = new HashMap<>();
+                new SSA(blocks, dom2sub);
+                HashMap<Integer, HashSet<String>> in = new HashMap<>();
+                HashMap<Integer, HashSet<String>> out = new HashMap<>();
+                new LivenessAnalysis(blocks, in, out);
 //            System.out.println("IN");
 //            System.out.println(in);
 //            System.out.println("OUT");
 //            System.out.println(out);
 //            new IRPrinter(blocks);
-            HashMap<String, Integer> stackAlloc = new HashMap<>();
-            new RegAllocate(blocks, in, out, stackAlloc);
+                HashMap<String, Integer> stackAlloc = new HashMap<>();
+                new RegAllocate(blocks, in, out, stackAlloc);
 //            new IRPrinter(blocks);
-            new AsmPrinter(blocks, stackAlloc, spillPara);
+                new AsmPrinter(blocks, stackAlloc, spillPara);
+            }
         } catch (error er) {
             System.err.println(er.toString());
             throw new RuntimeException();
