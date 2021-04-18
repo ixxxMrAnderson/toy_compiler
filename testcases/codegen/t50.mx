@@ -21,3 +21,155 @@ int main() {
     for (j = 1; j <= n; ++j) sum = sum + 10 + j;
     return sum;
 }
+
+/*
+main_
+.B0:
+	_TMP_33(t5) = 10(zero);
+	_TMP_96(t5) = _TMP_33(t5);
+	store _TMP_96(t5) in 36;
+	_TMP_36(t5) = 0(zero);
+	_TMP_70(t5) = _TMP_36(t5);
+	store _TMP_70(t5) in 4;
+	store _TMP_82(t5) in 12;
+	_TMP_39(t5) = 1(zero);
+	_TMP_83(t5) = _TMP_39(t5);
+	store _TMP_83(t5) in 12;
+.B1:
+	load _TMP_84(t6)on12;
+	load _TMP_97(t5)on36;
+	_TMP_41(t5) = _TMP_84(t6) <= _TMP_97(t5);
+	br _TMP_41(t5) .B2, .B4;
+.B2:
+	load _TMP_88(t5)on4;
+	store _TMP_88(t5) in 20;
+	load _TMP_94(t5)on12;
+	store _TMP_94(t5) in 32;
+	load _TMP_89(t6)on20;
+	load _TMP_95(t5)on32;
+	_TMP_50(t5) = _TMP_89(t6) + _TMP_95(t5);
+	_TMP_72(t5) = _TMP_50(t5);
+	store _TMP_72(t5) in 4;
+	j .B3;
+.B3:
+	load _TMP_86(t5)on12;
+	_TMP_46(t5) = _TMP_86(t5) + 1(zero);
+	_TMP_87(t5) = _TMP_46(t5);
+	store _TMP_87(t5) in 12;
+	j .B1;
+.B4:
+	store _TMP_76(t5) in 8;
+	_TMP_53(t5) = 1(zero);
+	_TMP_77(t5) = _TMP_53(t5);
+	store _TMP_77(t5) in 8;
+.B5:
+	load _TMP_78(t6)on8;
+	load _TMP_98(t5)on36;
+	_TMP_55(t5) = _TMP_78(t6) <= _TMP_98(t5);
+	br _TMP_55(t5) .B6, .B8;
+.B6:
+	load _TMP_73(t5)on4;
+	_TMP_90(t5) = _TMP_73(t5) + 10(zero);
+	store _TMP_90(t5) in 24;
+	load _TMP_92(t5)on8;
+	store _TMP_92(t5) in 28;
+	load _TMP_91(t5)on24;
+	load _TMP_93(t6)on28;
+	_TMP_67(t5) = _TMP_91(t5) + _TMP_93(t6);
+	_TMP_74(t5) = _TMP_67(t5);
+	store _TMP_74(t5) in 4;
+	j .B7;
+.B7:
+	load _TMP_80(t5)on8;
+	_TMP_60(t5) = _TMP_80(t5) + 1(zero);
+	_TMP_81(t5) = _TMP_60(t5);
+	store _TMP_81(t5) in 8;
+	j .B5;
+.B8:
+	load _TMP_75(t4)on4;
+	ret _TMP_75(t4);
+	ret 0(zero);
+
+	.text
+	.section	.rodata
+	.text
+	.section	.sbss,"aw",@nobits
+	.text
+	.align	2
+	.globl	main
+	.type	main, @function
+main:
+	addi	sp,sp,-52
+	sw	s0,48(sp)
+	sw	ra,44(sp)
+	addi	s0,sp,52
+	li	t5,10
+	sw	t5,-36(s0)
+	li	t5,0
+	sw	t5,-4(s0)
+	sw	t5,-12(s0)
+	li	t5,1
+	sw	t5,-12(s0)
+.B1:
+	lw	t6,-12(s0)
+	lw	t5,-36(s0)
+	sgt	t5,t6,t5
+	xori	t5,t5,1
+	beq	t5,zero,.B2
+	j	.B3
+.B3:
+	lw	t5,-4(s0)
+	sw	t5,-20(s0)
+	lw	t5,-12(s0)
+	sw	t5,-32(s0)
+	lw	t6,-20(s0)
+	lw	t5,-32(s0)
+	add	t5,t6,t5
+	sw	t5,-4(s0)
+	j	.B4
+.B4:
+	lw	t5,-12(s0)
+	li	a7,1
+	add	t5,t5,a7
+	sw	t5,-12(s0)
+	j	.B1
+.B2:
+	sw	t5,-8(s0)
+	li	t5,1
+	sw	t5,-8(s0)
+.B5:
+	lw	t6,-8(s0)
+	lw	t5,-36(s0)
+	sgt	t5,t6,t5
+	xori	t5,t5,1
+	beq	t5,zero,.B6
+	j	.B7
+.B7:
+	lw	t5,-4(s0)
+	li	a7,10
+	add	t5,t5,a7
+	sw	t5,-24(s0)
+	lw	t5,-8(s0)
+	sw	t5,-28(s0)
+	lw	t5,-24(s0)
+	lw	t6,-28(s0)
+	add	t5,t5,t6
+	sw	t5,-4(s0)
+	j	.B8
+.B8:
+	lw	t5,-8(s0)
+	li	a7,1
+	add	t5,t5,a7
+	sw	t5,-8(s0)
+	j	.B5
+.B6:
+	lw	t4,-4(s0)
+	mv	a0,t4
+	j	.B9
+.B9:
+	lw	s0,48(sp)
+	lw	ra,44(sp)
+	addi	sp,sp,52
+	jr	ra
+	.size	main, .-main
+*/

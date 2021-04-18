@@ -37,7 +37,7 @@ public class RegAllocate {
     public HashMap<String, Integer> currentStack = new HashMap<>();
     public String currentFun;
     public Integer sp = 0;
-    public Integer K = 3;
+    public Integer K = 18;
 
     public RegAllocate(HashMap<String, block> blocks,
                     HashMap<Integer, HashSet<String>> in,
@@ -577,8 +577,11 @@ public class RegAllocate {
         while (!selectStack.isEmpty()){
             String n = selectStack.pop();
             HashSet<Integer> okColors = new HashSet<>();
+            // a0-a7 (10-17);
+            // s0-s1 (8-9), s2-s11 (18-27);
+            // t0-t2 (5-7), t3-t6 (28-31)
             for (int i = 5; i <= 31; ++i) {
-                if (i >= 29){
+                if ((i >= 5 && i <= 7) || i == 9 || (i >= 18 && i <= 31)){
                     okColors.add(i);
                 }
             }
