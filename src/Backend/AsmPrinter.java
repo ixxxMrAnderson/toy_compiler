@@ -80,10 +80,24 @@ public class AsmPrinter implements Pass{
                 System.out.println(getBlockName(blk) + ":");
             } else {
                 Integer sp = spillPara.get(currentFun) * 4 + stackAlloc.get(currentFun) + 12;
-                System.out.println("\taddi\tsp,sp,-" + sp);
-                System.out.println("\tsw\ts0," + (sp - 4) + "(sp)");
-                System.out.println("\tsw\tra," + (sp - 8) + "(sp)");
-                System.out.println("\taddi\ts0,sp," + sp);
+                if (sp >= 4096){
+                    System.out.println("\tlui\tsp,-" + sp);
+                    System.out.println("\taddi\tsp,sp,-" + sp);
+                    System.out.println("\tlui\ta7," + (sp - 4));
+                    System.out.println("\taddi\ta7,sp," + (sp - 4));
+                    System.out.println("\tsw\ts0,a7");
+                    System.out.println("\tlui\ta7," + (sp - 8));
+                    System.out.println("\taddi\ta7,sp," + (sp - 8));
+                    System.out.println("\tsw\tra,a7");
+                    System.out.println("\tlui\ts0," + sp);
+                    System.out.println("\taddi\ts0,s0," + sp);
+                    System.out.println("\tadd\ts0,s0,sp");
+                } else {
+                    System.out.println("\taddi\tsp,sp,-" + sp);
+                    System.out.println("\tsw\ts0," + (sp - 4) + "(sp)");
+                    System.out.println("\tsw\tra," + (sp - 8) + "(sp)");
+                    System.out.println("\taddi\ts0,sp," + sp);
+                }
             }
             for (statement s : blk.stmts) {
                 if (s instanceof binary) {
@@ -92,9 +106,20 @@ public class AsmPrinter implements Pass{
                     jump j = (jump) s;
                     if (j.destination == null){
                         Integer sp = spillPara.get(currentFun) * 4 + stackAlloc.get(currentFun) + 12;
-                        System.out.println("\tlw\ts0," + (sp - 4) + "(sp)");
-                        System.out.println("\tlw\tra," + (sp - 8) + "(sp)");
-                        System.out.println("\taddi\tsp,sp," + sp);
+                        if (sp >= 4096){
+                            System.out.println("\tlui\ts0," + (sp - 4));
+                            System.out.println("\taddi\ts0,sp," + (sp - 4));
+                            System.out.println("\tlw\ts0,s0");
+                            System.out.println("\tlui\tra," + (sp - 8));
+                            System.out.println("\taddi\tra,sp," + (sp - 8));
+                            System.out.println("\tlw\tra,ra");
+                            System.out.println("\tlui\tsp," + sp);
+                            System.out.println("\taddi\tsp,sp," + sp);
+                        } else {
+                            System.out.println("\tlw\ts0," + (sp - 4) + "(sp)");
+                            System.out.println("\tlw\tra," + (sp - 8) + "(sp)");
+                            System.out.println("\taddi\tsp,sp," + sp);
+                        }
                         System.out.println("\tjr\tra");
                         System.out.println("\t.size\t" + currentFun + ", .-" + currentFun);
                     } else {
@@ -175,7 +200,13 @@ public class AsmPrinter implements Pass{
                             System.out.println("\tlw\t" + getReg(l.to) + ",%lo(.G"
                                     + sbssIndex.get(getEntityString(l.id)) + ")(" + getReg(l.to) + ")");
                         } else {
-                            System.out.println("\tlw\t" + getReg(l.to) + ",-" + (l.sp+8) + "(s0)");
+                            if (l.sp+8 >= 4096){
+                                System.out.println("\tlui\t" + getReg(l.to) + ","+ (l.sp + 8));
+                                System.out.println("\taddi\t" + getReg(l.to) + "," + getReg(l.to) + "," +(l.sp + 8));
+                                System.out.println("\tlw\t" + getReg(l.to) + "," + getReg(l.to));
+                            } else {
+                                System.out.println("\tlw\t" + getReg(l.to) + ",-" + (l.sp + 8) + "(s0)");
+                            }
                         }
                     }
                 } else if (s instanceof store) {
@@ -190,7 +221,13 @@ public class AsmPrinter implements Pass{
                                 System.out.println("\tsw\t" + getReg(s_.value) + ",%lo(.G"
                                         + sbssIndex.get(getEntityString(s_.id)) + ")(a7)");
                           } else {
-                              System.out.println("\tsw\t" + regIdentifier.get(s_.value.reg) + ",-" + (s_.sp+8) + "(s0)");
+                              if (s_.sp+8 >= 4096) {
+                                  System.out.println("\tlui\ta7,"+ (s_.sp + 8));
+                                  System.out.println("\taddi\ta7,a7," +(s_.sp + 8));
+                                  System.out.println("\tsw\t" + regIdentifier.get(s_.value.reg) + ",a7");
+                              } else {
+                                  System.out.println("\tsw\t" + regIdentifier.get(s_.value.reg) + ",-" + (s_.sp + 8) + "(s0)");
+                              }
                       }
                     }
                 }
