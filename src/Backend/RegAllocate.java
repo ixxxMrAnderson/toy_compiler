@@ -169,11 +169,17 @@ public class RegAllocate {
         Build();
         MakeWorkList();
         while (true){
+            Integer cnt = 0;
             if (!simplifyList.isEmpty()) Simplify();
             else if (!worklistMoves.isEmpty()) Coalesce();
             else if (!freezeList.isEmpty()) Freeze();
             else if (!spillList.isEmpty()) Spill();
             else break;
+            cnt++;
+            if (cnt > 2000000) {
+                System.out.println("time out");
+                break;
+            }
 //            System.out.println("________________________________________________________________");
 //            System.out.println("simplifyList");
 //            System.out.println(simplifyList.size());
