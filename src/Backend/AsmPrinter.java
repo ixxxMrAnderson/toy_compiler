@@ -103,15 +103,15 @@ public class AsmPrinter implements Pass{
                 } else if (s instanceof branch) {
                     branch b = (branch) s;
                     if (b.flag.is_constant){
-                        System.out.println("\tli\t" + regIdentifier.get(b.flag.reg) + "," + getReg(b.flag));
+                        System.out.println("\tli\ta7," + getReg(b.flag));
                         if (b.trueBranch == null){
-                            System.out.println("\tbeq\t" + regIdentifier.get(b.flag.reg) + ",zero,"
+                            System.out.println("\tbeq\ta7,zero,"
                                     + getBlockName(b.falseBranch));
                         } else if (b.falseBranch == null){
-                            System.out.println("\tbne\t" + regIdentifier.get(b.flag.reg) + ",zero,"
+                            System.out.println("\tbne\ta7,zero,"
                                     + getBlockName(b.trueBranch));
                         } else {
-                            System.out.println("\tbeq\t" + regIdentifier.get(b.flag.reg) + ",zero,"
+                            System.out.println("\tbeq\ta7,zero,"
                                     + getBlockName(b.falseBranch));
                             System.out.println("\tj\t" + getBlockName(b.trueBranch));
                         }

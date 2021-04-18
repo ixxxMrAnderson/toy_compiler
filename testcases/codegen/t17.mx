@@ -15,31 +15,31 @@ Origin Package: Codegen Pretest-552
 */
 
 int main() {
-	int a = 10000;
-	int b = 0;
-	int c = 2800;
-	int d = 0;
-	int e = 0;
-	int[] f = new int[2801];
-	int g = 0;
+	int a = 10000; // s4
+	int b = 0; // t2
+	int c = 2800; // t1
+	int d = 0; // s1
+	int e = 0; // s2
+	int[] f = new int[2801]; // s3  d is not alive here
+	int g = 0; // t0
 
-	for (;b-c!=0;b++) 
-		f[b] = a/5;
-	for (;; e = d%a){
-		d = 0;
-		g = c*2;
-		if (g==0) break;
-		
-		for (b=c;;d=d*b){
-			d=d+f[b]*a;
+	for (;b-c!=0;b++) //  g is not alive B15
+		f[b] = a/5; // d is cover by ptr of (f[b]), g is not alive
+	for (;; e = d%a){ // B5
+		d = 0; // B6
+		g = c*2; // b is cover by (g == 0)
+		if (g==0) break; // B7
+		// B8
+		for (b=c;;d=d*b){ // B9, 13
+			d=d+f[b]*a; // B10
 			f[b] = d%--g;
 			d=d/g;
 			g--;
-			if (--b==0) break;
+			if (--b==0) break; // B11
 		}
 		
-		c = c-14;
-		print(toString(e+d/a));
+		c = c-14; // B14
+		print(toString(e+d/a)); // acdf is alive(g is cover by (d/a))
 	}
 	
   print("\n");
