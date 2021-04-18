@@ -87,7 +87,7 @@ public class LivenessAnalysis {
             } else if (s instanceof assign) {
                 assign a = (assign) s;
                 if (a.rhs != null && !a.rhs.is_constant) addU(blk.index, a.rhs.id);
-                addD(blk.index, a.lhs.id);
+                if (a.rhs != null) addD(blk.index, a.lhs.id);
             } else if (s instanceof load) {
                 load l = (load) s;
                 if (l.addr != null) addU(blk.index, l.addr.id);

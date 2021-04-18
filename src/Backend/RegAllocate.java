@@ -37,7 +37,8 @@ public class RegAllocate {
     public HashMap<String, Integer> currentStack = new HashMap<>();
     public String currentFun;
     public Integer sp = 0;
-    public Integer K = 18;
+//    public Integer K = 18;
+    public Integer K = 3;
 
     public RegAllocate(HashMap<String, block> blocks,
                     HashMap<Integer, HashSet<String>> in,
@@ -110,8 +111,10 @@ public class RegAllocate {
                         use.add(a.rhs.id);
                         a.rhs.reg = color.get(a.rhs.id);
                     }
-                    def = a.lhs.id;
-                    a.lhs.reg = color.get(a.lhs.id);
+                    if (a.rhs != null) {
+                        def = a.lhs.id;
+                        a.lhs.reg = color.get(a.lhs.id);
+                    }
                 } else if (s instanceof load) {
                     load l = (load) s;
                     if (l.addr != null) {
@@ -227,9 +230,12 @@ public class RegAllocate {
     }
 
     public void Build(){
+        HashMap<Integer, HashSet<String>> tmp_in = new HashMap<>();
+        HashMap<Integer, HashSet<String>> tmp_out = new HashMap<>();
+        new LivenessAnalysis(blocks, tmp_in, tmp_out);
         for (Integer blk : blklist){
             HashSet<String> live = new HashSet<>();
-            for (String id : out.get(blk)) live.add(id);
+            for (String id : tmp_out.get(blk)) live.add(id);
             for (int i = index2blk.get(blk).stmts.size() - 1; i >= 0; --i){
                 statement s = index2blk.get(blk).stmts.get(i);
                 boolean moveFlag = false;
@@ -252,7 +258,7 @@ public class RegAllocate {
                         use.add(a.rhs.id);
                         if (!precolored.contains(a.rhs.id) && !precolored.contains(a.lhs.id)) moveFlag = true;
                     }
-                    def = a.lhs.id;
+                    if (a.rhs != null) def = a.lhs.id;
                 } else if (s instanceof load) {
                     load l = (load) s;
                     if (l.addr != null) use.add(l.addr.id);
@@ -581,7 +587,10 @@ public class RegAllocate {
             // s0-s1 (8-9), s2-s11 (18-27);
             // t0-t2 (5-7), t3-t6 (28-31)
             for (int i = 5; i <= 31; ++i) {
-                if ((i >= 5 && i <= 7) || i == 9 || (i >= 18 && i <= 31)){
+//                if ((i >= 5 && i <= 7) || i == 9 || (i >= 18 && i <= 31)){
+//                    okColors.add(i);
+//                }
+                if ((i >= 29)){
                     okColors.add(i);
                 }
             }
@@ -614,9 +623,10 @@ public class RegAllocate {
 
     public void RewriteProgram(){
         initial = new HashSet<>();
+//        System.out.println("rewrite: ");
         for (String v : spilledNodes){
-//            System.out.println("SPILL: "+v);
             sp += 4;
+//            System.out.println("SPILL: "+v+"____"+sp);
             for (Integer blk : blklist){
                 for (int i = 0; i < index2blk.get(blk).stmts.size(); ++i) {
                     statement s = index2blk.get(blk).stmts.get(i);
@@ -635,6 +645,7 @@ public class RegAllocate {
                         if (b.lhs.id.equals(v)) {
                             b.lhs = new entity();
                             def = b.lhs.id;
+//                            System.out.println("\tdef(b.lhs)_" + def);
                         }
                     } else if (s instanceof branch) {
                         branch b = (branch) s;
@@ -654,9 +665,11 @@ public class RegAllocate {
                             a.rhs = new entity();
                             use.add(a.rhs.id);
                         }
-                        if (a.lhs.id.equals(v)) {
+                        if (a.lhs.id.equals(v) && a.rhs != null) {
                             a.lhs = new entity();
                             def = a.lhs.id;
+//                            System.out.println("\tdef(assign)_" + def);
+//                            System.out.println(a.rhs.id);
                         }
                     } else if (s instanceof load) {
                         load l = (load) s;
@@ -667,6 +680,7 @@ public class RegAllocate {
                         if (l.to.id.equals(v)){
                             l.to = new entity();
                             def = l.to.id;
+//                            System.out.println("\tdef(l.to)_" + def);
                         }
                     } else if (s instanceof store) {
                         store s_ = (store) s;
@@ -681,7 +695,7 @@ public class RegAllocate {
                     }
                     if (!use.isEmpty()){
                         for (String id : use) {
-//                            System.out.println("NEW_USE_" + id);
+//                            System.out.println("\tNEW_USE_" + id);
                             if (!precolored.contains(id)) {
                                 initial.add(id);
                                 index2blk.get(blk).stmts.add(i++, new load(sp, new entity(id)));
@@ -689,7 +703,6 @@ public class RegAllocate {
                         }
                     }
                     if (def != null){
-//                        System.out.println("NEW_DEF_" + def);
                         if (!precolored.contains(def)) {
                             initial.add(def);
                             index2blk.get(blk).stmts.add(++i, new store(sp, new entity(def)));
@@ -698,7 +711,6 @@ public class RegAllocate {
                 }
             }
         }
-
         spilledNodes = new HashSet<>();
         for (String id : coloredNodes) {
             if (!precolored.contains(id)) initial.add(id);
@@ -706,8 +718,26 @@ public class RegAllocate {
         for (String id : coalescedNodes) {
             if (!precolored.contains(id)) initial.add(id);
         }
+//        System.out.println("initial");
+//        System.out.println(initial);
         coloredNodes = new HashSet<>();
         coalescedNodes = new HashSet<>();
+        moveList = new HashMap<>();
+        spillList = new HashSet<>();
+        freezeList = new HashSet<>();
+        simplifyList = new HashSet<>();
+        degree = new HashMap<>();
+        adjList = new HashMap<>();
+        adjSet = new HashSet<>();
+        selectStack = new Stack<>();
+        worklistMoves = new HashSet<>();
+        activeMoves = new HashSet<>();
+        coalescedMoves = new HashSet<>();
+        constrainedMoves = new HashSet<>();
+        frozenMoves = new HashSet<>();
+        spilledNodes = new HashSet<>();
+        alias = new HashMap<>();
+        color = new HashMap<>();
     }
 
     public void buildList(block blk){
@@ -728,7 +758,7 @@ public class RegAllocate {
             } else if (s instanceof assign){
                 assign a = (assign) s;
                 if (a.rhs != null && !a.rhs.is_constant && !precolored.contains(a.rhs.id)) initial.add(a.rhs.id);
-                if (!precolored.contains(a.lhs.id)) initial.add(a.lhs.id);
+                if (a.rhs != null && !precolored.contains(a.lhs.id)) initial.add(a.lhs.id);
             } else if (s instanceof load) {
                 load l = (load) s;
                 if (l.addr != null) initial.add(l.addr.id);

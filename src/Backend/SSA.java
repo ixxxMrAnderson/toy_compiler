@@ -118,7 +118,7 @@ public class SSA implements Pass{
                     add_D(blk, b.lhs.id);
                 } else if (s instanceof assign) {
                     assign a = (assign) s;
-                    add_D(blk, a.lhs.id);
+                    if (a.rhs != null) add_D(blk, a.lhs.id);
                 } else if (s instanceof load) {
                     load l = (load) s;
                     add_D(blk, l.to.id);
@@ -252,7 +252,7 @@ public class SSA implements Pass{
                     updateReachingDef_(a.rhs.id, blk);
                     if (getVarDef(a.rhs.id) != null) a.rhs.id = getVarDef(a.rhs.id).id;
                 }
-                if (!(a.lhs.id.startsWith("_A") && isNumeric(a.lhs.id.substring(2, 3)))) {
+                if (a.rhs != null && !(a.lhs.id.startsWith("_A") && isNumeric(a.lhs.id.substring(2, 3)))) {
                     updateReachingDef_(a.lhs.id, blk);
                     String v_ = createCopy(a.lhs.id);
                     String pre_id = a.lhs.id;
