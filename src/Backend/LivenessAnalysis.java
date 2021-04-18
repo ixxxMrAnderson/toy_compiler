@@ -23,6 +23,7 @@ public class LivenessAnalysis {
         for (String name : blocks.keySet()){
             buildList(blocks.get(name));
         }
+//        System.out.println("def");
 //        System.out.println(def);
 //        System.out.println(use);
         while (true){
@@ -59,7 +60,12 @@ public class LivenessAnalysis {
                 }
                 if (!ret) break;
             }
-            if (ret) return;
+            if (ret) {
+//                System.out.println("ret");
+//                System.out.println(in);
+//                System.out.println(out);
+                return;
+            }
         }
     }
 

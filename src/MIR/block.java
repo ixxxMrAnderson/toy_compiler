@@ -35,9 +35,22 @@ public class block {
                 ret.add(((branch) tailStmt).falseBranch);
             }
         } else if (tailStmt instanceof jump) {
-            if (((jump) tailStmt).destination != this && !ret.contains(((jump) tailStmt).destination)) {
-                ret.add(((jump) tailStmt).destination);
+//            if (((jump) tailStmt).destination != this && !ret.contains(((jump) tailStmt).destination)) {
+//                ret.add(((jump) tailStmt).destination);
+//            }
+            for (int i = stmts.size() - 1; i >= 0; --i){
+                if (stmts.get(i) instanceof jump) {
+                    jump st = (jump) stmts.get(i);
+                    if (st.destination != this && !ret.contains(st.destination)) {
+                        ret.add(st.destination);
+                    }
+                }
+                else break;
             }
+//            jump st = (jump) stmts.get(index);
+//            if (st.destination != this && !ret.contains(st.destination)) {
+//                ret.add(st.destination);
+//            }
         }
         return ret;
     }
