@@ -44,28 +44,38 @@ public class RegAllocate {
                     HashMap<Integer, HashSet<String>> in,
                     HashMap<Integer, HashSet<String>> out,
                     HashMap<String, Integer> stackAlloc){
-        precolored.add("_A0");
-        precolored.add("_A1");
-        precolored.add("_A2");
-        precolored.add("_A3");
-        precolored.add("_A4");
-        precolored.add("_A5");
-        precolored.add("_A6");
-        precolored.add("_A7");
-        precolored.add("_SP");
-        precolored.add("_S0");
-        this.blocks = blocks;
-        this.in = in;
-        this.out = out;
-        this.stackAlloc = stackAlloc;
-        for (String name : blocks.keySet()){
-            currentFun = name;
-            buildList(blocks.get(name));
-            sp = 0;
-            Allocate();
-            setReg();
-            stackAlloc.put(name, sp);
-            Clear();
+        Integer cnt = 0;
+        for (statement s : blocks.get("main").stmts){
+            if (s instanceof assign && ((assign) s).rhs == null) cnt++;
+            else break;
+        }
+        if (cnt > 200){
+//            System.out.println("55");
+            new RegAlloc(blocks, stackAlloc);
+        } else {
+            precolored.add("_A0");
+            precolored.add("_A1");
+            precolored.add("_A2");
+            precolored.add("_A3");
+            precolored.add("_A4");
+            precolored.add("_A5");
+            precolored.add("_A6");
+            precolored.add("_A7");
+            precolored.add("_SP");
+            precolored.add("_S0");
+            this.blocks = blocks;
+            this.in = in;
+            this.out = out;
+            this.stackAlloc = stackAlloc;
+            for (String name : blocks.keySet()) {
+                currentFun = name;
+                buildList(blocks.get(name));
+                sp = 0;
+                Allocate();
+                setReg();
+                stackAlloc.put(name, sp);
+                Clear();
+            }
         }
     }
 

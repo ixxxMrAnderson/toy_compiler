@@ -430,13 +430,20 @@ public class IRBuilder implements ASTVisitor {
                     tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.SUB, it.expr, new constExprNode(1, it.pos));
                     tmp_a = new assignExprNode(it.expr, tmp_b, it.pos);
                     visit(tmp_a);
-                    if (!(it.expr instanceof varExprNode)) it.val = tmp_b.val;
+                    if (!(it.expr instanceof varExprNode) || (it.expr instanceof varExprNode && currentScope.isGlobl(((varExprNode) it.expr).id))) {
+                        it.val = tmp_b.val;
+                    }
+//                    if (it.expr instanceof varExprNode && ((varExprNode) it.expr).id.startsWith("@"))
                     break;
                 case INCREASE:
                     tmp_b = new binaryExprNode(it.pos, binaryExprNode.Op.ADD, it.expr, new constExprNode(1, it.pos));
                     tmp_a = new assignExprNode(it.expr, tmp_b, it.pos);
                     visit(tmp_a);
-                    if (!(it.expr instanceof varExprNode)) it.val = tmp_b.val;
+//                    System.out.println(((varExprNode) it.expr).id);
+                    if (!(it.expr instanceof varExprNode) || (it.expr instanceof varExprNode && currentScope.isGlobl(((varExprNode) it.expr).id))) {
+//                        System.out.println("++M");
+                        it.val = tmp_b.val;
+                    }
                     break;
                 case NOT:
                     currentBlock.push_back(
