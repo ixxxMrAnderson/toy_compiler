@@ -99,7 +99,8 @@ public class AsmPrinter implements Pass{
                     System.out.println("\taddi\ts0,sp," + sp);
                 }
             }
-            for (statement s : blk.stmts) {
+            for (int i = 0; i < blk.stmts.size(); ++i) {
+                statement s = blk.stmts.get(i);
                 if (s instanceof binary) {
                     printBinaryIns((binary) s);
                 } else if (s instanceof jump) {
@@ -171,6 +172,7 @@ public class AsmPrinter implements Pass{
                             System.out.println("\tli\t" + getReg(a.lhs) + ","
                                     + getReg(a.rhs));
                         } else if (a.lhs.reg != a.rhs.reg) {
+                            if (detectMv(blk, i)) continue;
                             System.out.println("\tmv\t" + getReg(a.lhs) + ","
                                     + getReg(a.rhs));
                         }
@@ -185,9 +187,9 @@ public class AsmPrinter implements Pass{
                     } else {
                         if (l.id != null && getEntityString(l.id).startsWith("%")) {
                             Integer index = 0;
-                            for (int i = 0; i < roList.size(); ++i) {
-                                if (getEntityString(roList.get(i).lhs).equals(getEntityString(l.id))) {
-                                    index = i;
+                            for (int j = 0; j < roList.size(); ++j) {
+                                if (getEntityString(roList.get(j).lhs).equals(getEntityString(l.id))) {
+                                    index = j;
                                     break;
                                 }
                             }
@@ -234,6 +236,21 @@ public class AsmPrinter implements Pass{
             }
             blk.successors().forEach(this::visitBlock);
         }
+    }
+
+    private boolean detectMv(block blk, int index){
+        Integer r = ((assign) blk.stmts.get(index)).rhs.reg;
+        Integer l = ((assign) blk.stmts.get(index)).lhs.reg;
+        for (int i = index - 1; i >= 0; --i){
+            if (blk.stmts.get(i) instanceof assign){
+                assign a = (assign) blk.stmts.get(i);
+                if (a.rhs == null) continue;
+                if (a.rhs.reg == a.lhs.reg) continue;
+                if (a.rhs.reg == r && a.lhs.reg == l) return true;
+                else break;
+            } else break;
+        }
+        return false;
     }
 
     private void handleGlobl(block globlDef){
