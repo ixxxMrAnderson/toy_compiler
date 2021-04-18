@@ -1,5 +1,6 @@
 package Backend;
 
+import AST.binaryExprNode;
 import MIR.*;
 import Util.Type.type;
 
@@ -286,6 +287,18 @@ public class AsmPrinter implements Pass{
         lop.reg = binaryIns.op1.reg;
         entity rop = new entity();
         rop.reg = binaryIns.op2.reg;
+        if (!binaryIns.op1.is_constant && binaryIns.op2.is_constant){
+            if (binaryIns.op2.constant.int_value < 20) {
+//                System.out.println(binaryIns.op);
+                if (binaryIns.op == binaryExprNode.Op.ADD) {
+                    System.out.println("\taddi\t" + getReg(binaryIns.lhs) + "," + getReg(binaryIns.op1) + "," + getReg(binaryIns.op2));
+                    return;
+                } else if (binaryIns.op == binaryExprNode.Op.SUB){
+                    System.out.println("\taddi\t" + getReg(binaryIns.lhs) + "," + getReg(binaryIns.op1) + ",-" + getReg(binaryIns.op2));
+                    return;
+                }
+            }
+        }
         if (binaryIns.op1.is_constant){
             lop.reg = 16;
             System.out.println("\tli\t" + getReg(lop) + "," + getReg(binaryIns.op1));
