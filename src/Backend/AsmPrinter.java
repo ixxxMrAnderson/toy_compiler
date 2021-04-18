@@ -175,7 +175,7 @@ public class AsmPrinter implements Pass{
                             System.out.println("\tlw\t" + getReg(l.to) + ",%lo(.G"
                                     + sbssIndex.get(getEntityString(l.id)) + ")(" + getReg(l.to) + ")");
                         } else {
-                            System.out.println("\tlw\t" + getReg(l.to) + ",-" + l.sp + "(s0)");
+                            System.out.println("\tlw\t" + getReg(l.to) + ",-" + (l.sp+8) + "(s0)");
                         }
                     }
                 } else if (s instanceof store) {
@@ -190,7 +190,7 @@ public class AsmPrinter implements Pass{
                                 System.out.println("\tsw\t" + getReg(s_.value) + ",%lo(.G"
                                         + sbssIndex.get(getEntityString(s_.id)) + ")(a7)");
                           } else {
-                              System.out.println("\tsw\t" + regIdentifier.get(s_.value.reg) + ",-" + s_.sp + "(s0)");
+                              System.out.println("\tsw\t" + regIdentifier.get(s_.value.reg) + ",-" + (s_.sp+8) + "(s0)");
                       }
                     }
                 }
