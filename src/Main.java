@@ -20,9 +20,9 @@ import java.util.HashSet;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/codegen/shortest_path/dijkstra.mx";
-//        InputStream input = new FileInputStream(file_name);
-        InputStream input = System.in;
+        String file_name = "./testcases/sema/basic-package/basic-71.mx";
+        InputStream input = new FileInputStream(file_name);
+//        InputStream input = System.in;
 //
         try {
             MxLexer lexer = new MxLexer(CharStreams.fromStream(input));

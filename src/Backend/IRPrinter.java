@@ -157,7 +157,7 @@ public class IRPrinter implements Pass {
                 if (l.id != null) {
                     System.out.println("\tload " + getEntityString(l.id) + " on " + getEntityString(l.to) + ";");
                 } else {
-                    System.out.println("\tload " + l.sp + " on " + getEntityString(l.to) + ";");
+                    System.out.println("\tload " + getEntityString(l.to) + "on" + l.sp + ";");
                 }
             }
         } else if (s instanceof store) {
