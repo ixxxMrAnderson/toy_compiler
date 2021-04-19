@@ -44,6 +44,10 @@ public class Main {
                 HashMap<Integer, HashSet<Integer>> dom2sub = new HashMap<>();
                 new SSA(blocks, dom2sub);
                 new constPropagation(blocks);
+//            new IRPrinter(blocks);
+                new CFGopt(blocks);
+//            new IRPrinter(blocks);
+                new ADCE(blocks);
                 HashMap<Integer, HashSet<String>> in = new HashMap<>();
                 HashMap<Integer, HashSet<String>> out = new HashMap<>();
                 new LivenessAnalysis(blocks, in, out);
