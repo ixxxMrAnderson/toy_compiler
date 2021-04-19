@@ -29,10 +29,14 @@ public class inline implements Pass{
         for (Integer i : detected){
             if (i != null && i > max) max = i;
         }
-        for (String name : blocks.keySet()){
-            currentFun = name;
+//        System.out.println("----------------------------------------");
+//        System.out.println(detected.size());
+        if (detected.size() < 50) {
+            for (String name : blocks.keySet()) {
+                currentFun = name;
 //        System.out.println("-------------------------------------"+name+"-------------------------------------------");
-            visitBlock(blocks.get(name));
+                visitBlock(blocks.get(name));
+            }
         }
     }
 
