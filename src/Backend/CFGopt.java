@@ -21,9 +21,22 @@ public class CFGopt implements Pass{
     public void detectAlias(block blk){
         if (detected.contains(blk.index)) return;
         else detected.add(blk.index);
-        if (blk.stmts.size() > 0 && blk.stmts.get(0) instanceof jump){
-            if (((jump) blk.stmts.get(0)).destination != null) {
-                alias.put(blk, ((jump) blk.stmts.get(0)).destination);
+        if (blk.stmts.size() > 0){
+            if (blk.stmts.get(0) instanceof jump) {
+                if (((jump) blk.stmts.get(0)).destination != null) {
+                    alias.put(blk, ((jump) blk.stmts.get(0)).destination);
+                }
+            } else if (blk.stmts.get(0) instanceof branch) {
+                branch b = (branch) blk.stmts.get(0);
+                if (b.flag.is_constant){
+                    if (b.flag.constant.expr_type.type == type.INT){
+                        if (b.flag.constant.int_value == 0) alias.put(blk, b.falseBranch);
+                        else alias.put(blk, b.trueBranch);
+                    } else {
+                        if (b.flag.constant.bool_value) alias.put(blk, b.trueBranch);
+                        else alias.put(blk, b.falseBranch);
+                    }
+                }
             }
         }
         for (block nxt : blk.successors()) detectAlias(nxt);
