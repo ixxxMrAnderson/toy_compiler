@@ -273,7 +273,76 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
             case "||": op = Op.OR; break;
             default: throw new semanticError("Semantic Error: binary_expr", new position(ctx));
         }
-        return new binaryExprNode(new position(ctx), op, lhs, rhs);
+        if (lhs instanceof constExprNode && rhs instanceof constExprNode){
+            constExprNode cl = (constExprNode) lhs, cr = (constExprNode) rhs;
+            if ((cl.expr_type.type == type.INT && cr.expr_type.type == type.INT)||(cl.expr_type.type == type.BOOL && cr.expr_type.type == type.BOOL)) {
+//                if (cl.expr_type.type == type.INT) {
+//                    System.out.println("int_"+calConst(cl, cr, ctx.op.getText()).int_value+"="+cl.int_value+ctx.op.getText()+cr.int_value);
+//                } else {
+//                    System.out.println("bool_"+calConst(cl, cr, ctx.op.getText()).bool_value+"="+cl.bool_value+ctx.op.getText()+cr.bool_value);
+//                }
+                return calConst(cl, cr, ctx.op.getText());
+            } else {
+                return new binaryExprNode(new position(ctx), op, lhs, rhs);
+            }
+        } else {
+            return new binaryExprNode(new position(ctx), op, lhs, rhs);
+        }
+    }
+
+    public constExprNode calConst(constExprNode lhs, constExprNode rhs, String op){
+        if (lhs.expr_type.type == type.INT) {
+            Integer l = lhs.int_value, r = rhs.int_value;
+            switch (op) {
+                case "*":
+                    return new constExprNode(l * r, null);
+                case "/":
+                    if (r == 0) return new constExprNode(0, null);
+                    else return new constExprNode(l / r, null);
+                case "%":
+                    return new constExprNode(l % r, null);
+                case "+":
+                    return new constExprNode(l + r, null);
+                case "-":
+                    return new constExprNode(l - r, null);
+                case "<<":
+                    return new constExprNode(l << r, null);
+                case ">>":
+                    return new constExprNode(l >> r, null);
+                case "<":
+                    return new constExprNode(l < r, null);
+                case ">":
+                    return new constExprNode(l > r, null);
+                case "<=":
+                    return new constExprNode(l <= r, null);
+                case ">=":
+                    return new constExprNode(l >= r, null);
+                case "==":
+//                    System.out.println(lhs.int_value);
+//                    System.out.println(rhs.int_value);
+                    return new constExprNode(l.equals(r), null);
+                case "!=":
+                    return new constExprNode(!l.equals(r), null);
+                case "&":
+                    return new constExprNode(l & r, null);
+                case "^":
+                    return new constExprNode(l ^ r, null);
+                case "|":
+                    return new constExprNode(l | r, null);
+                default:
+                    throw new semanticError("Semantic Error: binary_expr", null);
+            }
+        } else {
+            boolean l = lhs.bool_value, r = rhs.bool_value;
+            switch (op) {
+                case "&&":
+                    return new constExprNode(l && r, null);
+                case "||":
+                    return new constExprNode(l || r, null);
+                default:
+                    throw new semanticError("Semantic Error: binary_expr", null);
+            }
+        }
     }
 
     @Override public ASTNode visitThis_expr(MxParser.This_exprContext ctx) {
