@@ -26,6 +26,7 @@ public class inline implements Pass{
         }
         for (String name : blocks.keySet()){
             currentFun = name;
+//        System.out.println("-------------------------------------"+name+"-------------------------------------------");
             visitBlock(blocks.get(name));
         }
     }
@@ -59,6 +60,7 @@ public class inline implements Pass{
                 }
                 copied = new HashMap<>();
                 blk.stmts.add(new jump(copyBlk(blocks.get(((call) s).funID))));
+//                System.out.println("inline " + ((call) s).funID + " in "+blk.index);
 //                System.out.println(blk.successors());
 //                System.out.println(copied);
             }
@@ -76,11 +78,9 @@ public class inline implements Pass{
         if (blk == null) return null;
 //        System.out.println("in_cpy");
         if (copied.containsKey(blk)) return copied.get(blk);
-//        System.out.println("not_contain: "+blk.index);
         block cpy = new block();
         copied.put(blk, cpy);
         cpy.index = alloc();
-//        System.out.println("cpy_index: "+cpy.index);
         for (int i = 0; i < blk.stmts.size(); ++i){
 //            System.out.println(i);
             statement s = blk.stmts.get(i);
@@ -145,7 +145,9 @@ public class inline implements Pass{
         if (callInFun.containsKey(from)) {
             for (String des : callInFun.get(from)) {
                 if (des.equals(to)) return true;
-                else if (!path.contains(des)) return walk(des, to);
+                else if (!path.contains(des)) {
+                    if (walk(des, to)) return true;
+                }
             }
         }
         return false;
