@@ -80,7 +80,7 @@ public class RegAlloc implements Pass{
                             currentBlk.stmts.add(currentIndex++, new store(currentStack.get(a.lhs.id), new entity(a.rhs)));
                         }
                     }
-                } else if (s instanceof call) { // clear the table (no caller safe)
+                } else if (s instanceof call && !((call) s).inlined) { // clear the table (no caller safe)
                     for (String id : id2reg.keySet()){
                         if (isNumeric(id)) continue;
                         entity assign = new entity();

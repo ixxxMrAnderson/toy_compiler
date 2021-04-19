@@ -53,10 +53,10 @@ int main() {
     int sum = 0;
     for ( ; ; ) {
         int u = rng(rng_seed);
-        int v = rng(u);
+        int v = rng(u); // B2
         rng_seed = v;
         if ((u & 255) != (v & 255)) {
-            int w = rng(rng_seed);
+            int w = rng(rng_seed); // B3
             int x = rng(w);
 			int y = rng(x);
 			int z = rng(y);
@@ -65,6 +65,7 @@ int main() {
             sum = sum ^ test(w & 3, w >> 28, x & 1, x >> 29, y >> 25, y & 31, z >> 15, z & 32767, zz >> 15, zz & 32767);
         }
 		else break;
+		// B5(2)
     }
-    return sum - 19;
+    return sum - 19; // B7
 }

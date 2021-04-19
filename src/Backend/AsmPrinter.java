@@ -161,7 +161,9 @@ public class AsmPrinter implements Pass{
                     }
                 } else if (s instanceof call) {
                     call c = (call) s;
-                    System.out.println("\tcall\t" + c.funID);
+                    if (!c.inlined) {
+                        System.out.println("\tcall\t" + c.funID);
+                    }
                 } else if (s instanceof load) {
                     load l = (load) s;
                     if (l.addr != null) {
@@ -227,7 +229,7 @@ public class AsmPrinter implements Pass{
         if (blk2call.containsKey(blk)) return blk2call.get(blk);
         boolean ret = false;
         for (statement s : blk.stmts){
-            if (s instanceof call) ret = true;
+            if (s instanceof call && !((call) s).inlined) ret = true;
         }
         blk2call.put(blk, ret);
         for (block b : blk.successors()){

@@ -143,7 +143,7 @@ public class RegAllocate {
                         use.add(s_.value.id);
                         s_.value.reg = color.get(s_.value.id);
                     }
-                } else if (s instanceof call) {
+                } else if (s instanceof call && !((call) s).inlined) {
 //                    System.out.println(live);
                     HashMap<String, Integer> tmp_stack = new HashMap<>();
                     for (String id : live){

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 public class block {
     public ArrayList<statement> stmts = new ArrayList<>();
-    private terminalStmt tailStmt = null;
     public block nxtBlock = null;
     public block tailBlk = null;
     public block optAndBlk = null;
@@ -14,9 +13,6 @@ public class block {
     public block() {}
     public void push_back(statement stmt) {
         stmts.add(stmt);
-        if (stmt instanceof terminalStmt) {
-            tailStmt = (terminalStmt)stmt;
-        }
     }
     public statement tail(){return stmts.get(stmts.size() - 1);}
     public void pop(){
@@ -27,30 +23,23 @@ public class block {
         if (nxtBlock != null) ret.add(nxtBlock);
         if (optOrBlk != null) ret.add(optOrBlk);
         if (optAndBlk != null) ret.add(optAndBlk);
-        if (tailStmt instanceof branch) {
-            if (((branch) tailStmt).trueBranch != null && !ret.contains(((branch) tailStmt).trueBranch)) {
-                ret.add(((branch) tailStmt).trueBranch);
-            }
-            if (((branch) tailStmt).falseBranch != null && !ret.contains(((branch) tailStmt).falseBranch)) {
-                ret.add(((branch) tailStmt).falseBranch);
-            }
-        } else if (tailStmt instanceof jump) {
-//            if (((jump) tailStmt).destination != this && !ret.contains(((jump) tailStmt).destination)) {
-//                ret.add(((jump) tailStmt).destination);
-//            }
-            for (int i = stmts.size() - 1; i >= 0; --i){
-                if (stmts.get(i) instanceof jump) {
-                    jump st = (jump) stmts.get(i);
-                    if (st.destination != this && !ret.contains(st.destination)) {
-                        ret.add(st.destination);
-                    }
+        for (int i = 0; i < stmts.size(); ++i){
+            statement s = stmts.get(i);
+            if (s instanceof jump){
+                jump j = (jump) s;
+                if (j.destination != null && j.destination != this && !ret.contains(j.destination)){
+                    ret.add(j.destination);
                 }
-                else break;
-            }
-//            jump st = (jump) stmts.get(index);
-//            if (st.destination != this && !ret.contains(st.destination)) {
-//                ret.add(st.destination);
-//            }
+                break;
+            } else if (s instanceof branch){
+                branch b = (branch) s;
+                if (b.trueBranch != null && !ret.contains(b.trueBranch)) {
+                    ret.add(b.trueBranch);
+                }
+                if (b.falseBranch != null && !ret.contains(b.falseBranch)) {
+                    ret.add(b.falseBranch);
+                }
+            } else if (s instanceof ret) break;
         }
         return ret;
     }
