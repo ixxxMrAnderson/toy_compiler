@@ -136,6 +136,7 @@ public class inline implements Pass{
 
     public HashSet<String> path = new HashSet<>();
     public boolean canInline(String id) {
+        if (!blocks.containsKey(id)) return false;
         path = new HashSet<>();
         return !walk(id, id);
     }
