@@ -100,9 +100,10 @@ public class inline implements Pass{
     public void INLINE(block blk, Integer i){
         statement s = blk.stmts.get(i);
         block toCpy = blocks.get(((call) s).funID);
-        if (currentFun.contains("_memberFn_") || ((call) s).funID.contains("_memberFn_")) return;
+        if (!currentFun.equals("main")) return;
+//        if (currentFun.contains("_memberFn_") || ((call) s).funID.contains("_memberFn_")) return;
 //        System.out.println("inline " + ((call) s).funID + " in " + currentFun);
-        if (((call) s).funID.contains("makeSlice_int") || ((call) s).funID.contains("mergeSortInf")) return;
+//        if (((call) s).funID.contains("makeSlice_int") || ((call) s).funID.contains("mergeSortInf")) return;
         blk.stmts.remove(blk.stmts.get(i)); // remove call
         if (toCpy.successors().size() > 0) {
             currentRet = new block();

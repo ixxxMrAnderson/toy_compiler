@@ -20,7 +20,7 @@ import java.util.HashSet;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/codegen/sorting/merge_sort.mx";
+        String file_name = "./testcases/optim-new/inline.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 //
