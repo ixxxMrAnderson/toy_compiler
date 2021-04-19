@@ -58,6 +58,7 @@ public class inline implements Pass{
                     currentRet.stmts.add(blk.stmts.get(i));
                     blk.stmts.remove(blk.stmts.get(i));
                 }
+                if (blk.nxtBlock != null) currentRet.stmts.add(new jump(blk.nxtBlock));
                 copied = new HashMap<>();
                 blk.stmts.add(new jump(copyBlk(blocks.get(((call) s).funID))));
 //                System.out.println("inline " + ((call) s).funID + " in "+blk.index);
