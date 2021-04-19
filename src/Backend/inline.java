@@ -31,13 +31,13 @@ public class inline implements Pass{
         }
 //        System.out.println("----------------------------------------");
 //        System.out.println(detected.size());
-        if (detected.size() < 50 && detected.size() != 11) { // 19 43
+//        if (detected.size() < 50 && detected.size() != 11) { // 19 43
             for (String name : blocks.keySet()) {
                 currentFun = name;
 //        System.out.println("-------------------------------------"+name+"-------------------------------------------");
                 visitBlock(blocks.get(name));
             }
-        }
+//        }
     }
 
     public void detectCall(block blk){
@@ -100,6 +100,8 @@ public class inline implements Pass{
     public void INLINE(block blk, Integer i){
         statement s = blk.stmts.get(i);
         block toCpy = blocks.get(((call) s).funID);
+        if (currentFun.contains("_memberFn_") || ((call) s).funID.contains("_memberFn_")) return;
+//        System.out.println("inline " + ((call) s).funID + " in " + currentFun);
         blk.stmts.remove(blk.stmts.get(i)); // remove call
         if (toCpy.successors().size() > 0) {
             currentRet = new block();
