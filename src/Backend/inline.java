@@ -83,6 +83,20 @@ public class inline implements Pass{
         }
     }
 
+    public entity createAlias(entity e){
+        entity e_ = new entity(e);
+        if (!e.is_constant) {
+            if (!e_.id.startsWith("@") && !e_.id.startsWith("%")){
+                if (!e_.id.equals("_S0") && !e_.id.equals("_SP")){
+                    if (!(e_.id.startsWith("_A") && isNumeric(e_.id.substring(2, 3)))){
+                        e_.id = e_.id + "_alias";
+                    }
+                }
+            }
+        }
+        return e_;
+    }
+
     @Override
     public void visitBlock(block blk) {
         if (visited.contains(blk.index)) return;
@@ -92,19 +106,79 @@ public class inline implements Pass{
             statement s = blk.stmts.get(i);
             if (s instanceof call && canInline(((call) s).funID) && !((call) s).inlined){
 //                System.out.println(((call) s).funID);
-                currentRet = new block();
-                currentRet.index = alloc();
-                blk.stmts.remove(blk.stmts.get(i));
-                while (blk.stmts.size() > i) {
-                    currentRet.stmts.add(blk.stmts.get(i));
-                    blk.stmts.remove(blk.stmts.get(i));
-                }
-                if (blk.nxtBlock != null) currentRet.stmts.add(new jump(blk.nxtBlock));
-                copied = new HashMap<>();
-                blk.stmts.add(new jump(copyBlk(blocks.get(((call) s).funID))));
+                block toCpy = blocks.get(((call) s).funID);
+                blk.stmts.remove(blk.stmts.get(i)); // remove call
+//                HashMap<String, String> tmp = new HashMap<>();
+//                while (true){
+//                    if (toCpy.stmts.size() == 0 || !(toCpy.stmts.get(0) instanceof assign)) break;
+//                    assign a = (assign) toCpy.stmts.get(0);
+//                    if (a.rhs == null || a.rhs.is_constant || !a.rhs.id.startsWith("_A")) break;
+//                    else {
+//                        tmp.put(a.rhs.id, a.lhs.id);
+//                        toCpy.stmts.remove(a);
+//                    }
+//                }
+//                for (int k = 0; k < tmp.size(); ++k){
+//                    assign a = (assign) blk.stmts.get(i - k - 1);
+//                    a.lhs = createAlias(new entity(tmp.get(a.lhs.id)));
+//                }
+                if (toCpy.successors().size() > 0) {
+                    currentRet = new block();
+                    currentRet.index = alloc();
+                    while (blk.stmts.size() > i) {
+                        currentRet.stmts.add(blk.stmts.get(i));
+                        blk.stmts.remove(blk.stmts.get(i));
+                    }
+                    if (blk.nxtBlock != null) currentRet.stmts.add(new jump(blk.nxtBlock));
+                    copied = new HashMap<>();
+                    blk.stmts.add(new jump(copyBlk(toCpy)));
 //                System.out.println("inline " + ((call) s).funID + " in "+blk.index);
 //                System.out.println(blk.successors());
 //                System.out.println(copied);
+                } else {
+                    for (int j = 0; j < toCpy.stmts.size(); ++j){
+//            System.out.println(i);
+                        statement s_ = toCpy.stmts.get(j);
+                        if (s_ instanceof binary) {
+                            binary b = (binary) s_;
+                            blk.stmts.add(i++, new binary(createAlias(b.lhs), createAlias(b.op1), createAlias(b.op2), b.op));
+                        } else if (s_ instanceof ret) {
+                            ret r = (ret) s_;
+                            if (r.value != null) {
+                                blk.stmts.add(i++, new assign(new entity("_A0"), createAlias(r.value)));
+                            }
+                            break;
+                        } else if (s_ instanceof assign) {
+                            assign a = (assign) s_;
+                            if (a.rhs != null) {
+                                blk.stmts.add(i++, new assign(createAlias(a.lhs), createAlias(a.rhs)));
+                            } else {
+                                blk.stmts.add(i++, new assign(createAlias(a.lhs), null));
+                            }
+                        } else if (s_ instanceof call) {
+                            call c = (call) s_;
+                            blk.stmts.add(i++, new call(c.funID));
+                        } else if (s_ instanceof load) {
+                            load l = (load) s_;
+                            if (l.id != null){
+                                blk.stmts.add(i++, new load(createAlias(l.id), createAlias(l.to), true));
+                            } else if (l.addr != null){
+                                blk.stmts.add(i++, new load(createAlias(l.addr), createAlias(l.to)));
+                            } else {
+                                blk.stmts.add(i++, new load(l.sp, createAlias(l.to)));
+                            }
+                        } else if (s_ instanceof store) {
+                            store st = (store) s_;
+                            if (st.id != null){
+                                blk.stmts.add(i++, new store(createAlias(st.id), createAlias(st.value), true));
+                            } else if (st.addr != null){
+                                blk.stmts.add(i++, new store(createAlias(st.addr), createAlias(st.value)));
+                            } else {
+                                blk.stmts.add(i++, new store(st.sp, createAlias(st.value)));
+                            }
+                        }
+                    }
+                }
             }
         }
 //        System.out.println("RNG_SIZE: " + blocks.get("rng").stmts.size());
@@ -128,76 +202,48 @@ public class inline implements Pass{
             statement s = blk.stmts.get(i);
             if (s instanceof binary) {
                 binary b = (binary) s;
-                entity op1 = new entity(b.op1);
-                entity op2 = new entity(b.op2);
-                entity lhs = new entity(b.lhs);
-                if (!op1.is_constant && definedVar.get(currentFun).contains(op1.id)) op1.id = op1.id + "_alias";
-                if (!op2.is_constant && definedVar.get(currentFun).contains(op2.id)) op2.id = op2.id + "_alias";
-                if (!lhs.is_constant && definedVar.get(currentFun).contains(lhs.id)) lhs.id = lhs.id + "_alias";
-                cpy.stmts.add(new binary(new entity(lhs), new entity(op1), new entity(op2), b.op));
+                cpy.stmts.add(new binary(createAlias(b.lhs), createAlias(b.op1), createAlias(b.op2), b.op));
             } else if (s instanceof jump) {
                 jump j = (jump) s;
                 cpy.stmts.add(new jump(copyBlk((j.destination))));
                 break;
             } else if (s instanceof branch) {
                 branch b = (branch) s;
-                entity flag = new entity(b.flag);
-                if (!flag.is_constant && definedVar.get(currentFun).contains(flag.id)) flag.id = flag.id + "_alias";
-                cpy.stmts.add(new branch(new entity(flag), copyBlk(b.trueBranch), copyBlk(b.falseBranch)));
+                cpy.stmts.add(new branch(createAlias(b.flag), copyBlk(b.trueBranch), copyBlk(b.falseBranch)));
             } else if (s instanceof ret) {
                 ret r = (ret) s;
                 if (((ret) s).value != null) {
-                    entity value = new entity(r.value);
-                    if (!value.is_constant && definedVar.get(currentFun).contains(value.id)) value.id = value.id + "_alias";
-                    cpy.stmts.add(new assign(new entity("_A0"), new entity(value)));
+                    cpy.stmts.add(new assign(new entity("_A0"), createAlias(r.value)));
                 }
                 cpy.stmts.add(new jump(currentRet));
                 break;
             } else if (s instanceof assign) {
                 assign a = (assign) s;
                 if (a.rhs != null) {
-                    entity rhs = new entity(a.rhs);
-                    if (!rhs.is_constant && definedVar.get(currentFun).contains(rhs.id)) rhs.id = rhs.id + "_alias";
-                    entity lhs = new entity(a.lhs);
-                    if (!lhs.is_constant && definedVar.get(currentFun).contains(lhs.id)) lhs.id = lhs.id + "_alias";
-                    cpy.stmts.add(new assign(new entity(lhs), new entity(rhs)));
+                    cpy.stmts.add(new assign(createAlias(a.lhs), createAlias(a.rhs)));
                 } else {
-                    entity lhs = new entity(a.lhs);
-                    if (!lhs.is_constant && definedVar.get(currentFun).contains(lhs.id)) lhs.id = lhs.id + "_alias";
-                    cpy.stmts.add(new assign(new entity(lhs), null));
+                    cpy.stmts.add(new assign(createAlias(a.lhs), null));
                 }
             } else if (s instanceof call) {
                 call c = (call) s;
                 cpy.stmts.add(new call(c.funID));
             } else if (s instanceof load) {
                 load l = (load) s;
-                entity to = new entity(l.to);
-                if (!to.is_constant && definedVar.get(currentFun).contains(to.id)) to.id = to.id + "_alias";
                 if (l.id != null){
-                    entity id = new entity(l.id);
-                    if (!id.is_constant && definedVar.get(currentFun).contains(id.id)) id.id = id.id + "_alias";
-                    cpy.stmts.add(new load(new entity(id), new entity(to), true));
+                    cpy.stmts.add(new load(createAlias(l.id), createAlias(l.to), true));
                 } else if (l.addr != null){
-                    entity addr = new entity(l.addr);
-                    if (!addr.is_constant && definedVar.get(currentFun).contains(addr.id)) addr.id = addr.id + "_alias";
-                    cpy.stmts.add(new load(new entity(addr), new entity(to)));
+                    cpy.stmts.add(new load(createAlias(l.addr), createAlias(l.to)));
                 } else {
-                    cpy.stmts.add(new load(l.sp, new entity(to)));
+                    cpy.stmts.add(new load(l.sp, createAlias(l.to)));
                 }
             } else if (s instanceof store) {
                 store s_ = (store) s;
-                entity value = new entity(s_.value);
-                if (!value.is_constant && definedVar.get(currentFun).contains(value.id)) value.id = value.id + "_alias";
                 if (s_.id != null){
-                    entity id = new entity(s_.id);
-                    if (!id.is_constant && definedVar.get(currentFun).contains(id.id)) id.id = id.id + "_alias";
-                    cpy.stmts.add(new store(new entity(id), new entity(value), true));
+                    cpy.stmts.add(new store(createAlias(s_.id), createAlias(s_.value), true));
                 } else if (s_.addr != null){
-                    entity addr = new entity(s_.addr);
-                    if (!addr.is_constant && definedVar.get(currentFun).contains(addr.id)) addr.id = addr.id + "_alias";
-                    cpy.stmts.add(new store(new entity(addr), new entity(value)));
+                    cpy.stmts.add(new store(createAlias(s_.addr), createAlias(s_.value)));
                 } else {
-                    cpy.stmts.add(new store(s_.sp, new entity(value)));
+                    cpy.stmts.add(new store(s_.sp, createAlias(s_.value)));
                 }
             }
         }

@@ -166,7 +166,6 @@ public class RegAllocate {
 //                        id = stackAlias.get(currentFun).get(id);
                         index2blk.get(blk).stmts.add(i, new store(tmp_stack.get(id), new entity(reg)));
                     }
-                    // todo LiveAnalysis again
                 }
                 if (precolored.contains(def)) def = null;
                 for (String id : use) {
@@ -636,7 +635,7 @@ public class RegAllocate {
 //        System.out.println("rewrite: ");
         for (String v : spilledNodes){
             sp += 4;
-//            System.out.println("SPILL: "+v+"____"+sp);
+            System.out.println("SPILL: "+v+"____"+sp);
             for (Integer blk : blklist){
                 for (int i = 0; i < index2blk.get(blk).stmts.size(); ++i) {
                     statement s = index2blk.get(blk).stmts.get(i);

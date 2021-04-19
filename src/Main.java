@@ -20,10 +20,11 @@ import java.util.HashSet;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/codegen/t63.mx";
+        String file_name = "./testcases/optim-new/inline.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 //
+        
         try {
             MxLexer lexer = new MxLexer(CharStreams.fromStream(input));
             lexer.removeErrorListeners();
