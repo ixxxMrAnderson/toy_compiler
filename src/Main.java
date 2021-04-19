@@ -20,11 +20,12 @@ import java.util.HashSet;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/optim-new/inline.mx";
+        String file_name = "./testcases/codegen/sorting/merge_sort.mx";
+//        String file_name = "./testcases/codegen/shortest_path/dijkstra.mx";
+//        String file_name = "./testcases/codegen/t63.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 //
-
         try {
             MxLexer lexer = new MxLexer(CharStreams.fromStream(input));
             lexer.removeErrorListeners();
@@ -45,6 +46,7 @@ public class Main {
                 HashMap<Integer, HashSet<Integer>> dom2sub = new HashMap<>();
                 new SSA(blocks, dom2sub);
                 new constPropagation(blocks);
+//            new IRPrinter(blocks);
                 new CFGopt(blocks);
 //            new IRPrinter(blocks);
                 new ADCE(blocks);

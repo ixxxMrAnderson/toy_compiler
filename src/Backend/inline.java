@@ -89,7 +89,7 @@ public class inline implements Pass{
             if (!e_.id.startsWith("@") && !e_.id.startsWith("%")){
                 if (!e_.id.equals("_S0") && !e_.id.equals("_SP")){
                     if (!(e_.id.startsWith("_A") && isNumeric(e_.id.substring(2, 3)))){
-                        e_.id = e_.id + "_alias";
+                        e_.id = e_.id + "_alias" + cntInline;
                     }
                 }
             }
@@ -97,7 +97,9 @@ public class inline implements Pass{
         return e_;
     }
 
+    public Integer cntInline = 0;
     public void INLINE(block blk, Integer i){
+        cntInline++;
         statement s = blk.stmts.get(i);
         block toCpy = blocks.get(((call) s).funID);
         if (!currentFun.equals("main")) return;
