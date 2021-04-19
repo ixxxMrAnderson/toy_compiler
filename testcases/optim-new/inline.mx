@@ -29,6 +29,10 @@ int unsigned_shr(int x, int k) { // k should be (0, 31)
 int rng(int rng_seed) {
     int rng_mask = 1073741823;
     int x = rng_seed;
+    x = x ^ unsigned_shl(x, 13);
+    x = x ^ unsigned_shr(x, 17);
+    x = x ^ unsigned_shl(x, 5);
+    x = x & rng_mask;
     return x;
 }
 
@@ -45,13 +49,22 @@ int test(int q, int w, int e, int r, int t, int y, int u, int i, int o, int p) {
 }
 
 int main() {
-    int rng_seed = 100000;
-    int w = rng(rng_seed); // B3
-    int x = rng(w);
-    int y = rng(x);
-    int z = rng(y);
-    int zz = rng(z);
-    rng_seed = zz;
-    test(w & 3, w >> 28, x & 1, x >> 29, y >> 25, y & 31, z >> 15, z & 32767, zz >> 15, zz & 32767);
-    return 19; // B7
+    int rng_seed = 19260817;
+    int sum = 0;
+    for ( ; ; ) {
+        int u = rng(rng_seed);
+        int v = rng(u);
+        rng_seed = v;
+        if ((u & 255) != (v & 255)) {
+            int w = rng(rng_seed);
+            int x = rng(w);
+			int y = rng(x);
+			int z = rng(y);
+			int zz = rng(z);
+			rng_seed = zz;
+            sum = sum ^ test(w & 3, w >> 28, x & 1, x >> 29, y >> 25, y & 31, z >> 15, z & 32767, zz >> 15, zz & 32767);
+        }
+		else break;
+    }
+    return sum - 19;
 }

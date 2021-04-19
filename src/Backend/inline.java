@@ -97,6 +97,67 @@ public class inline implements Pass{
         return e_;
     }
 
+    public void INLINE(block blk, Integer i){
+        statement s = blk.stmts.get(i);
+        block toCpy = blocks.get(((call) s).funID);
+        blk.stmts.remove(blk.stmts.get(i)); // remove call
+        if (toCpy.successors().size() > 0) {
+            currentRet = new block();
+            currentRet.index = alloc();
+            while (blk.stmts.size() > i) {
+                currentRet.stmts.add(blk.stmts.get(i));
+                blk.stmts.remove(blk.stmts.get(i));
+            }
+            if (blk.nxtBlock != null) currentRet.stmts.add(new jump(blk.nxtBlock));
+            copied = new HashMap<>();
+            blk.stmts.add(new jump(copyBlk(toCpy)));
+        } else {
+            for (int j = 0; j < toCpy.stmts.size(); ++j) {
+//            System.out.println(i);
+                statement s_ = toCpy.stmts.get(j);
+                if (s_ instanceof binary) {
+                    binary b = (binary) s_;
+                    blk.stmts.add(i++, new binary(createAlias(b.lhs), createAlias(b.op1), createAlias(b.op2), b.op));
+                } else if (s_ instanceof ret) {
+                    ret r = (ret) s_;
+                    if (r.value != null) {
+                        blk.stmts.add(i++, new assign(new entity("_A0"), createAlias(r.value)));
+                    }
+                    break;
+                } else if (s_ instanceof assign) {
+                    assign a = (assign) s_;
+                    if (a.rhs != null) {
+                        blk.stmts.add(i++, new assign(createAlias(a.lhs), createAlias(a.rhs)));
+                    } else {
+                        blk.stmts.add(i++, new assign(createAlias(a.lhs), null));
+                    }
+                } else if (s_ instanceof call) {
+                    call c = (call) s_;
+                    blk.stmts.add(i++, new call(c.funID));
+                    if (canInline(c.funID)) INLINE(blk, i - 1);
+                } else if (s_ instanceof load) {
+                    load l = (load) s_;
+                    if (l.id != null) {
+                        blk.stmts.add(i++, new load(createAlias(l.id), createAlias(l.to), true));
+                    } else if (l.addr != null) {
+                        blk.stmts.add(i++, new load(createAlias(l.addr), createAlias(l.to)));
+                    } else {
+                        blk.stmts.add(i++, new load(l.sp, createAlias(l.to)));
+                    }
+                } else if (s_ instanceof store) {
+                    store st = (store) s_;
+                    if (st.id != null) {
+                        blk.stmts.add(i++, new store(createAlias(st.id), createAlias(st.value), true));
+                    } else if (st.addr != null) {
+                        blk.stmts.add(i++, new store(createAlias(st.addr), createAlias(st.value)));
+                    } else {
+                        blk.stmts.add(i++, new store(st.sp, createAlias(st.value)));
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public void visitBlock(block blk) {
         if (visited.contains(blk.index)) return;
@@ -104,81 +165,8 @@ public class inline implements Pass{
 //        System.out.println("visit_"+blk.index);
         for (int i = 0; i < blk.stmts.size(); ++i){
             statement s = blk.stmts.get(i);
-            if (s instanceof call && canInline(((call) s).funID) && !((call) s).inlined){
-//                System.out.println(((call) s).funID);
-                block toCpy = blocks.get(((call) s).funID);
-                blk.stmts.remove(blk.stmts.get(i)); // remove call
-//                HashMap<String, String> tmp = new HashMap<>();
-//                while (true){
-//                    if (toCpy.stmts.size() == 0 || !(toCpy.stmts.get(0) instanceof assign)) break;
-//                    assign a = (assign) toCpy.stmts.get(0);
-//                    if (a.rhs == null || a.rhs.is_constant || !a.rhs.id.startsWith("_A")) break;
-//                    else {
-//                        tmp.put(a.rhs.id, a.lhs.id);
-//                        toCpy.stmts.remove(a);
-//                    }
-//                }
-//                for (int k = 0; k < tmp.size(); ++k){
-//                    assign a = (assign) blk.stmts.get(i - k - 1);
-//                    a.lhs = createAlias(new entity(tmp.get(a.lhs.id)));
-//                }
-                if (toCpy.successors().size() > 0) {
-                    currentRet = new block();
-                    currentRet.index = alloc();
-                    while (blk.stmts.size() > i) {
-                        currentRet.stmts.add(blk.stmts.get(i));
-                        blk.stmts.remove(blk.stmts.get(i));
-                    }
-                    if (blk.nxtBlock != null) currentRet.stmts.add(new jump(blk.nxtBlock));
-                    copied = new HashMap<>();
-                    blk.stmts.add(new jump(copyBlk(toCpy)));
-//                System.out.println("inline " + ((call) s).funID + " in "+blk.index);
-//                System.out.println(blk.successors());
-//                System.out.println(copied);
-                } else {
-                    for (int j = 0; j < toCpy.stmts.size(); ++j){
-//            System.out.println(i);
-                        statement s_ = toCpy.stmts.get(j);
-                        if (s_ instanceof binary) {
-                            binary b = (binary) s_;
-                            blk.stmts.add(i++, new binary(createAlias(b.lhs), createAlias(b.op1), createAlias(b.op2), b.op));
-                        } else if (s_ instanceof ret) {
-                            ret r = (ret) s_;
-                            if (r.value != null) {
-                                blk.stmts.add(i++, new assign(new entity("_A0"), createAlias(r.value)));
-                            }
-                            break;
-                        } else if (s_ instanceof assign) {
-                            assign a = (assign) s_;
-                            if (a.rhs != null) {
-                                blk.stmts.add(i++, new assign(createAlias(a.lhs), createAlias(a.rhs)));
-                            } else {
-                                blk.stmts.add(i++, new assign(createAlias(a.lhs), null));
-                            }
-                        } else if (s_ instanceof call) {
-                            call c = (call) s_;
-                            blk.stmts.add(i++, new call(c.funID));
-                        } else if (s_ instanceof load) {
-                            load l = (load) s_;
-                            if (l.id != null){
-                                blk.stmts.add(i++, new load(createAlias(l.id), createAlias(l.to), true));
-                            } else if (l.addr != null){
-                                blk.stmts.add(i++, new load(createAlias(l.addr), createAlias(l.to)));
-                            } else {
-                                blk.stmts.add(i++, new load(l.sp, createAlias(l.to)));
-                            }
-                        } else if (s_ instanceof store) {
-                            store st = (store) s_;
-                            if (st.id != null){
-                                blk.stmts.add(i++, new store(createAlias(st.id), createAlias(st.value), true));
-                            } else if (st.addr != null){
-                                blk.stmts.add(i++, new store(createAlias(st.addr), createAlias(st.value)));
-                            } else {
-                                blk.stmts.add(i++, new store(st.sp, createAlias(st.value)));
-                            }
-                        }
-                    }
-                }
+            if (s instanceof call && canInline(((call) s).funID)){
+                INLINE(blk, i);
             }
         }
 //        System.out.println("RNG_SIZE: " + blocks.get("rng").stmts.size());
