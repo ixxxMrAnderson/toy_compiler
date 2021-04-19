@@ -20,7 +20,7 @@ import java.util.HashSet;
 public class Main {
     public static void main(String[] args) throws Exception{
 
-        String file_name = "./testcases/codegen/sorting/bubble_sort.mx";
+        String file_name = "./testcases/codegen/t57.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 //
@@ -49,6 +49,7 @@ public class Main {
 //            new IRPrinter(blocks);
                 new ADCE(blocks);
                 new inline(blocks);
+                new CFGopt(blocks);
 //                new IRPrinter(blocks);
                 HashMap<Integer, HashSet<String>> in = new HashMap<>();
                 HashMap<Integer, HashSet<String>> out = new HashMap<>();

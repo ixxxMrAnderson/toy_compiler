@@ -7,11 +7,14 @@ import MIR.*;
 public class inline implements Pass{
     public HashSet<Integer> visited = new HashSet<>();
     public HashSet<Integer> detected = new HashSet<>();
+    public HashSet<Integer> defined = new HashSet<>();
     public String currentFun;
     public HashMap<String, HashSet<String>> callInFun = new HashMap<>();
     public HashMap<String, block> blocks;
     public block currentRet;
+    public HashMap<String, HashSet<String>> definedVar = new HashMap<>();
     public Integer max = 0;
+//    public HashMap<String, String> alias = new HashMap<>();
 
     public inline(HashMap<String, block> blocks){
         this.blocks = blocks;
@@ -19,8 +22,10 @@ public class inline implements Pass{
             currentFun = name;
             callInFun.put(name, new HashSet<>());
             detectCall(blocks.get(name));
+            definedVar.put(name, new HashSet<>());
+            defineVar(blocks.get(name));
         }
-//        System.out.println(detected);
+//        System.out.println(definedVar);
         for (Integer i : detected){
             if (i != null && i > max) max = i;
         }
@@ -40,6 +45,38 @@ public class inline implements Pass{
             }
         }
         for (block b : blk.successors()) detectCall(b);
+    }
+
+    public void defineVar(block blk){
+        if (defined.contains(blk.index)) return;
+        else defined.add(blk.index);
+        for (statement s : blk.stmts){
+            String def = null;
+            if (s instanceof assign){
+                if (((assign) s).rhs != null) def = ((assign) s).lhs.id;
+            } else if (s instanceof binary){
+                def = ((binary) s).lhs.id;
+            } else if (s instanceof load){
+                def = ((load) s).to.id;
+            }
+            if (def != null && !def.startsWith("_TMP") && !def.startsWith("@") && !def.startsWith("%")){
+                if (!def.equals("_S0") && !def.equals("_SP")){
+                    if (!(def.startsWith("_A") && isNumeric(def.substring(2, 3)))){
+                        if (!definedVar.get(currentFun).contains(def)) definedVar.get(currentFun).add(def);
+                    }
+                }
+            }
+        }
+        for (block b : blk.successors()) defineVar(b);
+    }
+
+    public boolean isNumeric(String str) {
+        try {
+            Double.parseDouble(str);
+            return true;
+        } catch(Exception e){
+            return false;
+        }
     }
 
     @Override
@@ -87,48 +124,76 @@ public class inline implements Pass{
             statement s = blk.stmts.get(i);
             if (s instanceof binary) {
                 binary b = (binary) s;
-                cpy.stmts.add(new binary(new entity(b.lhs), new entity(b.op1), new entity(b.op2), b.op));
+                entity op1 = new entity(b.op1);
+                entity op2 = new entity(b.op2);
+                entity lhs = new entity(b.lhs);
+                if (!op1.is_constant && definedVar.get(currentFun).contains(op1.id)) op1.id = op1.id + "_alias";
+                if (!op2.is_constant && definedVar.get(currentFun).contains(op2.id)) op2.id = op2.id + "_alias";
+                if (!lhs.is_constant && definedVar.get(currentFun).contains(lhs.id)) lhs.id = lhs.id + "_alias";
+                cpy.stmts.add(new binary(new entity(lhs), new entity(op1), new entity(op2), b.op));
             } else if (s instanceof jump) {
                 jump j = (jump) s;
                 cpy.stmts.add(new jump(copyBlk((j.destination))));
                 break;
             } else if (s instanceof branch) {
                 branch b = (branch) s;
-                cpy.stmts.add(new branch(new entity(b.flag), copyBlk(b.trueBranch), copyBlk(b.falseBranch)));
+                entity flag = new entity(b.flag);
+                if (!flag.is_constant && definedVar.get(currentFun).contains(flag.id)) flag.id = flag.id + "_alias";
+                cpy.stmts.add(new branch(new entity(flag), copyBlk(b.trueBranch), copyBlk(b.falseBranch)));
             } else if (s instanceof ret) {
                 ret r = (ret) s;
                 if (((ret) s).value != null) {
-                    cpy.stmts.add(new assign(new entity("_A0"), new entity(r.value)));
+                    entity value = new entity(r.value);
+                    if (!value.is_constant && definedVar.get(currentFun).contains(value.id)) value.id = value.id + "_alias";
+                    cpy.stmts.add(new assign(new entity("_A0"), new entity(value)));
                 }
                 cpy.stmts.add(new jump(currentRet));
                 break;
             } else if (s instanceof assign) {
                 assign a = (assign) s;
                 if (a.rhs != null) {
-                    cpy.stmts.add(new assign(new entity(a.lhs), new entity(a.rhs)));
+                    entity rhs = new entity(a.rhs);
+                    if (!rhs.is_constant && definedVar.get(currentFun).contains(rhs.id)) rhs.id = rhs.id + "_alias";
+                    entity lhs = new entity(a.lhs);
+                    if (!lhs.is_constant && definedVar.get(currentFun).contains(lhs.id)) lhs.id = lhs.id + "_alias";
+                    cpy.stmts.add(new assign(new entity(lhs), new entity(rhs)));
                 } else {
-                    cpy.stmts.add(new assign(new entity(a.lhs), null));
+                    entity lhs = new entity(a.lhs);
+                    if (!lhs.is_constant && definedVar.get(currentFun).contains(lhs.id)) lhs.id = lhs.id + "_alias";
+                    cpy.stmts.add(new assign(new entity(lhs), null));
                 }
             } else if (s instanceof call) {
                 call c = (call) s;
                 cpy.stmts.add(new call(c.funID));
             } else if (s instanceof load) {
                 load l = (load) s;
+                entity to = new entity(l.to);
+                if (!to.is_constant && definedVar.get(currentFun).contains(to.id)) to.id = to.id + "_alias";
                 if (l.id != null){
-                    cpy.stmts.add(new load(new entity(l.id), new entity(l.to), true));
+                    entity id = new entity(l.id);
+                    if (!id.is_constant && definedVar.get(currentFun).contains(id.id)) id.id = id.id + "_alias";
+                    cpy.stmts.add(new load(new entity(id), new entity(to), true));
                 } else if (l.addr != null){
-                    cpy.stmts.add(new load(new entity(l.addr), new entity(l.to)));
+                    entity addr = new entity(l.addr);
+                    if (!addr.is_constant && definedVar.get(currentFun).contains(addr.id)) addr.id = addr.id + "_alias";
+                    cpy.stmts.add(new load(new entity(addr), new entity(to)));
                 } else {
-                    cpy.stmts.add(new load(l.sp, new entity(l.to)));
+                    cpy.stmts.add(new load(l.sp, new entity(to)));
                 }
             } else if (s instanceof store) {
                 store s_ = (store) s;
+                entity value = new entity(s_.value);
+                if (!value.is_constant && definedVar.get(currentFun).contains(value.id)) value.id = value.id + "_alias";
                 if (s_.id != null){
-                    cpy.stmts.add(new store(new entity(s_.id), new entity(s_.value), true));
+                    entity id = new entity(s_.id);
+                    if (!id.is_constant && definedVar.get(currentFun).contains(id.id)) id.id = id.id + "_alias";
+                    cpy.stmts.add(new store(new entity(id), new entity(value), true));
                 } else if (s_.addr != null){
-                    cpy.stmts.add(new store(new entity(s_.addr), new entity(s_.value)));
+                    entity addr = new entity(s_.addr);
+                    if (!addr.is_constant && definedVar.get(currentFun).contains(addr.id)) addr.id = addr.id + "_alias";
+                    cpy.stmts.add(new store(new entity(addr), new entity(value)));
                 } else {
-                    cpy.stmts.add(new store(s_.sp, new entity(s_.value)));
+                    cpy.stmts.add(new store(s_.sp, new entity(value)));
                 }
             }
         }
