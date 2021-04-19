@@ -103,7 +103,11 @@ public class inline implements Pass{
                 break;
             } else if (s instanceof assign) {
                 assign a = (assign) s;
-                cpy.stmts.add(new assign(new entity(a.lhs), new entity(a.rhs)));
+                if (a.rhs != null) {
+                    cpy.stmts.add(new assign(new entity(a.lhs), new entity(a.rhs)));
+                } else {
+                    cpy.stmts.add(new assign(new entity(a.lhs), null));
+                }
             } else if (s instanceof call) {
                 call c = (call) s;
                 cpy.stmts.add(new call(c.funID));
@@ -138,9 +142,11 @@ public class inline implements Pass{
 
     public boolean walk(String from, String to){
         path.add(from);
-        for (String des : callInFun.get(from)){
-            if (des.equals(to)) return true;
-            else if (!path.contains(des)) return walk(des, to);
+        if (callInFun.containsKey(from)) {
+            for (String des : callInFun.get(from)) {
+                if (des.equals(to)) return true;
+                else if (!path.contains(des)) return walk(des, to);
+            }
         }
         return false;
     }
