@@ -104,9 +104,9 @@ public class IRBuilder implements ASTVisitor {
             if (it.sections.get(i) instanceof varDefNode) curMainBlk = currentBlock;
         }
         it.sections = tmp;
-        if (is_53) {
-            blocks.remove("main");
-        }
+//        if (is_53) {
+//            blocks.remove("main");
+//        }
         return it;
     }
 
