@@ -131,6 +131,9 @@ public class inline implements Pass{
                 }
             }
         }
+        if (blk.nxtBlock != null) cpy.nxtBlock = copyBlk(blk.nxtBlock);
+        if (blk.optOrBlk != null) cpy.optOrBlk = copyBlk(blk.optOrBlk);
+        if (blk.optAndBlk != null) cpy.optOrBlk = copyBlk(blk.optAndBlk);
         return cpy;
     }
 
