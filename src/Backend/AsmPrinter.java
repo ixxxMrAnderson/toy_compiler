@@ -18,10 +18,12 @@ public class AsmPrinter implements Pass{
     public String currentFun;
     public HashMap<String, Integer> stackAlloc;
     public HashMap<String, Integer> spillPara;
+    public HashMap<String, block> blocks;
+    public HashMap<block, Boolean> blk2call = new HashMap<>();
 
     public AsmPrinter(HashMap<String, block> b, HashMap<String
             , Integer> stackAlloc, HashMap<String, Integer> spillPara){
-
+        blocks = b;
         regIdentifier.add("zero"); // 0
         regIdentifier.add("ra");   // 1
         regIdentifier.add("sp");   // 2
@@ -81,24 +83,12 @@ public class AsmPrinter implements Pass{
                 System.out.println(getBlockName(blk) + ":");
             } else {
                 Integer sp = spillPara.get(currentFun) * 4 + stackAlloc.get(currentFun) + 12;
-                if (sp >= 4096){
-                    System.out.println("\tlui\tsp,-" + sp);
-                    System.out.println("\taddi\tsp,sp,-" + sp);
-                    System.out.println("\tlui\ta7," + (sp - 4));
-                    System.out.println("\taddi\ta7,sp," + (sp - 4));
-                    System.out.println("\tsw\ts0,a7");
-                    System.out.println("\tlui\ta7," + (sp - 8));
-                    System.out.println("\taddi\ta7,sp," + (sp - 8));
-                    System.out.println("\tsw\tra,a7");
-                    System.out.println("\tlui\ts0," + sp);
-                    System.out.println("\taddi\ts0,s0," + sp);
-                    System.out.println("\tadd\ts0,s0,sp");
-                } else {
                     System.out.println("\taddi\tsp,sp,-" + sp);
                     System.out.println("\tsw\ts0," + (sp - 4) + "(sp)");
-                    System.out.println("\tsw\tra," + (sp - 8) + "(sp)");
+                    if (callIn(blocks.get(currentFun))) {
+                        System.out.println("\tsw\tra," + (sp - 8) + "(sp)");
+                    }
                     System.out.println("\taddi\ts0,sp," + sp);
-                }
             }
             for (int i = 0; i < blk.stmts.size(); ++i) {
                 statement s = blk.stmts.get(i);
@@ -108,20 +98,11 @@ public class AsmPrinter implements Pass{
                     jump j = (jump) s;
                     if (j.destination == null){
                         Integer sp = spillPara.get(currentFun) * 4 + stackAlloc.get(currentFun) + 12;
-                        if (sp >= 4096){
-                            System.out.println("\tlui\ts0," + (sp - 4));
-                            System.out.println("\taddi\ts0,sp," + (sp - 4));
-                            System.out.println("\tlw\ts0,s0");
-                            System.out.println("\tlui\tra," + (sp - 8));
-                            System.out.println("\taddi\tra,sp," + (sp - 8));
-                            System.out.println("\tlw\tra,ra");
-                            System.out.println("\tlui\tsp," + sp);
-                            System.out.println("\taddi\tsp,sp," + sp);
-                        } else {
-                            System.out.println("\tlw\ts0," + (sp - 4) + "(sp)");
+                        System.out.println("\tlw\ts0," + (sp - 4) + "(sp)");
+                        if (callIn(blocks.get(currentFun))) {
                             System.out.println("\tlw\tra," + (sp - 8) + "(sp)");
-                            System.out.println("\taddi\tsp,sp," + sp);
                         }
+                        System.out.println("\taddi\tsp,sp," + sp);
                         System.out.println("\tjr\tra");
                         System.out.println("\t.size\t" + currentFun + ", .-" + currentFun);
                     } else {
@@ -203,13 +184,7 @@ public class AsmPrinter implements Pass{
                             System.out.println("\tlw\t" + getReg(l.to) + ",%lo(.G"
                                     + sbssIndex.get(getEntityString(l.id)) + ")(" + getReg(l.to) + ")");
                         } else {
-                            if (l.sp+8 >= 4096){
-                                System.out.println("\tlui\t" + getReg(l.to) + ","+ (l.sp + 8));
-                                System.out.println("\taddi\t" + getReg(l.to) + "," + getReg(l.to) + "," +(l.sp + 8));
-                                System.out.println("\tlw\t" + getReg(l.to) + "," + getReg(l.to));
-                            } else {
-                                System.out.println("\tlw\t" + getReg(l.to) + ",-" + (l.sp + 8) + "(s0)");
-                            }
+                            System.out.println("\tlw\t" + getReg(l.to) + ",-" + (l.sp + 8) + "(s0)");
                         }
                     }
                 } else if (s instanceof store) {
@@ -224,14 +199,8 @@ public class AsmPrinter implements Pass{
                                 System.out.println("\tsw\t" + getReg(s_.value) + ",%lo(.G"
                                         + sbssIndex.get(getEntityString(s_.id)) + ")(a7)");
                           } else {
-                              if (s_.sp+8 >= 4096) {
-                                  System.out.println("\tlui\ta7,"+ (s_.sp + 8));
-                                  System.out.println("\taddi\ta7,a7," +(s_.sp + 8));
-                                  System.out.println("\tsw\t" + regIdentifier.get(s_.value.reg) + ",a7");
-                              } else {
-                                  System.out.println("\tsw\t" + regIdentifier.get(s_.value.reg) + ",-" + (s_.sp + 8) + "(s0)");
-                              }
-                      }
+                              System.out.println("\tsw\t" + regIdentifier.get(s_.value.reg) + ",-" + (s_.sp + 8) + "(s0)");
+                          }
                     }
                 }
             }
@@ -252,6 +221,20 @@ public class AsmPrinter implements Pass{
             } else break;
         }
         return false;
+    }
+
+    public boolean callIn(block blk){
+        if (blk2call.containsKey(blk)) return blk2call.get(blk);
+        boolean ret = false;
+        for (statement s : blk.stmts){
+            if (s instanceof call) ret = true;
+        }
+        blk2call.put(blk, ret);
+        for (block b : blk.successors()){
+            if (callIn(b)) ret = true;
+        }
+        if (ret) blk2call.put(blk, ret);
+        return ret;
     }
 
     private void handleGlobl(block globlDef){
