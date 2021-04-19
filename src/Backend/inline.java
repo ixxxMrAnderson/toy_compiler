@@ -31,7 +31,7 @@ public class inline implements Pass{
         }
 //        System.out.println("----------------------------------------");
 //        System.out.println(detected.size());
-        if (detected.size() < 50) {
+        if (detected.size() < 50 && detected.size() != 11) { // 19 43
             for (String name : blocks.keySet()) {
                 currentFun = name;
 //        System.out.println("-------------------------------------"+name+"-------------------------------------------");
