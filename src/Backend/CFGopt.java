@@ -30,13 +30,12 @@ public class CFGopt implements Pass{
                     }
                 }
                 if (index != -1 || pre.nxtBlock == index2blk.get(b)){
-                    if (index != -1){
-                        while (pre.stmts.size() > index){
+                    if (index != -1) {
+                        while (pre.stmts.size() > index) {
                             pre.stmts.remove(pre.stmts.get(index));
                         }
-                    } else {
-                        pre.nxtBlock = null;
                     }
+                    pre.nxtBlock = index2blk.get(b).nxtBlock;
                     for (statement s : index2blk.get(b).stmts) pre.stmts.add(s);
                 }
             }
