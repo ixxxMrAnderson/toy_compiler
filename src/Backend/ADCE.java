@@ -25,7 +25,7 @@ public class ADCE implements Pass{
         HashMap<Integer, HashSet<String>> out = new HashMap<>();
 //        System.out.println(blk.index);
         new LivenessAnalysis(blocks, in, out);
-//        System.out.println("live analysis done: "+blk.stmts.size());
+//        System.out.println("begin: "+blk.stmts.size());
         HashSet<String> live = new HashSet<>();
         for (String id : out.get(blk.index)) live.add(id);
         for (int i = blk.stmts.size() - 1; i >= 0; --i) {
@@ -40,6 +40,9 @@ public class ADCE implements Pass{
             } else if (s instanceof branch) {
                 branch b = (branch) s;
                 if (!b.flag.is_constant) use.add(b.flag.id);
+            } else if (s instanceof jump) {
+                jump j = (jump) s;
+                if (j.destination == blk) break;
             } else if (s instanceof ret) {
                 ret r = (ret) s;
                 if (r.value != null && !r.value.is_constant) use.add(r.value.id);

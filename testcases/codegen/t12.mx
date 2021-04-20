@@ -7,36 +7,6 @@ Input:
 === end ===
 Output:
 === output ===
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
-str1str2str3str4str5str6str7str8str9str10
 === end ===
 ExitCode: 0
 InstLimit: -1
@@ -63,3 +33,5 @@ int main()
 	}
 	return 0;
 }
+
+
