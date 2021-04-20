@@ -29,7 +29,7 @@ public class Peephole {
 //                            System.out.println("continue1");
                             continue;
                         }
-                        if (((assign) t).rhs == null && ((assign) t).rhs.is_constant) {
+                        if (((assign) t).rhs == null || ((assign) t).rhs.is_constant) {
 //                            System.out.println("break1");
                             break;
                         }
