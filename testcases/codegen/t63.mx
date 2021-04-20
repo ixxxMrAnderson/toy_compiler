@@ -71,12 +71,35 @@ class point {
 int main() {
 	point a = new point;
 	point b = new point;
+	point c = new point;
+	point d = new point;
 	a.printPoint();
 	a.set(849, -463, 480);
 	b.set(-208, 585, -150);
+	c.set(360, -670, -742);
+	d.set(-29, -591, -960);
 	a.add(b);
+	b.add(c);
+	d.add(c);
+	c.sub(a);
+	b.sub(d);
+	d.sub(c);
+	c.add(b);
+	a.add(b);
+	b.add(b);
+	c.add(c);
+	a.sub(d);
+	a.add(b);
+	b.sub(c);
 	println(toString(a.sqrLen()));
+	println(toString(b.sqrLen()));
+	println(toString(b.sqrDis(c)));
+	println(toString(d.sqrDis(a)));
+	println(toString(c.dot(a)));
+	b.cross(d).printPoint();
+	a.printPoint();
+	b.printPoint();
+	c.printPoint();
+	d.printPoint();
 	return 0;
 }
-
-

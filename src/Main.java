@@ -13,8 +13,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -28,6 +27,8 @@ public class Main {
 //        String file_name = "./testcases/optim-new/inline.mx";
 //        String file_name = "./testcases/sema/misc-package/misc-33.mx";
 //        InputStream input = new FileInputStream(file_name);
+//        PrintStream o = new PrintStream(new File("test.s"));
+//        System.setOut(o);
         InputStream input = System.in;
 //
         try {
@@ -65,7 +66,7 @@ public class Main {
 //                new IRPrinter(blocks);
                 new CFGopt(blocks);
 //                new IRPrinter(blocks);
-//                new Peephole(blocks);
+                new Peephole(blocks);
 //                new IRPrinter(blocks);
                 HashMap<Integer, HashSet<String>> in = new HashMap<>();
                 HashMap<Integer, HashSet<String>> out = new HashMap<>();
