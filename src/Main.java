@@ -24,7 +24,8 @@ public class Main {
 
 //        String file_name = "./testcases/codegen/sorting/merge_sort.mx";
 //        String file_name = "./testcases/codegen/shortest_path/dijkstra.mx";
-        String file_name = "./testcases/codegen/t63.mx";
+//        String file_name = "./testcases/codegen/t63.mx";
+        String file_name = "./testcases/optim-new/inline.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 //
@@ -56,10 +57,13 @@ public class Main {
             } else {
                 new constPropagation(blocks);
                 new CFGopt(blocks);
-//            new IRPrinter(blocks);
+//                new IRPrinter(blocks);
                 new ADCE(blocks);
                 new inline(blocks);
+//                new IRPrinter(blocks);
                 new CFGopt(blocks);
+//                new IRPrinter(blocks);
+                new Peephole(blocks);
 //                new IRPrinter(blocks);
                 HashMap<Integer, HashSet<String>> in = new HashMap<>();
                 HashMap<Integer, HashSet<String>> out = new HashMap<>();
@@ -67,7 +71,7 @@ public class Main {
                 new RegAllocate(blocks, in, out, stackAlloc);
             }
 //            new IRPrinter(blocks);
-                new AsmPrinter(blocks, stackAlloc, spillPara);
+            new AsmPrinter(blocks, stackAlloc, spillPara);
         } catch (error er) {
             System.err.println(er.toString());
             throw new RuntimeException();

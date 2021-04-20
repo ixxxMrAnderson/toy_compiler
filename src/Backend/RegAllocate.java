@@ -85,7 +85,6 @@ public class RegAllocate {
             HashMap<Integer, HashSet<String>> tmp_in = new HashMap<>();
             HashMap<Integer, HashSet<String>> tmp_out = new HashMap<>();
             new LivenessAnalysis(blocks, tmp_in, tmp_out);
-//            System.out.println(tmp_out);
             for (String id : tmp_out.get(blk)) live.add(id);
             for (int i = index2blk.get(blk).stmts.size() - 1; i >= 0; --i) {
                 statement s = index2blk.get(blk).stmts.get(i);
@@ -144,26 +143,18 @@ public class RegAllocate {
                         s_.value.reg = color.get(s_.value.id);
                     }
                 } else if (s instanceof call && !((call) s).inlined) {
-//                    System.out.println(live);
                     HashMap<String, Integer> tmp_stack = new HashMap<>();
                     for (String id : live){
                         entity reg = new entity("_S0");
-//                        System.out.println(color);
-//                        System.out.println(id);
                         reg.reg = color.get(id);
-//                        if (!stackAlias.get(currentFun).containsKey(id)) {
-                            sp += 4;
-//                            currentStack.put(id, sp);
-//                            System.out.println("not_contain");
-//                        } else id = stackAlias.get(currentFun).get(id);
+                        sp += 4;
                         tmp_stack.put(id, sp);
+//                        System.out.println("SPILL: "+id+"____"+sp);
                         index2blk.get(blk).stmts.add(i+1, new load(sp, new entity(reg)));
                     }
-//                    System.out.println();
                     for (String id : live){
                         entity reg = new entity("_S0");
                         reg.reg = color.get(id);
-//                        id = stackAlias.get(currentFun).get(id);
                         index2blk.get(blk).stmts.add(i, new store(tmp_stack.get(id), new entity(reg)));
                     }
                 }
@@ -192,22 +183,8 @@ public class RegAllocate {
                 System.out.println("time out");
                 break;
             }
-//            System.out.println("________________________________________________________________");
-//            System.out.println("simplifyList");
-//            System.out.println(simplifyList.size());
-//            System.out.println("freezelist");
-//            System.out.println(freezeList.size());
-//            System.out.println("spilllist");
-//            System.out.println(spillList.size());
-//            System.out.println("wtfffffffffffffffffffffffffffff");
-//            System.out.println(adjSet);
         }
         AssignColors();
-//        System.out.println("color: ");
-//        System.out.println(color);
-//        System.out.println("spilledNodes: ");
-//        System.out.println(spilledNodes);
-//        System.out.println(spilledNodes);
         if (!spilledNodes.isEmpty()){
             RewriteProgram();
             Allocate();
@@ -298,10 +275,6 @@ public class RegAllocate {
                 for (String id : precolored) live.remove(id);
             }
         }
-
-//        System.out.println("adjSet");
-//        System.out.println(adjSet);
-//        System.out.println(worklistMoves);
     }
 
     public void printMoveSet(HashSet<statement> set){
@@ -346,13 +319,6 @@ public class RegAllocate {
             else simplifyList.add(id);
         }
         initial = new HashSet<>();
-//        System.out.println("_______________makeWorkList_____________________");
-//        System.out.println("simplifyList");
-//        System.out.println(simplifyList);
-//        System.out.println("freezelist");
-//        System.out.println(freezeList);
-//        System.out.println("spilllist");
-//        System.out.println(spillList);
     }
 
     public HashSet<String> Adjacent(String n){
@@ -386,14 +352,6 @@ public class RegAllocate {
 
     public void Simplify(){
         String n = null;
-//        System.out.println("______________before_simplify_____________________");
-//        System.out.println("simplifyList");
-//        System.out.println(simplifyList);
-//        System.out.println("freezelist");
-//        System.out.println(freezeList);
-//        System.out.println("spilllist");
-//        System.out.println(spillList);
-//        System.out.println(selectStack);
         for (String id : simplifyList){
             n = id;
             break;
@@ -402,14 +360,6 @@ public class RegAllocate {
         if (n == null) System.out.println("______________________________SIM");
         selectStack.push(n);
         for (String m : Adjacent(n)) DecrementDegree(m);
-//        System.out.println("______________after_simplify_____________________");
-//        System.out.println("simplifyList");
-//        System.out.println(simplifyList);
-//        System.out.println("freezelist");
-//        System.out.println(freezeList);
-//        System.out.println("spilllist");
-//        System.out.println(spillList);
-//        System.out.println(selectStack);
     }
 
     public void DecrementDegree(String m){
@@ -479,18 +429,6 @@ public class RegAllocate {
                 AddWorkList(u);
             }
         }
-//        System.out.println("___________________coalesced__________________");
-//        printMoveSet(coalescedMoves);
-//        System.out.println("___________________active__________________");
-//        printMoveSet(activeMoves);
-//        System.out.println("___________________frozen__________________");
-//        printMoveSet(frozenMoves);
-//        System.out.println("___________________constraint__________________");
-//        printMoveSet(constrainedMoves);
-//        System.out.println("___________________todo__________________");
-//        printMoveSet(worklistMoves);
-//        System.out.println("___________________coalesced nodes__________________");
-//        System.out.println(coalescedNodes);
     }
 
     public void AddWorkList(String u){
@@ -501,10 +439,6 @@ public class RegAllocate {
             simplifyList.add(u);
         }
     }
-
-//    public boolean OK(String t, String r){
-//        return (!degree.containsKey(t) || degree.get(t) < K) || precolored.contains(t) || adjSet.contains("("+t+","+r+")");
-//    }
 
     public boolean Conservatve(HashSet<String> nodes){
         Integer k = 0;
@@ -526,7 +460,6 @@ public class RegAllocate {
         if (v == null) System.out.println("_________________________________________________-");
         coalescedNodes.add(v);
         alias.put(v, u);
-//        for (String id : worklistMoves.get(v).keyset()) nodeMoves.get(u).add(id);
         for (String t : Adjacent(v)){
             AddEdge(t, u);
             DecrementDegree(t);
@@ -599,9 +532,6 @@ public class RegAllocate {
                 if ((i >= 5 && i <= 7) || i == 9 || (i >= 18 && i <= 31)){
                     okColors.add(i);
                 }
-//                if ((i >= 29)){
-//                    okColors.add(i);
-//                }
             }
             if (adjList.containsKey(n)) {
                 for (String w : adjList.get(n)) {
@@ -621,11 +551,7 @@ public class RegAllocate {
                 color.put(n, c);
             }
         }
-//        System.out.println(color);
-//        System.out.println(alias);
-//        System.out.println(coalescedNodes);
         for (String n : coalescedNodes) {
-//            while (!color.containsKey(n)) n = GetAlias(n);
             color.put(n, color.get(GetAlias(n)));
         }
     }
@@ -654,7 +580,6 @@ public class RegAllocate {
                         if (b.lhs.id.equals(v)) {
                             b.lhs = new entity();
                             def = b.lhs.id;
-//                            System.out.println("\tdef(b.lhs)_" + def);
                         }
                     } else if (s instanceof branch) {
                         branch b = (branch) s;
@@ -677,8 +602,6 @@ public class RegAllocate {
                         if (a.lhs.id.equals(v) && a.rhs != null) {
                             a.lhs = new entity();
                             def = a.lhs.id;
-//                            System.out.println("\tdef(assign)_" + def);
-//                            System.out.println(a.rhs.id);
                         }
                     } else if (s instanceof load) {
                         load l = (load) s;
@@ -689,7 +612,6 @@ public class RegAllocate {
                         if (l.to.id.equals(v)){
                             l.to = new entity();
                             def = l.to.id;
-//                            System.out.println("\tdef(l.to)_" + def);
                         }
                     } else if (s instanceof store) {
                         store s_ = (store) s;
@@ -727,8 +649,6 @@ public class RegAllocate {
         for (String id : coalescedNodes) {
             if (!precolored.contains(id)) initial.add(id);
         }
-//        System.out.println("initial");
-//        System.out.println(initial);
         coloredNodes = new HashSet<>();
         coalescedNodes = new HashSet<>();
         moveList = new HashMap<>();

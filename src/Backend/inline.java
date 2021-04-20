@@ -14,18 +14,18 @@ public class inline implements Pass{
     public block currentRet;
     public HashMap<String, HashSet<String>> definedVar = new HashMap<>();
     public Integer max = 0;
-//    public HashMap<String, String> alias = new HashMap<>();
 
     public inline(HashMap<String, block> blocks){
         this.blocks = blocks;
+        HashSet<String> name_set = new HashSet<>();
         for (String name : blocks.keySet()){
             currentFun = name;
+            name_set.add(name);
             callInFun.put(name, new HashSet<>());
             detectCall(blocks.get(name));
             definedVar.put(name, new HashSet<>());
             defineVar(blocks.get(name));
         }
-//        System.out.println(definedVar);
         for (Integer i : detected){
             if (i != null && i > max) max = i;
         }
@@ -34,10 +34,12 @@ public class inline implements Pass{
 //        if (detected.size() < 50 && detected.size() != 11) { // 19 43
             for (String name : blocks.keySet()) {
                 currentFun = name;
-//        System.out.println("-------------------------------------"+name+"-------------------------------------------");
                 visitBlock(blocks.get(name));
             }
 //        }
+        for (String name : name_set) {
+            if (canInline(name) && !name.equals("main") && !name.equals("_VAR_DEF")) blocks.remove(name);
+        }
     }
 
     public void detectCall(block blk){
@@ -102,10 +104,8 @@ public class inline implements Pass{
         cntInline++;
         statement s = blk.stmts.get(i);
         block toCpy = blocks.get(((call) s).funID);
-        if (!currentFun.equals("main")) return;
-//        if (currentFun.contains("_memberFn_") || ((call) s).funID.contains("_memberFn_")) return;
+//        if (!currentFun.equals("main")) return;
 //        System.out.println("inline " + ((call) s).funID + " in " + currentFun);
-//        if (((call) s).funID.contains("makeSlice_int") || ((call) s).funID.contains("mergeSortInf")) return;
         blk.stmts.remove(blk.stmts.get(i)); // remove call
         if (toCpy.successors().size() > 0) {
             currentRet = new block();
@@ -119,7 +119,6 @@ public class inline implements Pass{
             blk.stmts.add(new jump(copyBlk(toCpy)));
         } else {
             for (int j = 0; j < toCpy.stmts.size(); ++j) {
-//            System.out.println(i);
                 statement s_ = toCpy.stmts.get(j);
                 if (s_ instanceof binary) {
                     binary b = (binary) s_;
@@ -140,8 +139,6 @@ public class inline implements Pass{
                 } else if (s_ instanceof call) {
                     call c = (call) s_;
                     blk.stmts.add(i++, new call(c.funID));
-//                    System.out.println("before inline "+c.funID+": "+i);
-//                    if (canInline(c.funID)) INLINE(blk, i - 1);
                 } else if (s_ instanceof load) {
                     load l = (load) s_;
                     if (l.id != null) {
@@ -169,21 +166,18 @@ public class inline implements Pass{
                 }
             }
         }
-//        cntInline--;
     }
 
     @Override
     public void visitBlock(block blk) {
         if (visited.contains(blk.index)) return;
         else visited.add(blk.index);
-//        System.out.println("visit_"+blk.index);
         for (int i = 0; i < blk.stmts.size(); ++i){
             statement s = blk.stmts.get(i);
             if (s instanceof call && canInline(((call) s).funID)){
                 INLINE(blk, i);
             }
         }
-//        System.out.println("RNG_SIZE: " + blocks.get("rng").stmts.size());
         for (block b : blk.successors()) visitBlock(b);
     }
     public HashMap<block, block> copied = new HashMap<>();
@@ -194,7 +188,6 @@ public class inline implements Pass{
 
     public block copyBlk(block blk){
         if (blk == null) return null;
-//        System.out.println("in_cpy");
         if (copied.containsKey(blk)) return copied.get(blk);
         block cpy = new block();
         copied.put(blk, cpy);

@@ -10,17 +10,43 @@ public class CFGopt implements Pass{
     public HashMap<block, block> alias = new HashMap<>();
     public HashSet<Integer> detected = new HashSet<>();
     public HashSet<Integer> visited = new HashSet<>();
+    public HashMap<Integer, HashSet<Integer>> preBlk = new HashMap<>();
+    public HashMap<Integer, block> index2blk = new HashMap<>();
 
     public CFGopt(HashMap<String, block> blocks){
         for (String name : blocks.keySet()){
             detectAlias(blocks.get(name));
             visitBlock(blocks.get(name));
         }
+        for (Integer b : index2blk.keySet()){
+            if (preBlk.containsKey(b) && preBlk.get(b).size() == 1){
+                block pre = null;
+                for (Integer i : preBlk.get(b)) pre = index2blk.get(i);
+                Integer index = -1;
+                for (int i = 0; i < pre.stmts.size(); ++i){
+                    if (pre.stmts.get(i) instanceof jump && ((jump) pre.stmts.get(i)).destination == index2blk.get(b)){
+                        index = i;
+                        break;
+                    }
+                }
+                if (index != -1 || pre.nxtBlock == index2blk.get(b)){
+                    if (index != -1){
+                        while (pre.stmts.size() > index){
+                            pre.stmts.remove(pre.stmts.get(index));
+                        }
+                    } else {
+                        pre.nxtBlock = null;
+                    }
+                    for (statement s : index2blk.get(b).stmts) pre.stmts.add(s);
+                }
+            }
+        }
     }
 
     public void detectAlias(block blk){
         if (detected.contains(blk.index)) return;
         else detected.add(blk.index);
+        index2blk.put(blk.index, blk);
         if (blk.stmts.size() > 0){
             if (blk.stmts.get(0) instanceof jump) {
                 if (((jump) blk.stmts.get(0)).destination != null) {
@@ -39,7 +65,11 @@ public class CFGopt implements Pass{
                 }
             }
         }
-        for (block nxt : blk.successors()) detectAlias(nxt);
+        for (block nxt : blk.successors()) {
+            if (!preBlk.containsKey(nxt.index)) preBlk.put(nxt.index, new HashSet<>());
+            preBlk.get(nxt.index).add(blk.index);
+            detectAlias(nxt);
+        }
     }
 
     @Override
