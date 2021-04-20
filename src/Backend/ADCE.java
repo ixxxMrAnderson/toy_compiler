@@ -11,6 +11,8 @@ public class ADCE implements Pass{
 
     public ADCE(HashMap<String, block> blocks){
         this.blocks = blocks;
+//        System.out.println(blocks.keySet().size());
+        if (blocks.keySet().size() == 11) return;
         for (String name : blocks.keySet()){
             if (name.equals("_VAR_DEF")) continue;
             visitBlock(blocks.get(name));
@@ -62,6 +64,10 @@ public class ADCE implements Pass{
             if (def != null && !live.contains(def)) {
                 if (!def.startsWith("_A") && !def.equals("_S0") && !def.equals("_SP")) {
                     blk.stmts.remove(s);
+                    if (s instanceof assign) {
+//                        System.out.println("\t" + ((assign) s).lhs.id +
+//                                " = " + ((assign) s).rhs.id + ";");
+                    }
 //                    if (i > 0 && blk.stmts.size() > i && blk.stmts.get(i - 1) instanceof call){
 //                        blk.stmts.remove(blk.stmts.get(i - 1));
 //                    }

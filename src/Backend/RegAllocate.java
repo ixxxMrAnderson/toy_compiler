@@ -143,7 +143,14 @@ public class RegAllocate {
                     }
                 } else if (s instanceof call && !((call) s).inlined) {
                     HashMap<String, Integer> tmp_stack = new HashMap<>();
-                    for (String id : live){
+                    HashSet<String> live_ = new HashSet<>();
+                    HashSet<Integer> reg_ = new HashSet<>();
+                    for (String id : live) {
+                        if (reg_.contains(color.get(id))) continue;
+                        else reg_.add(color.get(id));
+                        live_.add(id);
+                    }
+                    for (String id : live_){
                         entity reg = new entity("_S0");
                         reg.reg = color.get(id);
                         sp += 4;
@@ -151,7 +158,7 @@ public class RegAllocate {
 //                        System.out.println("SPILL: "+id+"____"+sp);
                         index2blk.get(blk).stmts.add(i+1, new load(sp, new entity(reg)));
                     }
-                    for (String id : live){
+                    for (String id : live_){
                         entity reg = new entity("_S0");
                         reg.reg = color.get(id);
                         index2blk.get(blk).stmts.add(i, new store(tmp_stack.get(id), new entity(reg)));

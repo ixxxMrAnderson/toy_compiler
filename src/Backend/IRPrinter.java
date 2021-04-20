@@ -141,17 +141,6 @@ public class IRPrinter implements Pass {
         } else if (s instanceof call) {
             call c = (call) s;
             System.out.println("\tcall " + c.funID + ";");
-//        } else if (s instanceof define) {
-//            define d = (define) s;
-//            if (d.assign != null) {
-//                if (d.toAssign) {
-//                    System.out.println("\t" + getEntityString(d.var) +
-//                            " = " + getEntityString(d.assign) + ";");
-//                } else {
-//                    System.out.println("\tdefine " + getEntityString(d.var) + (d.assign == null ? "" :
-//                            (", assign " + getEntityString(d.assign))) + ";");
-//                }
-//            }
         } else if (s instanceof load) {
             load l = (load) s;
             if (l.addr != null) {
@@ -178,15 +167,7 @@ public class IRPrinter implements Pass {
                 }
             }
         } else if (s instanceof phi){
-//            phi p = (phi) s;
-//            System.out.println("\tphi " + getEntityString(p.born));
-//            if (p.varList != null && p.varList.size() > 0) {
-//                System.out.println("[");
-//                for (entity i : p.varList) {
-//                    System.out.println(getEntityString(i) + ", ");
-//                }
-//                System.out.println("];");
-//            }
+
         }
     }
 }
