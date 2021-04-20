@@ -169,7 +169,7 @@ public class inline implements Pass{
                 }
             }
         }
-        cntInline--;
+//        cntInline--;
     }
 
     @Override
