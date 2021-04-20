@@ -65,7 +65,7 @@ public class Main {
 //                new IRPrinter(blocks);
                 new CFGopt(blocks);
 //                new IRPrinter(blocks);
-                new Peephole(blocks);
+//                new Peephole(blocks);
 //                new IRPrinter(blocks);
                 HashMap<Integer, HashSet<String>> in = new HashMap<>();
                 HashMap<Integer, HashSet<String>> out = new HashMap<>();
