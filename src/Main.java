@@ -24,9 +24,9 @@ public class Main {
 
 //        String file_name = "./testcases/codegen/sorting/merge_sort.mx";
 //        String file_name = "./testcases/codegen/shortest_path/dijkstra.mx";
-//        String file_name = "./testcases/codegen/t12.mx";
+        String file_name = "./testcases/codegen/t63.mx";
 //        String file_name = "./testcases/optim-new/inline.mx";
-        String file_name = "./testcases/sema/misc-package/misc-33.mx";
+//        String file_name = "./testcases/sema/misc-package/misc-33.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 //
@@ -57,6 +57,7 @@ public class Main {
                 new RegAlloc(blocks, stackAlloc);
             } else {
                 new constPropagation(blocks);
+//                new IRPrinter(blocks);
                 new CFGopt(blocks);
 //                new IRPrinter(blocks);
                 new ADCE(blocks);

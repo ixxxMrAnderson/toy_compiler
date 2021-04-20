@@ -44,6 +44,7 @@ public class Peephole {
 //                        System.out.println("remove " + ((assign) t).lhs.id);
                         ((assign) s).lhs.id = ((assign) t).lhs.id;
                         blk.stmts.remove(t);
+                        break;
                     } else break;
                 }
             }

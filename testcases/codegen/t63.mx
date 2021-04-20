@@ -32,15 +32,246 @@ class point {
 		y = 0;
 		z = 0;
 	}
+	void set(int a_x, int a_y, int a_z){
+		x = a_x;
+		y = a_y;
+		z = a_z;
+	}
+	int sqrLen(){
+		return x * x + y * y + z * z;
+	}
+	int sqrDis(point other) {
+		return (x - other.x) * (x - other.x) + (y - other.y) * (y - other.y) + (z - other.z) * (z - other.z);
+	}
+	int dot(point other) {
+		return x * other.x + y * other.y + z * other.z;
+	}
 	point cross(point other) {
 		point retval = new point;
+		retval.set(y * other.z - z * other.y, z * other.x - x * other.z, x * other.y - y * other.x);
 		return retval;
+	}
+	point add(point other) {
+		x = x + other.x;
+		y = y + other.y;
+		z = z + other.z;
+		return this;
+	}
+	point sub(point other) {
+		x = x - other.x;
+		y = y - other.y;
+		z = z - other.z;
+		return this;
+	}
+	void printPoint() {
+		println("(" + toString(x) + ", " + toString(y) + ", " + toString(z) + ")");
 	}
 };
 
 int main() {
+	point a = new point;
 	point b = new point;
+	point c = new point;
 	point d = new point;
-	b.cross(d);
+	a.printPoint();
+	a.set(849, -463, 480);
+	b.set(-208, 585, -150);
+	c.set(360, -670, -742);
+	d.set(-29, -591, -960);
+	a.add(b);
+	b.add(c);
+	d.add(c);
+	c.sub(a);
+	b.sub(d);
+	d.sub(c);
+	c.add(b);
+	a.add(b);
+	b.add(b);
+	c.add(c);
+	a.sub(d);
+	a.add(b);
+	b.sub(c);
+	println(toString(a.sqrLen()));
+	println(toString(b.sqrLen()));
+	println(toString(b.sqrDis(c)));
+	println(toString(d.sqrDis(a)));
+	println(toString(c.dot(a)));
+	b.cross(d).printPoint();
+	a.printPoint();
+	b.printPoint();
+	c.printPoint();
+	d.printPoint();
 	return 0;
 }
+
+
+/*
+    _A0(zero) = 12(zero);
+	call malloc;
+	_TMP_626(zero) = _A0(zero);
+	call point_memberFn_point;
+	a_0(zero) = _TMP_626(zero);
+	_A0(zero) = 12(zero);
+	call malloc;
+	_TMP_631(zero) = _A0(zero);
+	call point_memberFn_point;
+	b_0(zero) = _TMP_631(zero);
+	_A0(zero) = 12(zero);
+	call malloc;
+	_TMP_636(zero) = _A0(zero);
+	call point_memberFn_point;
+	c_0(zero) = _TMP_636(zero);
+	_A0(zero) = 12(zero);
+	call malloc;
+	_TMP_641(zero) = _A0(zero);
+	call point_memberFn_point;
+	d_0(zero) = _TMP_641(zero);
+	_A0(zero) = a_0(zero);
+	call point_memberFn_printPoint;
+	_TMP_645(zero) = _A0(zero);
+	_A0(zero) = a_0(zero);
+	_A1(zero) = 849(zero);
+	_A2(zero) = -463(zero);
+	_A3(zero) = 480(zero);
+	call point_memberFn_set;
+	_TMP_659(zero) = _A0(zero);
+	_A0(zero) = b_0(zero);
+	_A1(zero) = -208(zero);
+	_A2(zero) = 585(zero);
+	_A3(zero) = -150(zero);
+	call point_memberFn_set;
+	_TMP_676(zero) = _A0(zero);
+	_A0(zero) = c_0(zero);
+	_A1(zero) = 360(zero);
+	_A2(zero) = -670(zero);
+	_A3(zero) = -742(zero);
+	call point_memberFn_set;
+	_TMP_693(zero) = _A0(zero);
+	_A0(zero) = d_0(zero);
+	_A1(zero) = -29(zero);
+	_A2(zero) = -591(zero);
+	_A3(zero) = -960(zero);
+	call point_memberFn_set;
+	_TMP_713(zero) = _A0(zero);
+	_A0(zero) = a_0(zero);
+	_A1(zero) = b_0(zero);
+	call point_memberFn_add;
+	_TMP_716(zero) = _A0(zero);
+	_A0(zero) = b_0(zero);
+	_A1(zero) = c_0(zero);
+	call point_memberFn_add;
+	_TMP_719(zero) = _A0(zero);
+	_A0(zero) = d_0(zero);
+	_A1(zero) = c_0(zero);
+	call point_memberFn_add;
+	_TMP_722(zero) = _A0(zero);
+	_A0(zero) = c_0(zero);
+	_A1(zero) = a_0(zero);
+	call point_memberFn_sub;
+	_TMP_725(zero) = _A0(zero);
+	_A0(zero) = b_0(zero);
+	_A1(zero) = d_0(zero);
+	call point_memberFn_sub;
+	_TMP_728(zero) = _A0(zero);
+	_A0(zero) = d_0(zero);
+	_A1(zero) = c_0(zero);
+	call point_memberFn_sub;
+	_TMP_731(zero) = _A0(zero);
+	_A0(zero) = c_0(zero);
+	_A1(zero) = b_0(zero);
+	call point_memberFn_add;
+	_TMP_734(zero) = _A0(zero);
+	_A0(zero) = a_0(zero);
+	_A1(zero) = b_0(zero);
+	call point_memberFn_add;
+	_TMP_737(zero) = _A0(zero);
+	_A0(zero) = b_0(zero);
+	_A1(zero) = b_0(zero);
+	call point_memberFn_add;
+	_TMP_740(zero) = _A0(zero);
+	_A0(zero) = c_0(zero);
+	_A1(zero) = c_0(zero);
+	call point_memberFn_add;
+	_TMP_743(zero) = _A0(zero);
+	_A0(zero) = a_0(zero);
+	_A1(zero) = d_0(zero);
+	call point_memberFn_sub;
+	_TMP_746(zero) = _A0(zero);
+	_A0(zero) = a_0(zero);
+	_A1(zero) = b_0(zero);
+	call point_memberFn_add;
+	_TMP_749(zero) = _A0(zero);
+	_A0(zero) = b_0(zero);
+	_A1(zero) = c_0(zero);
+	call point_memberFn_sub;
+	_TMP_752(zero) = _A0(zero);
+	_A0(zero) = a_0(zero);
+	call point_memberFn_sqrLen;
+	_TMP_756(zero) = _A0(zero);
+	_A0(zero) = _TMP_756(zero);
+	call toString;
+	_TMP_758(zero) = _A0(zero);
+	_A0(zero) = _TMP_758(zero);
+	call println;
+	_TMP_760(zero) = _A0(zero);
+	_A0(zero) = b_0(zero);
+	call point_memberFn_sqrLen;
+	_TMP_764(zero) = _A0(zero);
+	_A0(zero) = _TMP_764(zero);
+	call toString;
+	_TMP_766(zero) = _A0(zero);
+	_A0(zero) = _TMP_766(zero);
+	call println;
+	_TMP_768(zero) = _A0(zero);
+	_A0(zero) = b_0(zero);
+	_A1(zero) = c_0(zero);
+	call point_memberFn_sqrDis;
+	_TMP_773(zero) = _A0(zero);
+	_A0(zero) = _TMP_773(zero);
+	call toString;
+	_TMP_775(zero) = _A0(zero);
+	_A0(zero) = _TMP_775(zero);
+	call println;
+	_TMP_777(zero) = _A0(zero);
+	_A0(zero) = d_0(zero);
+	_A1(zero) = a_0(zero);
+	call point_memberFn_sqrDis;
+	_TMP_782(zero) = _A0(zero);
+	_A0(zero) = _TMP_782(zero);
+	call toString;
+	_TMP_784(zero) = _A0(zero);
+	_A0(zero) = _TMP_784(zero);
+	call println;
+	_TMP_786(zero) = _A0(zero);
+	_A0(zero) = c_0(zero);
+	_A1(zero) = a_0(zero);
+	call point_memberFn_dot;
+	_TMP_791(zero) = _A0(zero);
+	_A0(zero) = _TMP_791(zero);
+	call toString;
+	_TMP_793(zero) = _A0(zero);
+	_A0(zero) = _TMP_793(zero);
+	call println;
+	_TMP_795(zero) = _A0(zero);
+	_A0(zero) = b_0(zero);
+	_A1(zero) = d_0(zero);
+	call point_memberFn_cross;
+	_TMP_799(zero) = _A0(zero);
+	_A0(zero) = _TMP_799(zero);
+	call point_memberFn_printPoint;
+	_TMP_800(zero) = _A0(zero);
+	_A0(zero) = a_0(zero);
+	call point_memberFn_printPoint;
+	_TMP_802(zero) = _A0(zero);
+	_A0(zero) = b_0(zero);
+	call point_memberFn_printPoint;
+	_TMP_804(zero) = _A0(zero);
+	_A0(zero) = c_0(zero);
+	call point_memberFn_printPoint;
+	_TMP_806(zero) = _A0(zero);
+	_A0(zero) = d_0(zero);
+	call point_memberFn_printPoint;
+	_TMP_808(zero) = _A0(zero);
+	ret 0(zero);
+	ret 0(zero);
+*/
