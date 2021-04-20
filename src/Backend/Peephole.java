@@ -9,10 +9,9 @@ public class Peephole {
     public HashSet<Integer> visited = new HashSet<>();
 
     public Peephole(HashMap<String, block> blocks) {
-        if (blocks.keySet().size() != 2) {
-            for (String name : blocks.keySet()) {
-                visitBlock(blocks.get(name));
-            }
+        for (String name : blocks.keySet()) {
+//                System.out.println(name);
+            visitBlock(blocks.get(name));
         }
     }
 

@@ -34,7 +34,6 @@ public class RegAllocate {
     public HashSet<String> coloredNodes = new HashSet<>();
     public HashMap<String, String> alias = new HashMap<>();
     public HashMap<String, Integer> color = new HashMap<>();
-    public HashMap<String, Integer> currentStack = new HashMap<>();
     public String currentFun;
     public Integer sp = 0;
     public Integer K = 18;
@@ -265,6 +264,11 @@ public class RegAllocate {
                     moveList.get(def).add(s);
                     worklistMoves.add(s);
                 }
+//                if (blk == 24){
+////                    System.out.println(i);
+////                    System.out.println(def);
+////                    System.out.println(live);
+//                }
                 if (def != null) {
                     for (String id : live) AddEdge(id, def);
                 }
@@ -284,6 +288,7 @@ public class RegAllocate {
     }
 
     public void AddEdge(String u, String v){
+//        System.out.println("Add edge: "+u+"____"+v);
         if (!adjSet.contains("("+u+","+v+")") && !u.equals(v)){
             adjSet.add("("+u+","+v+")");
             adjSet.add("("+v+","+u+")");
@@ -312,7 +317,7 @@ public class RegAllocate {
 
     public void MakeWorkList(){
         for (String id : initial){
-            if (id == null) System.out.println("make work list");
+//            if (id == null) System.out.println("make work list");
             if (precolored.contains(id)) continue;
             if (degree.containsKey(id) && degree.get(id) >= K) spillList.add(id);
             else if (MoveRelated(id)) freezeList.add(id);
@@ -357,7 +362,7 @@ public class RegAllocate {
             break;
         }
         simplifyList.remove(n);
-        if (n == null) System.out.println("______________________________SIM");
+//        if (n == null) System.out.println("______________________________SIM");
         selectStack.push(n);
         for (String m : Adjacent(n)) DecrementDegree(m);
     }
@@ -377,6 +382,7 @@ public class RegAllocate {
     }
 
     public void EnableMoves(HashSet<String> nodes){
+//        printMoveSet(workli        stMoves);
         for (String n : nodes){
             for (statement m : NodeMoves(n)){
                 if (activeMoves.contains(m)){
@@ -385,6 +391,7 @@ public class RegAllocate {
                 }
             }
         }
+//        printMoveSet(worklistMoves);
     }
 
     public void Coalesce(){
@@ -397,8 +404,9 @@ public class RegAllocate {
         String x = null, y = null, u = null, v = null;
         // todo: copy(x, y) = mv x, y
         assign a = (assign) m;
-        x = a.lhs.id;
-        y = a.rhs.id;
+        y = a.lhs.id;
+        x = a.rhs.id;
+//        System.out.println("___________________Coalesce_______"+x+"____"+y+"_______");
         x = GetAlias(x);
         y = GetAlias(y);
         if (precolored.contains(y)){
@@ -433,7 +441,7 @@ public class RegAllocate {
 
     public void AddWorkList(String u){
 
-        if (u == null) System.out.println("addWork list");
+//        if (u == null) System.out.println("addWork list");
         if (!precolored.contains(u) && !MoveRelated(u) && (!degree.containsKey(u) || degree.get(u) < K)){
             freezeList.remove(u);
             simplifyList.add(u);
@@ -455,19 +463,24 @@ public class RegAllocate {
 
     public void Combine(String u, String v){
 //        System.out.println("___________________COMBINE__"+u+" and " +v+"_________________");
+//        if (v.equals("_TMP_205") || v.equals("u_0"))
+//            System.out.println(selectStack);
         if (freezeList.contains(v)) freezeList.remove(v);
         else spillList.remove(v);
-        if (v == null) System.out.println("_________________________________________________-");
+//        if (v == null) System.out.println("_________________________________________________-");
         coalescedNodes.add(v);
         alias.put(v, u);
+        if (moveList.get(v) != null) {
+            for (statement mv : moveList.get(v)) moveList.get(u).add(mv);
+        }
         for (String t : Adjacent(v)){
             AddEdge(t, u);
             DecrementDegree(t);
         }
-        if (u == null) System.out.println("combine");
+//        if (u == null) System.out.println("combine");
         if (degree.containsKey(u) && degree.get(u) >= K && freezeList.contains(u)){
             freezeList.remove(u);
-            simplifyList.add(u);
+            spillList.add(u);
         }
     }
 
@@ -479,7 +492,7 @@ public class RegAllocate {
             break;
         }
         freezeList.remove(u);
-        if (u == null) System.out.println("freeze");
+//        if (u == null) System.out.println("freeze");
         simplifyList.add(u);
         FreezeMoves(u);
 //        System.out.println("___________________Freeze_end___________________");
@@ -490,13 +503,13 @@ public class RegAllocate {
             String x = null, y = null, v = null;
             // todo: copy(x, y) = mv x, y
             assign a = (assign) m;
-            x = a.lhs.id;
-            y = a.rhs.id;
+            y = a.lhs.id;
+            x = a.rhs.id;
             if (GetAlias(y).equals(GetAlias(u))) v = GetAlias(x);
             else v = GetAlias(y);
             activeMoves.remove(m);
             frozenMoves.add(m);
-            if (v == null) System.out.println("freeze move");
+//            if (v == null) System.out.println("freeze move");
             if (NodeMoves(v).isEmpty() && (!degree.containsKey(v) || degree.get(v) < K)){
                 freezeList.remove(v);
                 simplifyList.add(v);
@@ -511,7 +524,7 @@ public class RegAllocate {
             break;
         }
         spillList.remove(m);
-        if (m == null) System.out.println("spill");
+//        if (m == null) System.out.println("spill");
         simplifyList.add(m);
         FreezeMoves(m);
     }
@@ -548,10 +561,13 @@ public class RegAllocate {
                     c = i;
                     break;
                 }
+//                if (n.equals("u_0") || n.equals("v_0")) System.out.println("put "+n+", "+c);
                 color.put(n, c);
             }
         }
+//        System.out.println(coalescedNodes);
         for (String n : coalescedNodes) {
+//            if (n.equals("u_0") || n.equals("v_0")) System.out.println("alias : put "+n+"("+GetAlias(n)+")"+", "+color.get(GetAlias(n)));
             color.put(n, color.get(GetAlias(n)));
         }
     }
