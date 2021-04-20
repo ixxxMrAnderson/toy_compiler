@@ -134,10 +134,10 @@ public class IRPrinter implements Pass {
                     (" " + getEntityString(r.value))) + ";");
         } else if (s instanceof assign) {
             assign a = (assign) s;
-            if (a.rhs != null) {
+//            if (a.rhs != null) {
                 System.out.println("\t" + getEntityString(a.lhs) +
                         " = " + getEntityString(a.rhs) + ";");
-            }
+//            }
         } else if (s instanceof call) {
             call c = (call) s;
             System.out.println("\tcall " + c.funID + ";");

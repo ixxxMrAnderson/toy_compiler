@@ -12,8 +12,8 @@ public class ADCE implements Pass{
     public ADCE(HashMap<String, block> blocks){
         this.blocks = blocks;
         for (String name : blocks.keySet()){
+            if (name.equals("_VAR_DEF")) continue;
             visitBlock(blocks.get(name));
-            for (block nxt : blocks.get(name).successors()) visitBlock(nxt);
         }
     }
 
@@ -59,9 +59,9 @@ public class ADCE implements Pass{
             if (def != null && !live.contains(def)) {
                 if (!def.startsWith("_A") && !def.equals("_S0") && !def.equals("_SP")) {
                     blk.stmts.remove(s);
-                    if (i > 0 && blk.stmts.size() > i && blk.stmts.get(i - 1) instanceof call){
-                        blk.stmts.remove(blk.stmts.get(i - 1));
-                    }
+//                    if (i > 0 && blk.stmts.size() > i && blk.stmts.get(i - 1) instanceof call){
+//                        blk.stmts.remove(blk.stmts.get(i - 1));
+//                    }
                     live.remove(def);
                     continue;
                 }

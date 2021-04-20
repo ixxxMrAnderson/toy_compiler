@@ -23,9 +23,9 @@ public class Main {
 
 //        String file_name = "./testcases/codegen/sorting/merge_sort.mx";
 //        String file_name = "./testcases/codegen/shortest_path/dijkstra.mx";
-//        String file_name = "./testcases/codegen/t63.mx";
+        String file_name = "./testcases/codegen/e7.mx";
 //        String file_name = "./testcases/optim-new/adce-adv.mx";
-        String file_name = "./testcases/sema/misc-package/misc-34.mx";
+//        String file_name = "./testcases/sema/misc-package/misc-34.mx";
 //        InputStream input = new FileInputStream(file_name);
 //        PrintStream o = new PrintStream(new File("test.s"));
 //        System.setOut(o);
