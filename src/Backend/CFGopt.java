@@ -22,7 +22,7 @@ public class CFGopt implements Pass{
             if (preBlk.containsKey(b) && preBlk.get(b).size() == 1){
                 block pre = null;
                 for (Integer i : preBlk.get(b)) pre = index2blk.get(i);
-                if (pre.tail() instanceof jump && ((jump) pre.tail()).destination == pre) continue;
+                if (pre.stmts.size() == 0 || pre.tail() instanceof jump && ((jump) pre.tail()).destination == pre) continue;
                 Integer index = -1;
                 for (int i = 0; i < pre.stmts.size(); ++i){
                     if (pre.stmts.get(i) instanceof jump && ((jump) pre.stmts.get(i)).destination == index2blk.get(b)){
