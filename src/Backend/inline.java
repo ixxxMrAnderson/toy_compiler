@@ -140,7 +140,8 @@ public class inline implements Pass{
                 } else if (s_ instanceof call) {
                     call c = (call) s_;
                     blk.stmts.add(i++, new call(c.funID));
-                    if (canInline(c.funID)) INLINE(blk, i - 1);
+//                    System.out.println("before inline "+c.funID+": "+i);
+//                    if (canInline(c.funID)) INLINE(blk, i - 1);
                 } else if (s_ instanceof load) {
                     load l = (load) s_;
                     if (l.id != null) {
@@ -159,6 +160,12 @@ public class inline implements Pass{
                     } else {
                         blk.stmts.add(i++, new store(st.sp, createAlias(st.value)));
                     }
+                }
+            }
+            for (int j = 0; j < blk.stmts.size(); ++j){
+                statement s_ = blk.stmts.get(j);
+                if (s_ instanceof call && canInline(((call) s_).funID)){
+                    INLINE(blk, j);
                 }
             }
         }
