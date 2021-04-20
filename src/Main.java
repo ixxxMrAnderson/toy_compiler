@@ -25,7 +25,7 @@ public class Main {
 //        String file_name = "./testcases/codegen/shortest_path/dijkstra.mx";
 //        String file_name = "./testcases/codegen/t63.mx";
 //        String file_name = "./testcases/optim-new/adce-adv.mx";
-        String file_name = "./testcases/sema/misc-package/misc-31.mx";
+        String file_name = "./testcases/sema/misc-package/misc-34.mx";
 //        InputStream input = new FileInputStream(file_name);
 //        PrintStream o = new PrintStream(new File("test.s"));
 //        System.setOut(o);
@@ -62,6 +62,7 @@ public class Main {
                 new CFGopt(blocks);
 //                new IRPrinter(blocks);
                 new ADCE(blocks);
+//                new IRPrinter(blocks);
                 new inline(blocks);
 //                new IRPrinter(blocks);
                 new CFGopt(blocks);
@@ -71,6 +72,7 @@ public class Main {
                 HashMap<Integer, HashSet<String>> in = new HashMap<>();
                 HashMap<Integer, HashSet<String>> out = new HashMap<>();
                 new LivenessAnalysis(blocks, in, out);
+//                new IRPrinter(blocks);
                 new RegAllocate(blocks, in, out, stackAlloc);
             }
 //            new IRPrinter(blocks);

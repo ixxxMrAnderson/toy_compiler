@@ -23,7 +23,9 @@ public class ADCE implements Pass{
         else visited.add(blk.index);
         HashMap<Integer, HashSet<String>> in = new HashMap<>();
         HashMap<Integer, HashSet<String>> out = new HashMap<>();
+//        System.out.println(blk.index);
         new LivenessAnalysis(blocks, in, out);
+//        System.out.println("live analysis done: "+blk.stmts.size());
         HashSet<String> live = new HashSet<>();
         for (String id : out.get(blk.index)) live.add(id);
         for (int i = blk.stmts.size() - 1; i >= 0; --i) {
@@ -54,12 +56,22 @@ public class ADCE implements Pass{
                 if (s_.addr != null) use.add(s_.addr.id);
                 if (!s_.value.is_constant) use.add(s_.value.id);
             }
-            for (String id : use) live.add(id);
-            if (def != null) {
-                blk.stmts.remove(s);
-                live.remove(def);
+            if (def != null && !live.contains(def)) {
+                if (!def.startsWith("_A") && !def.equals("_S0") && !def.equals("_SP")) {
+                    blk.stmts.remove(s);
+                    if (i > 0 && blk.stmts.size() > i && blk.stmts.get(i - 1) instanceof call){
+                        blk.stmts.remove(blk.stmts.get(i - 1));
+                    }
+                    live.remove(def);
+                    continue;
+                }
+            }
+            for (String id : use) {
+                if (!id.startsWith("_A") && !id.equals("_S0") && !id.equals("_SP")) live.add(id);
             }
         }
+//        System.out.println("done: " + blk.stmts.size());
+//        System.out.println("nxt: " + blk.successors().size());
         for (block b : blk.successors()) visitBlock(b);
     }
 }
