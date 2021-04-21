@@ -50,18 +50,30 @@ public class CFGopt implements Pass{
         index2blk.put(blk.index, blk);
         if (blk.stmts.size() > 0){
             if (blk.stmts.get(0) instanceof jump) {
-                if (((jump) blk.stmts.get(0)).destination != null) {
-                    alias.put(blk, ((jump) blk.stmts.get(0)).destination);
+                jump j = (jump) blk.stmts.get(0);
+                if (j.destination != null) {
+                    if (!alias.containsKey(j.destination) && blk != j.destination)
+                        alias.put(blk, j.destination);
                 }
             } else if (blk.stmts.get(0) instanceof branch) {
                 branch b = (branch) blk.stmts.get(0);
                 if (b.flag.is_constant){
                     if (b.flag.constant.expr_type.type == type.INT){
-                        if (b.flag.constant.int_value == 0) alias.put(blk, b.falseBranch);
-                        else alias.put(blk, b.trueBranch);
+                        if (b.flag.constant.int_value == 0) {
+                            if (!alias.containsKey(b.falseBranch) && blk != b.falseBranch)
+                                alias.put(blk, b.falseBranch);
+                        } else {
+                            if (!alias.containsKey(b.trueBranch) && blk != b.trueBranch)
+                                alias.put(blk, b.trueBranch);
+                        }
                     } else {
-                        if (b.flag.constant.bool_value) alias.put(blk, b.trueBranch);
-                        else alias.put(blk, b.falseBranch);
+                        if (b.flag.constant.bool_value) {
+                            if (!alias.containsKey(b.trueBranch) && blk != b.trueBranch)
+                                alias.put(blk, b.trueBranch);
+                        } else {
+                            if (!alias.containsKey(b.falseBranch) && blk != b.falseBranch)
+                                alias.put(blk, b.falseBranch);
+                        }
                     }
                 }
             }
