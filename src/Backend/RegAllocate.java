@@ -165,10 +165,10 @@ public class RegAllocate {
                     }
                 }
                 if (precolored.contains(def)) def = null;
+                if (def != null) live.remove(def);
                 for (String id : use) {
                     if (!precolored.contains(id)) live.add(id);
                 }
-                if (def != null) live.remove(def);
                 for (String id : precolored) live.remove(id);
             }
         }
@@ -278,11 +278,11 @@ public class RegAllocate {
 //                }
                 if (def != null) {
                     for (String id : live) AddEdge(id, def);
+                    live.remove(def);
                 }
                 for (String id : use) {
                     if (!precolored.contains(id)) live.add(id);
                 }
-                if (def != null) live.remove(def);
                 for (String id : precolored) live.remove(id);
             }
         }

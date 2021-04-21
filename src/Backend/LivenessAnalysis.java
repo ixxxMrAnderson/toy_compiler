@@ -26,6 +26,7 @@ public class LivenessAnalysis {
         for (String name : blocks.keySet()){
             deadVars = new HashSet<>();
             buildList(blocks.get(name));
+            if (name.equals("_VAR_DEF")) continue;
 //            System.out.println(name+": "+deadVars);
             collectDeadVar(blocks.get(name));
 //            System.out.println(name+": "+deadVars);

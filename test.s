@@ -13,121 +13,60 @@
 	.globl	main
 	.type	main, @function
 main:
-	addi	sp,sp,-12
-	sw	s0,8(sp)
-	addi	s0,sp,12
-	li	t0,19260817
-	lui	a7,%hi(.G0)
-	sw	t0,%lo(.G0)(a7)
-.B1:
-	lui	t0,%hi(.G0)
-	lw	t0,%lo(.G0)(t0)
-	li	a7,100
-	rem	t0,t0,a7
-	li	a7,0
-	sub	t0,t0,a7
-	snez	t0,t0
-	beq	t0,zero,.B2
-	j	.B3
-.B3:
-	lui	t0,%hi(.G0)
-	lw	t0,%lo(.G0)(t0)
-	addi	t0,t0,-1
-	lui	a7,%hi(.G0)
-	sw	t0,%lo(.G0)(a7)
-	j	.B1
-.B2:
-	li	t1,1073741823
-	lui	t0,%hi(.G0)
-	lw	t0,%lo(.G0)(t0)
-	li	t2,13
-	sll	t0,t0,t2
-	xor	t0,t0,t0
-	li	s2,17
-	li	t2,-2147483648
-	li	a7,0
-	slt	s1,t0,a7
-	xori	s1,s1,1
-	beq	s1,zero,.B4
-	j	.B5
-.B5:
-	sra	t2,t0,s2
-	mv	a0,t2
-	j	.B6
-.B6:
+	addi	sp,sp,-24
+	sw	s0,20(sp)
+	sw	ra,16(sp)
+	addi	s0,sp,24
+	li	a0,4
+	call	Mx_malloc
 	mv	t0,a0
-	xor	t0,t0,t0
-	li	t2,5
-	sll	t0,t0,t2
-	xor	t0,t0,t0
 	lui	a7,%hi(.G0)
 	sw	t0,%lo(.G0)(a7)
-	and	t0,t0,t1
-	mv	a0,t0
-	li	t0,1073741823
+	li	t0,0
+.B1:
 	lui	t1,%hi(.G0)
 	lw	t1,%lo(.G0)(t1)
-	li	t2,13
-	sll	t1,t1,t2
-	xor	t1,t1,t1
-	li	s2,17
-	li	t2,-2147483648
-	li	a7,0
-	slt	s1,t1,a7
-	xori	s1,s1,1
-	beq	s1,zero,.B7
-	j	.B8
-.B8:
-	sra	t2,t1,s2
-	mv	a0,t2
-	j	.B9
-.B9:
+	mv	a0,t1
+	sw	t0,-12(s0)
+	call	Mx_array_size
+	lw	t0,-12(s0)
 	mv	t1,a0
-	xor	t1,t1,t1
-	li	t2,5
-	sll	t1,t1,t2
-	xor	t1,t1,t1
-	lui	a7,%hi(.G0)
-	sw	t1,%lo(.G0)(a7)
-	and	t0,t1,t0
-	li	a7,127
-	and	t0,t0,a7
-	li	a7,100000
-	add	t0,t0,a7
-	li	t1,0
-	j	.B10
-.B10:
-	slt	t2,t1,t0
-	beq	t2,zero,.B11
-	j	.B12
-.B12:
-	addi	t1,t1,1
-	j	.B10
-.B11:
+	slt	t1,t0,t1
+	beq	t1,zero,.B2
+	j	.B3
+.B3:
+	li	s1,0
+	lui	t2,%hi(.G0)
+	lw	t2,%lo(.G0)(t2)
+	addi	t1,t0,1
+	li	a7,2
+	sll	t1,t1,a7
+	add	t1,t1,t2
+	sw	s1,0(t1)
+	lui	t1,%hi(.G0)
+	lw	t1,%lo(.G0)(t1)
+	addi	t2,t0,1
+	li	a7,2
+	sll	t2,t2,a7
+	add	t1,t2,t1
+	lw	t1,0(t1)
+	mv	a0,t1
+	sw	t0,-20(s0)
+	call	toString
+	lw	t0,-20(s0)
+	mv	t1,a0
+	mv	a0,t1
+	sw	t0,-16(s0)
+	call	print
+	lw	t0,-16(s0)
+	addi	t0,t0,1
+	j	.B1
+.B2:
 	li	a0,0
-	j	.B13
-.B7:
-	li	a6,31
-	sub	s1,a6,s2
-	li	a6,1
-	sll	s1,a6,s1
-	xor	t2,t1,t2
-	sra	t2,t2,s2
-	or	t2,s1,t2
-	mv	a0,t2
-	j	.B9
+	j	.B4
 .B4:
-	li	a6,31
-	sub	s1,a6,s2
-	li	a6,1
-	sll	s1,a6,s1
-	xor	t2,t0,t2
-	sra	t2,t2,s2
-	or	t2,s1,t2
-	mv	a0,t2
-	j	.B6
-.B13:
-	lw	s0,8(sp)
-	addi	sp,sp,12
+	lw	s0,20(sp)
+	lw	ra,16(sp)
+	addi	sp,sp,24
 	jr	ra
 	.size	main, .-main
