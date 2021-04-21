@@ -191,7 +191,10 @@ public class AsmPrinter implements Pass{
                     }
                 } else if (s instanceof store) {
                     store s_ = (store) s;
-                    if (s_.value.is_constant) s_.value.reg = regIdentifier.indexOf("a6");
+                    if (s_.value.is_constant) {
+                        s_.value.reg = regIdentifier.indexOf("a6");
+                        System.out.println("\tli\ta6," + getReg(s_.value));
+                    }
                     if (s_.addr != null) {
                             System.out.println("\tsw\t" + regIdentifier.get(s_.value.reg) + ",0("
                                     + getReg(s_.addr) + ")");

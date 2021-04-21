@@ -23,7 +23,7 @@ public class Main {
 
 //        String file_name = "./testcases/codegen/sorting/merge_sort.mx";
 //        String file_name = "./testcases/codegen/shortest_path/dijkstra.mx";
-        String file_name = "./testcases/codegen/t45.mx";
+        String file_name = "./testcases/codegen/t3.mx"; // e9 e7
 //        String file_name = "./testcases/optim-new/const-adv.mx";
 //        String file_name = "./testcases/sema/scope-package/scope-2.mx";
 //        InputStream input = new FileInputStream(file_name);

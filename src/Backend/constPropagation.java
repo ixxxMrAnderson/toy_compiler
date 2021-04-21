@@ -16,6 +16,7 @@ public class constPropagation{
 
     public constPropagation(HashMap<String, block> blocks){
         for (String name : blocks.keySet()){
+            if (name.equals("_VAR_DEF")) continue;
             index2blk = new HashMap<>();
             definedVar = new HashMap<>();
             Done = new HashSet<>();
