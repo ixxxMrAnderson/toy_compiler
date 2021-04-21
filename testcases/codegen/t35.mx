@@ -12,21 +12,12 @@ ExitCode: 20
 InstLimit: -1
 Origin Package: Codegen Pretest-572
 */
-int x;
-int y;
-int a;
-int b;
-
-int fun(int x, int y, int z){
-    return 0;
-}
-
 int main() {
-    int k = 0;
-    int a = 5;
-    int b = a;
-    k = x + (b + x) + (k + (k + a));
-    b = 3;
-    y = fun(x, y, 1);
+    int x = 10;
+    int y = x;
+    if (x == 10) {
+        int x = 20;
+        y = x;
+    }
     return y;
 }

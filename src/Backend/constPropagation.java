@@ -10,14 +10,15 @@ import java.util.HashSet;
 public class constPropagation{
     private HashMap<String, HashSet<defineNode>> definedVar = new HashMap<>();
     private HashSet<defineNode> workList = new HashSet<>();
-    private HashSet<defineNode> givenUp = new HashSet<>();
     private HashMap<Integer, block> index2blk = new HashMap<>();
     private HashMap<Integer, HashSet<Integer>> preBlk = new HashMap<>();
+    private HashSet<defineNode> Done = new HashSet<>();
 
     public constPropagation(HashMap<String, block> blocks){
         for (String name : blocks.keySet()){
             index2blk = new HashMap<>();
             definedVar = new HashMap<>();
+            Done = new HashSet<>();
             buildList(blocks.get(name));
 //            System.out.println(name+" build finished: ");
 //            for (defineNode d : workList) printDef(d);
@@ -83,8 +84,9 @@ public class constPropagation{
                 addD(((binary) s).lhs.id, blk.index, blk.stmts.indexOf(s));
             } else if (s instanceof assign){
                 if (((assign) s).rhs != null) {
-                    if (((assign) s).rhs.is_constant) addList(((assign) s).lhs.id, blk.index, blk.stmts.indexOf(s));
-                    else addD(((assign) s).lhs.id, blk.index, blk.stmts.indexOf(s));
+                    if (((assign) s).rhs.is_constant) {
+                        addList(((assign) s).lhs.id, blk.index, blk.stmts.indexOf(s));
+                    } else addD(((assign) s).lhs.id, blk.index, blk.stmts.indexOf(s));
                 }
             } else if (s instanceof load){
                 addD(((load) s).to.id, blk.index, blk.stmts.indexOf(s));
@@ -106,8 +108,10 @@ public class constPropagation{
 
     public void addList(String id, Integer blk, Integer index){
         if (!id.startsWith("_A") && !id.equals("_SP") && !id.equals("_S0")) {
-//            if ()
-            workList.add(new defineNode(index2blk.get(blk).stmts.get(index), blk));
+            defineNode def = new defineNode(index2blk.get(blk).stmts.get(index), blk);
+            workList.add(def);
+            if (!definedVar.containsKey(id)) definedVar.put(id, new HashSet<>());
+            definedVar.get(id).add(def);
         }
     }
 
@@ -180,7 +184,7 @@ public class constPropagation{
             const_ = new entity(cNode);
             id = b.lhs.id;
         }
-        if (!definedVar.containsKey(id) || definedVar.get(id).isEmpty()){
+        if (definedVar.get(id).size() == 1){
 //            System.out.println("propagate: " + id + "_" + getEntityString(const_));
             for (Integer blk : index2blk.keySet()){
                 for (statement s : index2blk.get(blk).stmts){
@@ -206,9 +210,10 @@ public class constPropagation{
                 }
             }
             index2blk.get(todo.blk).stmts.remove(todo.def);
-        } else {
-            givenUp.add(todo);
+            definedVar.get(id).remove(todo);
         }
+        Done.add(todo);
+        // todo : if propagation is not thorough (most cases in this implementation), statement shouldn't be deleted
     }
 
     public void updateList(){
@@ -220,7 +225,7 @@ public class constPropagation{
                     if (((assign) d.def).rhs.is_constant) workList.add(d);
                 }
             }
-            for (defineNode d : workList) definedVar.get(var).remove(d);
+            for (defineNode d : Done) workList.remove(d);
         }
     }
 }
