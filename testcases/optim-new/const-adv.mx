@@ -28,7 +28,7 @@ int test() {
             int z = x + y;
             if (x + y == z) {
                 if (y * y * y * y * y * y * y * y * y * y == (x + x + y) * (x + x + y) * (x + x + y) * (x + x + y) * (x + x + y)) {
-                    i++; j++;    
+                    i++; j++;
                 }
             }
         } else {
@@ -43,10 +43,10 @@ int naivedce() {
 	if (false) {
 		ret = ret * 234 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ N + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + ret / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 1 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 - 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + ret * 12;
 		ret = ret + 11;
-		ret = 1 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5;	
+		ret = 1 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5;
 		ret = ret * 234 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ N + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + ret / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 1 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 - 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + 42342 * 12 + 111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10111 + 4 / 5 * 6 + 7 + 8 / 9 * 10 ^ 12211342 + ret * 12;
 		ret = ret + 11;
-		ret = 1 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5;	
+		ret = 1 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5 / 5;
 	}
 	ret = ret + ret + ret + ret;
 	ret = 0;
@@ -54,35 +54,35 @@ int naivedce() {
 	int bb = aa + 1; // = 2
 	int cc = bb * 2;
 	int dd = cc - 100000;
-	
+
 	int i, sum = 0, prod = 1;
 	for (i = 1; i <= 100; i++) sum = sum + i;
 	for ( ; i >= 1; i--) sum = sum + i; // avoid hack
 	for (i++; i <= 10; i++) prod = prod * i;
 
-	if (aa != cc) if (aa != dd) if (aa + cc == cc + aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) 
-	if (aa != cc) if (aa != dd) if (aa + cc == cc + aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) 
-	if (aa != cc) if (aa != dd) if (aa + cc == cc + aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) 
-	if (aa != cc) if (aa != dd) if (aa + cc == cc + aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) 
+	if (aa != cc) if (aa != dd) if (aa + cc == cc + aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd)
+	if (aa != cc) if (aa != dd) if (aa + cc == cc + aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd)
+	if (aa != cc) if (aa != dd) if (aa + cc == cc + aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd)
+	if (aa != cc) if (aa != dd) if (aa + cc == cc + aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd)
 	if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2)
-	if (aa != cc) if (aa != dd) if (aa + cc == cc + aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) 
-	if (aa != cc) if (aa != dd) if (aa + cc == cc + aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) 
+	if (aa != cc) if (aa != dd) if (aa + cc == cc + aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd)
+	if (aa != cc) if (aa != dd) if (aa + cc == cc + aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd)
 	if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2)
 	if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2)
 	if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2) if (sum == 5050 * 2)
-	if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) 
-	if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) 
-	if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) 
+	if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd)
+	if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd)
+	if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd)
 	if (prod == 3628800)
-	if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) 
-	if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) 
-	if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) 
+	if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd)
+	if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd)
+	if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd)
 	if (sum == 5050 * 2)
-	if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) 
+	if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd)
     if (prod == 3628800)
 	{
-		if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) 
-		if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) 
+		if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd)
+		if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (aa == aa) if (dd == dd)
 			dd --;
 		prod ++;
 	}
@@ -108,5 +108,6 @@ int dceconst() {
 	return sum;
 }
 int main() {
-    return test() + naivedce() + dceconst() - 50997;
+    println(toString(test() + naivedce() + dceconst() - 50997));
+    return 0;
 }

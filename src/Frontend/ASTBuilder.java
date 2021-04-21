@@ -276,11 +276,6 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         if (lhs instanceof constExprNode && rhs instanceof constExprNode){
             constExprNode cl = (constExprNode) lhs, cr = (constExprNode) rhs;
             if ((cl.expr_type.type == type.INT && cr.expr_type.type == type.INT)||(cl.expr_type.type == type.BOOL && cr.expr_type.type == type.BOOL)) {
-//                if (cl.expr_type.type == type.INT) {
-//                    System.out.println("int_"+calConst(cl, cr, ctx.op.getText()).int_value+"="+cl.int_value+ctx.op.getText()+cr.int_value);
-//                } else {
-//                    System.out.println("bool_"+calConst(cl, cr, ctx.op.getText()).bool_value+"="+cl.bool_value+ctx.op.getText()+cr.bool_value);
-//                }
                 return calConst(cl, cr, ctx.op.getText());
             } else {
                 return new binaryExprNode(new position(ctx), op, lhs, rhs);

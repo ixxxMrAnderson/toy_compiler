@@ -10,8 +10,6 @@ public class RegAllocate {
     public HashSet<Integer> blklist = new HashSet<>();
     public HashMap<Integer, block> index2blk = new HashMap<>();
     public HashMap<String, block> blocks;
-    public HashMap<Integer, HashSet<String>> in;
-    public HashMap<Integer, HashSet<String>> out;
     public HashMap<String, Integer> stackAlloc;
     public HashMap<String, HashSet<statement>> moveList = new HashMap<>();
     public HashSet<String> spillList = new HashSet<>();
@@ -40,8 +38,6 @@ public class RegAllocate {
 //    public Integer K = 3;
 
     public RegAllocate(HashMap<String, block> blocks,
-                    HashMap<Integer, HashSet<String>> in,
-                    HashMap<Integer, HashSet<String>> out,
                     HashMap<String, Integer> stackAlloc){
         Integer cnt = 0;
         for (statement s : blocks.get("main").stmts){
@@ -63,8 +59,6 @@ public class RegAllocate {
             precolored.add("_SP");
             precolored.add("_S0");
             this.blocks = blocks;
-            this.in = in;
-            this.out = out;
             this.stackAlloc = stackAlloc;
             for (String name : blocks.keySet()) {
                 currentFun = name;

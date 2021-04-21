@@ -191,14 +191,15 @@ public class AsmPrinter implements Pass{
                     }
                 } else if (s instanceof store) {
                     store s_ = (store) s;
+                    if (s_.value.is_constant) s_.value.reg = regIdentifier.indexOf("a6");
                     if (s_.addr != null) {
-                            System.out.println("\tsw\t" + getReg(s_.value) + ",0("
+                            System.out.println("\tsw\t" + regIdentifier.get(s_.value.reg) + ",0("
                                     + getReg(s_.addr) + ")");
                     } else {
                           if (s_.id != null && getEntityString(s_.id).startsWith("@")) {
                                 System.out.println("\tlui\t" + "a7,%hi(.G"
                                         + sbssIndex.get(getEntityString(s_.id)) + ")");
-                                System.out.println("\tsw\t" + getReg(s_.value) + ",%lo(.G"
+                                System.out.println("\tsw\t" + regIdentifier.get(s_.value.reg) + ",%lo(.G"
                                         + sbssIndex.get(getEntityString(s_.id)) + ")(a7)");
                           } else {
                               System.out.println("\tsw\t" + regIdentifier.get(s_.value.reg) + ",-" + (s_.sp + 8) + "(s0)");

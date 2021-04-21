@@ -457,7 +457,7 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public thisExprNode visit(thisExprNode it) {
-        it.val = new entity("_THIS", true);
+        it.val = new entity("_THIS");
         it.expr_type.type = type.CLASS;
         it.expr_type.class_id = currentClass;
         return it;
@@ -667,9 +667,13 @@ public class IRBuilder implements ASTVisitor {
             }
             currentBlock.push_back(new assign(new entity(it.val), new entity("_A0")));
         } else {
-            currentBlock.push_back(
-                new binary(new entity(value), new entity(it.lhs.val), new entity(it.rhs.val), op)
-            );
+            if (op == binaryExprNode.Op.EQ && it.lhs.val.id.equals(it.rhs.val.id)){
+                it.val = new entity(true);
+            } else {
+                currentBlock.push_back(
+                        new binary(new entity(value), new entity(it.lhs.val), new entity(it.rhs.val), op)
+                );
+            }
         }
         return it;
     }

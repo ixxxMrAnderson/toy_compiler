@@ -9,20 +9,16 @@ public class SSA implements Pass{
 
     private Integer blockCnt = 0;
     private HashSet<Integer> visited = new HashSet<>();
-    private HashMap<String, Integer> counter = new HashMap<>();
     private HashMap<block, Integer> block2index = new HashMap<>();
     private HashMap<Integer, block> index2blk = new HashMap<>();
     private HashMap<String, HashSet<Integer>> blks = new HashMap<>();
     private HashMap<Integer, HashSet<Integer>> preBlk = new HashMap<>();
     private HashMap<Integer, HashSet<Integer>> DT = new HashMap<>();
+    private HashMap<Integer, HashSet<Integer>> DF = new HashMap<>();
     private HashMap<String, Integer> fun2entry = new HashMap<>();
     private HashMap<Integer, HashSet<Integer>> dom2sub;
-    private HashMap<Integer, HashSet<Integer>> DF = new HashMap<>();
     private String currentFun;
     private HashMap<String, HashMap<String, HashSet<Integer>>> definedVar = new HashMap<>();
-    private HashMap<String, HashSet<varNode>> varNodes = new HashMap<>();
-    private HashSet<Integer> inserted = new HashSet<>();
-    private HashSet<String> glblVars = new HashSet<>();
 
     public SSA(HashMap<String, block> b, HashMap<Integer, HashSet<Integer>> dom2sub){
         currentFun = "main";
@@ -36,71 +32,14 @@ public class SSA implements Pass{
             definedVar.put(currentFun, new HashMap<>());
             blks.put(currentFun, new HashSet<>());
             visitBlock(b.get(name));
-            for (String var : glblVars){
-                if (!definedVar.get(name).containsKey(var)) {
-                    definedVar.get(name).put(var, new HashSet<>());
-                    definedVar.get(name).get(var).add(b.get(name).index);
-                }
-            }
-//            visitBlock(b.get(name).tailBlk);
         }
-//        System.out.println("definedVar:");
-//        System.out.println(definedVar);
-//        System.out.println("preBlk:");
-//        System.out.println(preBlk);
-        generateDT();
-//        System.out.println("DT:");
-//        System.out.println(DT);
-        generateDF();
-//        System.out.println("DF:");
-//        System.out.println(DF);
-//        for (String name : b.keySet()){ // insertingPhi
-//            if (name.equals("_VAR_DEF")) continue;
-//            for (String var : definedVar.get(name).keySet()){
-//                HashSet<Integer> F = new HashSet<>();
-//                HashSet<Integer> W = new HashSet<>();
-//                for (Integer d : definedVar.get(name).get(var)){
-//                    if (!W.contains(d)) W.add(d);
-//                }
-//                while (!W.isEmpty()){
-//                    Integer x = 0;
-//                    for (Integer w : W){
-//                        x = w;
-//                        W.remove(x);
-//                        if (x == w) break;
-//                    }
-//                    if (DF.get(x) != null) {
-//                        for (Integer y : DF.get(x)) {
-//                            if (!F.contains(y)) {
-//                                index2blk.get(y).stmts.add(0, new phi(new entity(var)));
-//                                F.add(y);
-//                                if (!definedVar.get(name).get(var).contains(y) && !W.contains(y)) W.add(y);
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        }
+//        generateDT();
+//        generateDF();
 //        for (Integer index : index2blk.keySet()){ // building dom tree
 //            if (fun2entry.containsValue(index)) continue;
 //            Integer dom = idom(index);
 //            if (!dom2sub.containsKey(dom)) dom2sub.put(dom, new HashSet<>());
 //            dom2sub.get(dom).add(index);
-//        }
-////        System.out.println("dom2sub:");
-////        System.out.println(dom2sub);
-//        for (String name : b.keySet()){
-//            if (name.equals("_VAR_DEF")) continue;
-//            currentFun = name;
-//            varNodes.put(name, new HashSet<>());
-//            for (String id : definedVar.get(name).keySet()){
-//                varNodes.get(name).add(new varNode(id));
-//            }
-//            rename(fun2entry.get(name));
-//        }
-//        for (String name : b.keySet()){
-//            if (name.equals("_VAR_DEF")) continue;
-//            insertCopy(b.get(name).index);
 //        }
     }
 
@@ -145,9 +84,7 @@ public class SSA implements Pass{
     }
 
     private void add_D(block blk, String id){
-//        System.out.println(currentFun + "_add_D: "+id);
-        if (id.startsWith("@")) glblVars.add(id);
-        if (!id.startsWith("_TMP") && !id.equals("_SP")  && !id.equals("_S0") ){
+        if (!id.equals("_SP")  && !id.equals("_S0") ){
             if (!(id.startsWith("_A") && isNumeric(id.substring(2, 3)))){
                 if (!definedVar.get(currentFun).containsKey(id)) definedVar.get(currentFun).put(id, new HashSet<>());
                 definedVar.get(currentFun).get(id).add(getBlockName(blk));
@@ -210,199 +147,6 @@ public class SSA implements Pass{
                 }
             }
         }
-    }
-
-    public void rename(Integer blk){
-        for (int i = 0; i < index2blk.get(blk).stmts.size(); ++i){
-            statement s = index2blk.get(blk).stmts.get(i);
-            if (s instanceof binary) {
-                binary b = (binary) s;
-                if (!b.op1.is_constant) {
-                    updateReachingDef_(b.op1.id, blk);
-                    if (getVarDef(b.op1.id) != null) b.op1.id = getVarDef(b.op1.id).id;
-                }
-                if (!b.op2.is_constant) {
-                    updateReachingDef_(b.op2.id, blk);
-                    if (getVarDef(b.op2.id) != null) b.op2.id = getVarDef(b.op2.id).id;
-                }
-                updateReachingDef_(b.lhs.id, blk);
-                String v_ = createCopy(b.lhs.id);
-                String pre_id = b.lhs.id;
-                b.lhs.id = v_;
-                varNode new_v = new varNode(v_, blk, getVarDef(pre_id));
-                varNodes.get(currentFun).add(new_v);
-                for (varNode x : varNodes.get(currentFun)){
-                    if (x.id.equals(pre_id)) x.def = new_v;
-                }
-            } else if (s instanceof branch) {
-                branch b = (branch) s;
-                if (!b.flag.is_constant) {
-                    updateReachingDef_(b.flag.id, blk);
-                    if (getVarDef(b.flag.id) != null) b.flag.id = getVarDef(b.flag.id).id;
-                }
-            } else if (s instanceof ret) {
-                ret r = (ret) s;
-                if (r.value != null && !r.value.is_constant) {
-                    updateReachingDef_(r.value.id, blk);
-                    if (getVarDef(r.value.id) != null) r.value.id = getVarDef(r.value.id).id;
-                }
-            } else if (s instanceof assign) {
-                assign a = (assign) s;
-                if (a.rhs != null && !a.rhs.is_constant) {
-                    updateReachingDef_(a.rhs.id, blk);
-                    if (getVarDef(a.rhs.id) != null) a.rhs.id = getVarDef(a.rhs.id).id;
-                }
-                if (a.rhs != null && !(a.lhs.id.startsWith("_A") && isNumeric(a.lhs.id.substring(2, 3)))) {
-                    updateReachingDef_(a.lhs.id, blk);
-                    String v_ = createCopy(a.lhs.id);
-                    String pre_id = a.lhs.id;
-                    a.lhs.id = v_;
-                    varNode new_v = new varNode(v_, blk, getVarDef(pre_id));
-                    varNodes.get(currentFun).add(new_v);
-                    for (varNode x : varNodes.get(currentFun)) {
-                        if (x.id.equals(pre_id)) x.def = new_v;
-                    }
-                }
-            } else if (s instanceof load) {
-                load l = (load) s;
-                if (l.addr != null) {
-                    updateReachingDef_(l.addr.id, blk);
-                    if (getVarDef(l.addr.id) != null) l.addr.id = getVarDef(l.addr.id).id;
-                }
-                    updateReachingDef_(l.to.id, blk);
-                    String v_ = createCopy(l.to.id);
-                    String pre_id = l.to.id;
-                    l.to.id = v_;
-                    varNode new_v = new varNode(v_, blk, getVarDef(pre_id));
-                    varNodes.get(currentFun).add(new_v);
-                    for (varNode x : varNodes.get(currentFun)){
-                        if (x.id.equals(pre_id)) x.def = new_v;
-                    }
-            } else if (s instanceof store) {
-                store s_ = (store) s;
-                if (s_.value != null && !s_.value.is_constant){
-                    updateReachingDef_(s_.value.id, blk);
-                    if (getVarDef(s_.value.id) != null) s_.value.id = getVarDef(s_.value.id).id;
-                }
-                if (s_.addr != null){
-                    updateReachingDef_(s_.addr.id, blk);
-                    if (getVarDef(s_.addr.id) != null) s_.addr.id = getVarDef(s_.addr.id).id;
-                }
-            } else if (s instanceof phi){
-                phi p = (phi) s;
-//                if (p.born.id.startsWith("_TMP")) System.out.println("SSA WTF");
-                updateReachingDef_(p.born.id, blk);
-                String v_ = createCopy(p.born.id);
-                String pre_id = p.born.id;
-                p.born.id = v_;
-                varNode new_v = new varNode(v_, blk, getVarDef(pre_id));
-                varNodes.get(currentFun).add(new_v);
-                for (varNode x : varNodes.get(currentFun)){
-                    if (x.id.equals(pre_id)) x.def = new_v;
-                }
-            }
-        }
-        for (block b_ : index2blk.get(blk).successors()){
-            if (b_ != null) {
-                for (statement s : b_.stmts){
-                    if (s instanceof phi){
-                        phi p = (phi) s;
-                        String phi_id = returnID(p.born.id);
-                        updateReachingDef_(phi_id, blk);
-                        p.varList.add(getVarDef(phi_id) == null? null: new entity(getVarDef(phi_id).id));
-                        p.blkList.add(blk);
-                    }
-                }
-            }
-        }
-        if (dom2sub.containsKey(blk)) {
-            for (Integer sub : dom2sub.get(blk)) {
-                rename(sub);
-            }
-        }
-    }
-
-    public void insertCopy(Integer blk){
-        if (inserted.contains(blk)) return;
-        else inserted.add(blk);
-        for (statement s : index2blk.get(blk).stmts){
-            if (s instanceof phi){
-                phi p = (phi) s;
-                for (entity var : p.varList){
-                    if (var != null){
-                        assign stToInsert = new assign(new entity(p.born), new entity(var));
-                        block blkToInsert = index2blk.get(p.blkList.get(p.varList.indexOf(var)));
-                        Integer index = blkToInsert.stmts.size();
-                        for (int i = index - 1; i >= 0; --i){
-                            if (blkToInsert.stmts.get(i) instanceof jump || blkToInsert.stmts.get(i) instanceof branch){
-                                index --;
-                            } else {
-                                break;
-                            }
-                        }
-                        if (index == blkToInsert.stmts.size()){
-                            blkToInsert.stmts.add(stToInsert);
-                        } else {
-                            blkToInsert.stmts.add(index, stToInsert);
-                        }
-                    }
-                }
-            }
-        }
-        for (block b : index2blk.get(blk).successors()){
-            insertCopy(b.index);
-        }
-    }
-
-    public void updateReachingDef_(String id, Integer i){
-        if (!id.startsWith("_TMP") && !id.equals("_SP")  && !id.equals("_S0") && !isNumeric(id)){
-            if (!(id.startsWith("_A") && isNumeric(id.substring(2, 3)))){
-                updateReachingDef(id, i);
-            }
-        }
-    }
-
-    public varNode getVarDef(String id){
-        for (varNode x : varNodes.get(currentFun)){
-            if (x.id.equals(id)) return x.def;
-        }
-        return null;
-    }
-
-    public String returnID(String id){
-        for (int i = 1; i <= id.length(); ++i){
-            if (id.substring(0, i).contains("#")) {
-                return id.substring(0, i - 1);
-            }
-        }
-        return id;
-    }
-
-    public String createCopy(String id){
-        id = returnID(id);
-        if (!counter.containsKey(id)){
-            counter.put(id, 0);
-            return id + "#0";
-        } else {
-            Integer cnt = counter.get(id);
-            counter.remove(id);
-            counter.put(id, ++cnt);
-            return id + "#" + cnt;
-        }
-    }
-
-    public void updateReachingDef(String v, Integer i){
-//        System.out.println("update: " + v + ", " + i);
-        varNode v_ = null;
-        for (varNode x : varNodes.get(currentFun)){
-//            System.out.println(x.id + "____" + (x.def == null ? "null":x.def.id));
-            if (x.id.equals(v)) v_ = x;
-        }
-        varNode r = v_.def;
-        while (r != null && (!DT.containsKey(i) || !DT.get(i).contains(r.blk)) && r.blk != i) {
-            r = r.def;
-        }
-        v_.def = r;
     }
 
     private Integer getBlockName(block b) {

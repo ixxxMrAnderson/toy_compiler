@@ -1,6 +1,6 @@
 package MIR;
 
-public class ret extends terminalStmt{
+public class ret extends statement {
     public entity value;
     public block retBlk;
     public ret(entity value, block retBlk) {

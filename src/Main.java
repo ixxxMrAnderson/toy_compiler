@@ -23,9 +23,9 @@ public class Main {
 
 //        String file_name = "./testcases/codegen/sorting/merge_sort.mx";
 //        String file_name = "./testcases/codegen/shortest_path/dijkstra.mx";
-        String file_name = "./testcases/codegen/t7.mx";
-//        String file_name = "./testcases/optim-new/adce-adv.mx";
-//        String file_name = "./testcases/sema/misc-package/misc-34.mx";
+//        String file_name = "./testcases/codegen/t63.mx";
+//        String file_name = "./testcases/optim-new/inline.mx";
+        String file_name = "./testcases/sema/misc-package/misc-34.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 //        PrintStream o = new PrintStream(new File("test.s"));
@@ -45,35 +45,36 @@ public class Main {
             AST_root = new SemanticChecker().visit(AST_root);
             HashMap<String, block> blocks = new HashMap<>();
             HashMap<String, Integer> spillPara = new HashMap<>();
-            new IRBuilder(blocks, spillPara).visit(AST_root);
             HashMap<Integer, HashSet<Integer>> dom2sub = new HashMap<>();
+            HashMap<String, Integer> stackAlloc = new HashMap<>();
+            new IRBuilder(blocks, spillPara).visit(AST_root);
             new SSA(blocks, dom2sub);
             Integer cnt = 0;
             for (statement s : blocks.get("main").stmts){
                 if (s instanceof assign && ((assign) s).rhs == null) cnt++;
                 else break;
             }
-            HashMap<String, Integer> stackAlloc = new HashMap<>();
             if (cnt > 200){
                 new RegAlloc(blocks, stackAlloc);
             } else {
-                new constPropagation(blocks);
-//                new IRPrinter(blocks);
+//                System.out.println("___________________CFGopt________________");
                 new CFGopt(blocks);
 //                new IRPrinter(blocks);
+//                System.out.println("___________________ADCE________________");
                 new ADCE(blocks);
+//                new CFGopt(blocks);
 //                new IRPrinter(blocks);
+//                System.out.println("___________________inline________________");
                 new inline(blocks);
+//                new IRPrinter(blocks);
+//                System.out.println("___________________const________________");
+                new constPropagation(blocks);
 //                new IRPrinter(blocks);
                 new CFGopt(blocks);
 //                new IRPrinter(blocks);
                 new Peephole(blocks);
 //                new IRPrinter(blocks);
-                HashMap<Integer, HashSet<String>> in = new HashMap<>();
-                HashMap<Integer, HashSet<String>> out = new HashMap<>();
-                new LivenessAnalysis(blocks, in, out);
-//                new IRPrinter(blocks);
-                new RegAllocate(blocks, in, out, stackAlloc);
+                new RegAllocate(blocks, stackAlloc);
             }
 //            new IRPrinter(blocks);
             new AsmPrinter(blocks, stackAlloc, spillPara);

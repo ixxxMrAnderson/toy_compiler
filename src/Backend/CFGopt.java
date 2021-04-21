@@ -73,6 +73,11 @@ public class CFGopt implements Pass{
         }
     }
 
+    public block GetAlias(block blk){
+        if (alias.containsKey(alias.get(blk))) return GetAlias(alias.get(blk));
+        else return alias.get(blk);
+    }
+
     @Override
     public void visitBlock(block blk) {
         if (visited.contains(blk.index)) return;
@@ -80,7 +85,7 @@ public class CFGopt implements Pass{
         for (statement s : blk.stmts){
             if (s instanceof jump){
                 jump j = (jump) s;
-                if (alias.containsKey(j.destination)) j.destination = alias.get(j.destination);
+                if (j.destination != null && alias.containsKey(j.destination)) j.destination = GetAlias(j.destination);
             } else if (s instanceof branch){
                 branch b = (branch) s;
                 if (b.flag.is_constant){
@@ -92,10 +97,13 @@ public class CFGopt implements Pass{
                         else b.trueBranch = null;
                     }
                 }
-                if (alias.containsKey(b.trueBranch)) b.trueBranch = alias.get(b.trueBranch);
-                if (alias.containsKey(b.falseBranch)) b.falseBranch = alias.get(b.falseBranch);
+                if (alias.containsKey(b.trueBranch)) b.trueBranch = GetAlias(b.trueBranch);
+                if (alias.containsKey(b.falseBranch)) b.falseBranch = GetAlias(b.falseBranch);
             }
         }
+        if (blk.nxtBlock != null && alias.containsKey(blk.nxtBlock)) blk.nxtBlock = GetAlias(blk.nxtBlock);
+        if (blk.optOrBlk != null && alias.containsKey(blk.optOrBlk)) blk.optOrBlk = GetAlias(blk.optOrBlk);
+        if (blk.optAndBlk != null && alias.containsKey(blk.optAndBlk)) blk.optAndBlk = GetAlias(blk.optAndBlk);
         for (block nxt : blk.successors()) visitBlock(nxt);
     }
 }

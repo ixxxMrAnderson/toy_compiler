@@ -8,7 +8,6 @@ public class entity {
     public String id;
     public int reg;
     public boolean is_constant;
-    public boolean is_addr = false;
     public constExprNode constant;
 
     public entity(){
@@ -19,20 +18,11 @@ public class entity {
         this.id = id;
     }
 
-    public entity(String id, boolean flag){
-        this.id = id;
-        this.is_addr = flag;
-    }
 
-    public entity(boolean flag){
-        this.is_addr = flag;
-        id = "_TMP_" + (cnt++);
-    }
 
     public entity(entity other){
         this.id = other.id;
         this.reg = other.reg;
-        this.is_addr = other.is_addr;
         this.is_constant = other.is_constant;
         if (this.is_constant == true) {
             this.constant = new constExprNode(other.constant, null);
@@ -41,6 +31,12 @@ public class entity {
 
     public entity(int value){
         this.id = Integer.toString(value);
+        this.is_constant = true;
+        this.constant = new constExprNode(value, null);
+    }
+
+    public entity(boolean value){
+        this.id = value ? "true":"false";
         this.is_constant = true;
         this.constant = new constExprNode(value, null);
     }
