@@ -667,7 +667,7 @@ public class IRBuilder implements ASTVisitor {
             }
             currentBlock.push_back(new assign(new entity(it.val), new entity("_A0")));
         } else {
-            if (op == binaryExprNode.Op.EQ && it.lhs.val.id.equals(it.rhs.val.id)){
+            if (op == binaryExprNode.Op.EQ && !it.lhs.val.is_constant && it.lhs.val.id.equals(it.rhs.val.id)){
                 it.val = new entity(true);
             } else {
                 currentBlock.push_back(
@@ -683,9 +683,9 @@ public class IRBuilder implements ASTVisitor {
         if (it.string_value != null){
 //            System.out.println("basic_53");
 //            System.out.println(it.string_value);
-            entity tmp = new entity(true);
+            entity tmp = new entity();
             tmp.id = "%" + tmp.id;
-            entity ret = new entity(true);
+            entity ret = new entity();
             currentBlock.push_back(new load(new entity(tmp.id), new entity(ret), true));
             blocks.get("_VAR_DEF").push_back(new assign(new entity(tmp), new entity(it)));
             it.val = new entity(ret);
@@ -796,7 +796,7 @@ public class IRBuilder implements ASTVisitor {
             if (node.members.get(i).variables.get(0).id.equals(it.member)) break;
             offset += 4;
         }
-        it.val = new entity(true);
+        it.val = new entity();
         typeNode t_ = node.getMemberType(it.member);
         if (t_ != null) {
             it.expr_type = new Type(t_.type);
@@ -812,16 +812,17 @@ public class IRBuilder implements ASTVisitor {
     public arrayExprNode visit(arrayExprNode it) {
         it.array = (ExprNode) it.array.accept(this);
         it.index = (ExprNode) it.index.accept(this);
-        it.val = new entity(true);
-        entity l = new entity(true);
+        it.val = new entity();
+        entity l1 = new entity();
+        entity l2 = new entity();
         currentBlock.push_back(
-                new binary(new entity(l), new entity(it.index.val), new entity(1), binaryExprNode.Op.ADD)
+                new binary(new entity(l1), new entity(it.index.val), new entity(1), binaryExprNode.Op.ADD)
         );
         currentBlock.push_back(
-            new binary(new entity(l), new entity(l), new entity(2), binaryExprNode.Op.SLA)
+            new binary(new entity(l2), new entity(l1), new entity(2), binaryExprNode.Op.SLA)
         );
         currentBlock.push_back(
-            new binary(new entity(it.val), new entity(l), new entity(it.array.val), binaryExprNode.Op.ADD)
+            new binary(new entity(it.val), new entity(l2), new entity(it.array.val), binaryExprNode.Op.ADD)
         );
         it.expr_type = new Type(it.array.expr_type);
         currentBlock.push_back(new load(new entity(it.val), new entity(it.val)));

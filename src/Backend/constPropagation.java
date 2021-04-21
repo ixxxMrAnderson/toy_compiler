@@ -81,7 +81,10 @@ public class constPropagation{
         else index2blk.put(blk.index, blk);
         for (statement s : blk.stmts){
             if (s instanceof binary){
-                addD(((binary) s).lhs.id, blk.index, blk.stmts.indexOf(s));
+                if (((binary) s).op1.is_constant && ((binary) s).op2.is_constant) {
+                    addList(((binary) s).lhs.id, blk.index, blk.stmts.indexOf(s));
+                }
+                else addD(((binary) s).lhs.id, blk.index, blk.stmts.indexOf(s));
             } else if (s instanceof assign){
                 if (((assign) s).rhs != null) {
                     if (((assign) s).rhs.is_constant) {
@@ -154,7 +157,8 @@ public class constPropagation{
                     cNode = new constExprNode(b.op1.constant.int_value * b.op2.constant.int_value, null);
                     break;
                 case DIV:
-                    cNode = new constExprNode(b.op1.constant.int_value / b.op2.constant.int_value, null);
+                    if (b.op2.constant.int_value == 0) cNode = new constExprNode(0, null);
+                    else cNode = new constExprNode(b.op1.constant.int_value / b.op2.constant.int_value, null);
                     break;
                 case MOD:
                     cNode = new constExprNode(b.op1.constant.int_value % b.op2.constant.int_value, null);
