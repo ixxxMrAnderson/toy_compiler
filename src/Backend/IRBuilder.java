@@ -545,7 +545,16 @@ public class IRBuilder implements ASTVisitor {
                 currentBlock.pop();
                 currentBlock.push_back(new store(new entity(tmp_mem.val), new entity(rhs_)));
             } else {
-                currentBlock.push_back(new assign(new entity(id), new entity(rhs_)));
+                if (it.rhs instanceof binaryExprNode){
+//                    System.out.println(id);
+                    if (currentBlock.stmts.get(currentBlock.stmts.size() - 1) instanceof binary){
+                        ((binary) currentBlock.stmts.get(currentBlock.stmts.size() - 1)).lhs = new entity(id);
+                    } else {
+                        currentBlock.push_back(new assign(new entity(id), new entity(rhs_)));
+                    }
+                } else {
+                    currentBlock.push_back(new assign(new entity(id), new entity(rhs_)));
+                }
             }
         } else {
             if (!(it.lhs instanceof prefixExprNode)) {

@@ -14,6 +14,9 @@ public class LivenessAnalysis {
     public HashMap<Integer, HashSet<String>> out;
     public HashMap<Integer, HashSet<String>> use = new HashMap<>();
     public HashMap<Integer, HashSet<String>> def = new HashMap<>();
+    public HashSet<String> deadVars = new HashSet<>();
+    public HashSet<Integer> collected = new HashSet<>();
+    public HashSet<Integer> cleaned = new HashSet<>();
 
     public LivenessAnalysis(HashMap<String, block> blocks,
     HashMap<Integer, HashSet<String>> in,
@@ -21,7 +24,12 @@ public class LivenessAnalysis {
         this.in = in;
         this.out = out;
         for (String name : blocks.keySet()){
+            deadVars = new HashSet<>();
             buildList(blocks.get(name));
+//            System.out.println(name+": "+deadVars);
+            collectDeadVar(blocks.get(name));
+//            System.out.println(name+": "+deadVars);
+            cleanDeadVar(blocks.get(name));
         }
 //        System.out.println("def");
 //        System.out.println(def);
@@ -67,6 +75,52 @@ public class LivenessAnalysis {
                 return;
             }
         }
+    }
+
+    public void collectDeadVar(block blk){
+        if (collected.contains(blk.index)) return;
+        else collected.add(blk.index);
+        for (statement s : blk.stmts){
+            if (s instanceof binary) {
+                binary b = (binary) s;
+                if (!b.op1.is_constant) {
+                    if (!b.lhs.id.equals(b.op1.id)) deadVars.remove(b.op1.id);
+                }
+                if (!b.op2.is_constant) {
+                    if (!b.lhs.id.equals(b.op2.id)) deadVars.remove(b.op2.id);
+                }
+            } else if (s instanceof branch) {
+                branch b = (branch) s;
+                if (!b.flag.is_constant) deadVars.remove(b.flag.id);
+            } else if (s instanceof ret) {
+                ret r = (ret) s;
+                if (r.value != null && !r.value.is_constant) deadVars.remove(r.value.id);
+            } else if (s instanceof assign) {
+                assign a = (assign) s;
+                if (a.rhs != null && !a.rhs.is_constant) {
+                    if (!a.lhs.id.equals(a.rhs.id)) deadVars.remove(a.rhs.id);
+                }
+            } else if (s instanceof load) {
+                load l = (load) s;
+                if (l.addr != null) deadVars.remove(l.addr.id);
+                deadVars.remove(l.to.id);
+            } else if (s instanceof store) {
+                store s_ = (store) s;
+                if (s_.addr != null) deadVars.remove(s_.addr.id);
+                if (!s_.value.is_constant) deadVars.remove(s_.value.id);
+            }
+        }
+        for (block b : blk.successors()) collectDeadVar(b);
+    }
+
+    public void cleanDeadVar(block blk){
+        if (cleaned.contains(blk.index)) return;
+        else cleaned.add(blk.index);
+        for (String id : deadVars){
+            def.get(blk.index).remove(id);
+            use.get(blk.index).remove(id);
+        }
+        for (block b : blk.successors()) cleanDeadVar(b);
     }
 
     public void buildList(block blk){
@@ -120,13 +174,19 @@ public class LivenessAnalysis {
 
     public void addU(Integer key, String val){
         if (!def.get(key).contains(val) && !(val.startsWith("_A") && isNumeric(val.substring(2, 3)))){
-            if (!val.equals("_SP") && !val.equals("_S0")) use.get(key).add(val);
+            if (!val.equals("_SP") && !val.equals("_S0")) {
+                use.get(key).add(val);
+                deadVars.add(val);
+            }
         }
     }
 
     public void addD(Integer key, String val){
         if (!use.get(key).contains(val) && !(val.startsWith("_A") && isNumeric(val.substring(2, 3)))){
-            if (!val.equals("_SP") && !val.equals("_S0")) def.get(key).add(val);
+            if (!val.equals("_SP") && !val.equals("_S0")) {
+                def.get(key).add(val);
+                deadVars.add(val);
+            }
         }
     }
 }
