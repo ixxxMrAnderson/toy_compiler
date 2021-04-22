@@ -12,7 +12,6 @@ public class inline implements Pass{
     public HashMap<String, HashSet<String>> callInFun = new HashMap<>();
     public HashMap<String, block> blocks;
     public block currentRet;
-    public String currentInline;
     public Integer max = 0;
     public boolean kill_flag = false;
 
@@ -31,28 +30,19 @@ public class inline implements Pass{
 //        System.out.println("----------------------------------------");
 //        System.out.println(detected.size());
 //        if (detected.size() < 50 && detected.size() != 11) { // 19 43
-//            for (String name : blocks.keySet()) {
-//                currentFun = name;
-//                visitBlock(blocks.get(name));
-//            }
-//        }
-        for (String name : name_set) {
-            if (!name.equals("main") && !name.equals("_VAR_DEF")) {
-//                System.out.println("inline: "+name);
-                currentInline = name;
-                visited = new HashSet<>();
-                for (String blk : blocks.keySet()) {
-                    currentFun = blk;
-                    visitBlock(blocks.get(blk));
-                }
-                new Peephole(blocks);
+            for (String name : blocks.keySet()) {
+                currentFun = name;
+                visitBlock(blocks.get(name));
                 if (kill_flag){
                     kill();
                     return;
                 }
-                if (canInline(name)) blocks.remove(name);
             }
+//        }
+        for (String name : name_set) {
+            if (canInline(name) && !name.equals("main") && !name.equals("_VAR_DEF")) blocks.remove(name);
         }
+//        System.out.println(blocks.keySet());
     }
 
     public void detectCall(block blk){
@@ -97,12 +87,11 @@ public class inline implements Pass{
         statement s = blk.stmts.get(i);
         block toCpy = blocks.get(((call) s).funID);
 //        System.out.println("wrong inline " + ((call) s).funID + " in " + currentFun);
-        if (!currentInline.equals(((call) s).funID)) return;
-//        if (!canInline(currentInline) && callInFun.get(currentInline).size() > 1) return;
-        if (!inlineCnt.containsKey(currentInline)) inlineCnt.put(currentInline, 1);
-        else if (inlineCnt.get(currentInline) > 0 && !canInline(currentInline)) return;
-        else inlineCnt.put(currentInline, inlineCnt.get(currentInline) + 1);
-        if (inlineCnt.get(currentInline) > 50) kill_flag = true;
+        if (!currentFun.equals("main")) return;
+        if (!inlineCnt.containsKey(((call) s).funID)) inlineCnt.put(((call) s).funID, 1);
+        else if (inlineCnt.get(((call) s).funID) > 0 && !canInline(((call) s).funID)) return;
+        else inlineCnt.put(((call) s).funID, inlineCnt.get(((call) s).funID) + 1);
+        if (inlineCnt.get(((call) s).funID) > 50) kill_flag = true;
         if (kill_flag) return;
 //        System.out.println("inline " + ((call) s).funID + " in " + currentFun);
         blk.stmts.remove(blk.stmts.get(i)); // remove call
