@@ -23,8 +23,8 @@ public class Main {
 
 //        String file_name = "./testcases/codegen/sorting/merge_sort.mx";
 //        String file_name = "./testcases/codegen/shortest_path/dijkstra.mx";
-//        String file_name = "./testcases/codegen/t3.mx";
-        String file_name = "./testcases/optim-new/const-adv.mx";
+        String file_name = "./testcases/codegen/t55.mx";
+//        String file_name = "./testcases/optim-new/const-adv.mx";
 //        String file_name = "./testcases/sema/scope-package/scope-2.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
@@ -50,7 +50,9 @@ public class Main {
             new IRBuilder(blocks, spillPara).visit(AST_root);
             new SSA(blocks, dom2sub);
             Integer cnt = 0;
-            for (statement s : blocks.get("main").stmts){
+            for (int i = 0; i < blocks.get("main").stmts.size(); ++i){
+                if (i == 1 || i == 0) continue;
+                statement s = blocks.get("main").stmts.get(i);
                 if (s instanceof assign && ((assign) s).rhs == null) cnt++;
                 else break;
             }

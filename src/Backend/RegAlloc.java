@@ -197,7 +197,7 @@ public class RegAlloc implements Pass{
                         if (r.value != null && r.value.id != null && r.value.id.equals(reg2id.get(i))) flag = true;
                     } else if (s instanceof assign) {
                         assign a = (assign) s;
-                        if (a.rhs.id != null && a.rhs.id.equals(reg2id.get(i))) flag = true;
+                        if (a.rhs != null && a.rhs.id != null && a.rhs.id.equals(reg2id.get(i))) flag = true;
                     } else if (s instanceof load) {
                         load l = (load) s;
                         if (l.addr != null && l.addr.id != null && l.addr.id.equals(reg2id.get(i))) flag = true;
