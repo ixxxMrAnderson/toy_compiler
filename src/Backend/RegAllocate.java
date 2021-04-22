@@ -578,7 +578,7 @@ public class RegAllocate {
 //        System.out.println("rewrite: ");
         for (String v : spilledNodes){
             sp += 4;
-//            System.out.println("SPILL: "+v+"____"+sp);
+            System.out.println("SPILL: "+v+"____"+sp);
             for (Integer blk : blklist){
                 for (int i = 0; i < index2blk.get(blk).stmts.size(); ++i) {
                     statement s = index2blk.get(blk).stmts.get(i);

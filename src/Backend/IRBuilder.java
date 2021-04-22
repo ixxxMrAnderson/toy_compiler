@@ -164,7 +164,7 @@ public class IRBuilder implements ASTVisitor {
     public funDefNode visit(funDefNode it) {
         currentFun = it.name;
         Integer paraNum = 0;
-        if (currentFun.equals("main")){
+        if (currentFun.equals("main") && currentClass == null){
             currentBlock = curMainBlk;
         } else {
             currentBlock = new block();

@@ -50,6 +50,21 @@ public class Peephole {
                 }
             }
         }
-        for (block b : blk.successors()) visitBlock(b);
+        if (blk.successors().size() == 0){
+//            Integer mvCnt = 0;
+//            while (true){
+//                mvCnt = 0;
+//                entity lhs = null, rhs = null;
+//                for (int j = 0; j < blk.stmts.size(); ++j){
+//                    statement s = blk.stmts.get(j);
+//                    if (s instanceof assign) {
+//                        mvCnt++;
+//
+//                    }
+//                }
+//            }
+        } else {
+            for (block b : blk.successors()) visitBlock(b);
+        }
     }
 }

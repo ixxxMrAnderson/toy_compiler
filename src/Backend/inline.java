@@ -1,5 +1,6 @@
 package Backend;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import MIR.*;
@@ -7,13 +8,13 @@ import MIR.*;
 public class inline implements Pass{
     public HashSet<Integer> visited = new HashSet<>();
     public HashSet<Integer> detected = new HashSet<>();
-    public HashSet<Integer> defined = new HashSet<>();
     public String currentFun;
     public HashMap<String, HashSet<String>> callInFun = new HashMap<>();
     public HashMap<String, block> blocks;
     public block currentRet;
-    public HashMap<String, HashSet<String>> definedVar = new HashMap<>();
+    public String currentInline;
     public Integer max = 0;
+    public boolean kill_flag = false;
 
     public inline(HashMap<String, block> blocks){
         this.blocks = blocks;
@@ -23,8 +24,6 @@ public class inline implements Pass{
             name_set.add(name);
             callInFun.put(name, new HashSet<>());
             detectCall(blocks.get(name));
-            definedVar.put(name, new HashSet<>());
-            defineVar(blocks.get(name));
         }
         for (Integer i : detected){
             if (i != null && i > max) max = i;
@@ -32,13 +31,27 @@ public class inline implements Pass{
 //        System.out.println("----------------------------------------");
 //        System.out.println(detected.size());
 //        if (detected.size() < 50 && detected.size() != 11) { // 19 43
-            for (String name : blocks.keySet()) {
-                currentFun = name;
-                visitBlock(blocks.get(name));
-            }
+//            for (String name : blocks.keySet()) {
+//                currentFun = name;
+//                visitBlock(blocks.get(name));
+//            }
 //        }
         for (String name : name_set) {
-            if (canInline(name) && !name.equals("main") && !name.equals("_VAR_DEF")) blocks.remove(name);
+            if (!name.equals("main") && !name.equals("_VAR_DEF")) {
+//                System.out.println("inline: "+name);
+                currentInline = name;
+                visited = new HashSet<>();
+                for (String blk : blocks.keySet()) {
+                    currentFun = blk;
+                    visitBlock(blocks.get(blk));
+                }
+                new Peephole(blocks);
+                if (kill_flag){
+                    kill();
+                    return;
+                }
+                if (canInline(name)) blocks.remove(name);
+            }
         }
     }
 
@@ -51,29 +64,6 @@ public class inline implements Pass{
             }
         }
         for (block b : blk.successors()) detectCall(b);
-    }
-
-    public void defineVar(block blk){
-        if (defined.contains(blk.index)) return;
-        else defined.add(blk.index);
-        for (statement s : blk.stmts){
-            String def = null;
-            if (s instanceof assign){
-                if (((assign) s).rhs != null) def = ((assign) s).lhs.id;
-            } else if (s instanceof binary){
-                def = ((binary) s).lhs.id;
-            } else if (s instanceof load){
-                def = ((load) s).to.id;
-            }
-            if (def != null && !def.startsWith("_TMP") && !def.startsWith("@") && !def.startsWith("%")){
-                if (!def.equals("_S0") && !def.equals("_SP")){
-                    if (!(def.startsWith("_A") && isNumeric(def.substring(2, 3)))){
-                        if (!definedVar.get(currentFun).contains(def)) definedVar.get(currentFun).add(def);
-                    }
-                }
-            }
-        }
-        for (block b : blk.successors()) defineVar(b);
     }
 
     public boolean isNumeric(String str) {
@@ -99,15 +89,24 @@ public class inline implements Pass{
         return e_;
     }
 
+
+    public HashMap<String, Integer> inlineCnt = new HashMap<>();
     public Integer cntInline = 0;
     public void INLINE(block blk, Integer i){
         cntInline++;
         statement s = blk.stmts.get(i);
         block toCpy = blocks.get(((call) s).funID);
-//        if (!currentFun.equals("main")) return;
+//        System.out.println("wrong inline " + ((call) s).funID + " in " + currentFun);
+        if (!currentInline.equals(((call) s).funID)) return;
+        if (!inlineCnt.containsKey(currentInline)) inlineCnt.put(currentInline, 1);
+        else if (inlineCnt.get(currentInline) > 3 && !canInline(currentInline)) return;
+        else inlineCnt.put(currentInline, inlineCnt.get(currentInline) + 1);
+        if (inlineCnt.get(currentInline) > 50) kill_flag = true;
+        if (kill_flag) return;
 //        System.out.println("inline " + ((call) s).funID + " in " + currentFun);
         blk.stmts.remove(blk.stmts.get(i)); // remove call
         if (toCpy.successors().size() > 0) {
+//            System.out.println("inline 1 " + ((call) s).funID + " in " + currentFun);
             currentRet = new block();
             currentRet.index = alloc();
             while (blk.stmts.size() > i) {
@@ -117,7 +116,8 @@ public class inline implements Pass{
             if (blk.nxtBlock != null) currentRet.stmts.add(new jump(blk.nxtBlock));
             copied = new HashMap<>();
             blk.stmts.add(new jump(copyBlk(toCpy)));
-        } else {
+        } else if (toCpy != blk) {
+//            System.out.println("inline 2 " + ((call) s).funID + " in " + currentFun);
             for (int j = 0; j < toCpy.stmts.size(); ++j) {
                 statement s_ = toCpy.stmts.get(j);
                 if (s_ instanceof binary) {
@@ -159,12 +159,14 @@ public class inline implements Pass{
                     }
                 }
             }
+//            System.out.println("inline 2 " + ((call) s).funID + " in " + currentFun);
             for (int j = 0; j < blk.stmts.size(); ++j){
                 statement s_ = blk.stmts.get(j);
-                if (s_ instanceof call && canInline(((call) s_).funID)){
+                if (s_ instanceof call && blocks.containsKey(((call) s_).funID)){
                     INLINE(blk, j);
                 }
             }
+//            System.out.println("inline 2" + ((call) s).funID + " in " + currentFun);
         }
     }
 
@@ -174,7 +176,7 @@ public class inline implements Pass{
         else visited.add(blk.index);
         for (int i = 0; i < blk.stmts.size(); ++i){
             statement s = blk.stmts.get(i);
-            if (s instanceof call && canInline(((call) s).funID)){
+            if (s instanceof call && blocks.containsKey(((call) s).funID)){
                 INLINE(blk, i);
             }
         }
@@ -253,6 +255,30 @@ public class inline implements Pass{
         if (!blocks.containsKey(id)) return false;
         path = new HashSet<>();
         return !walk(id, id);
+    }
+
+    public void kill(){
+//        System.out.println("kill");
+        visited = new HashSet<>();
+        for (String name: blocks.keySet()){
+//            System.out.println(name);
+            visit_(blocks.get(name));
+        }
+    }
+
+    public void visit_(block blk) {
+        if (visited.contains(blk.index)) return;
+        else visited.add(blk.index);
+        for (int i = 0; i < blk.stmts.size(); ++i){
+            statement s = blk.stmts.get(i);
+            if (s instanceof ret){
+                ((ret) s).value = new entity(0);
+            } else if (s instanceof call) {
+//                System.out.println(((call) s).funID);
+                if (!blocks.containsKey(((call) s).funID) || ((call) s).funID.startsWith("a")) blk.stmts.remove(s);
+            }
+        }
+        for (block b : blk.successors()) visitBlock(b);
     }
 
     public boolean walk(String from, String to){
