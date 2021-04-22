@@ -24,8 +24,8 @@ public class Main {
 //        String file_name = "./testcases/codegen/sorting/merge_sort.mx";
 //        String file_name = "./testcases/codegen/shortest_path/dijkstra.mx";
 //        String file_name = "./testcases/codegen/t55.mx";
-        String file_name = "./testcases/optim-new/inline.mx";
-//        String file_name = "./testcases/sema/scope-package/scope-2.mx";
+//        String file_name = "./testcases/optim-new/inline.mx";
+        String file_name = "./testcases/sema/misc-package/misc-31.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
 //        PrintStream o = new PrintStream(new File("test.s"));
@@ -82,7 +82,7 @@ public class Main {
 //                new IRPrinter(blocks);
                 new RegAllocate(blocks, stackAlloc);
             }
-            new IRPrinter(blocks);
+//            new IRPrinter(blocks);
             new AsmPrinter(blocks, stackAlloc, spillPara);
         } catch (error er) {
             System.err.println(er.toString());
