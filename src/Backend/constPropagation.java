@@ -8,11 +8,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 
 public class constPropagation{
-    private HashMap<String, HashSet<defineNode>> definedVar = new HashMap<>();
+    private HashMap<String, HashSet<defineNode>> definedVar;
     private HashSet<defineNode> workList = new HashSet<>();
-    private HashMap<Integer, block> index2blk = new HashMap<>();
+    private HashMap<Integer, block> index2blk;
     private HashMap<Integer, HashSet<Integer>> preBlk = new HashMap<>();
     private HashSet<defineNode> Done = new HashSet<>();
+    private HashMap<String, entity> glblVars = new HashMap<>();
 
     public constPropagation(HashMap<String, block> blocks){
         for (String name : blocks.keySet()){
@@ -27,6 +28,50 @@ public class constPropagation{
                 for (defineNode todo : workList) propagate(todo);
                 workList = new HashSet<>();
                 updateList();
+            }
+        }
+
+        definedVar = new HashMap<>();
+        index2blk = new HashMap<>();
+        for (String name : blocks.keySet()) {
+            if (name.equals("_VAR_DEF")) continue;
+            addGlblConst(blocks.get(name));
+        }
+        propagateGlbl();
+    }
+
+    public void addGlblConst(block blk){
+        if (index2blk.containsKey(blk.index)) return;
+        else index2blk.put(blk.index, blk);
+        for (statement s : blk.stmts){
+            if (s instanceof store && ((store) s).id != null && ((store) s).id.id.startsWith("@") && ((store) s).value.is_constant){
+                if(!definedVar.containsKey(((store) s).id.id)) definedVar.put(((store) s).id.id, new HashSet<>());
+                definedVar.get(((store) s).id.id).add(new defineNode(s, blk.index));
+            }
+        }
+        for (block b : blk.successors()) addGlblConst(b);
+    }
+
+    public void propagateGlbl(){
+        for (String id : definedVar.keySet()){
+            if (definedVar.get(id).size() == 1){
+                entity const_ = null;
+                for (defineNode d : definedVar.get(id)) const_ = ((store) d.def).value;
+                for (Integer blk : index2blk.keySet()){
+                    for (int i = 0; i < index2blk.get(blk).stmts.size(); ++i){
+                        statement s = index2blk.get(blk).stmts.get(i);
+                        if (s instanceof load){
+                            load l = (load) s;
+                            if (l.id != null && l.id.id.equals(id)) {
+                                index2blk.get(blk).stmts.add(i, new assign(new entity(l.to), new entity(const_)));
+                                index2blk.get(blk).stmts.remove(s);
+                            }
+                        }
+                    }
+                }
+                for (defineNode d : definedVar.get(id)) {
+                    index2blk.get(d.blk).stmts.remove(d.def);
+                }
             }
         }
     }
@@ -216,6 +261,73 @@ public class constPropagation{
             }
             index2blk.get(todo.blk).stmts.remove(todo.def);
             definedVar.get(id).remove(todo);
+        } else {
+            block blk = index2blk.get(todo.blk);
+            Integer index = blk.stmts.indexOf(todo.def);
+            boolean ret = false;
+            for (int i = index + 1; i < blk.stmts.size(); ++i){
+                statement s = blk.stmts.get(i);
+                if (s instanceof binary) {
+                    binary b = (binary) s;
+                    if (!b.op1.is_constant && b.op1.id.equals(id)) b.op1 = new entity(const_);
+                    if (!b.op2.is_constant && b.op2.id.equals(id)) b.op2 = new entity(const_);
+                    if (b.lhs.id.equals(id)){
+                        ret = true;
+                        break;
+                    }
+                } else if (s instanceof branch) {
+                    branch b = (branch) s;
+                    if (!b.flag.is_constant && b.flag.id.equals(id)) b.flag = new entity(const_);
+                } else if (s instanceof ret) {
+                    ret r = (ret) s;
+                    if (r.value != null && !r.value.is_constant && r.value.id.equals(id)) r.value = new entity(const_);
+                } else if (s instanceof assign) {
+                    assign a_ = (assign) s;
+                    if (a_.rhs != null && !a_.rhs.is_constant && a_.rhs.id.equals(id)) a_.rhs = new entity(const_);
+                    if (a_.lhs.id.equals(id)){
+                        ret = true;
+                        break;
+                    }
+                } else if (s instanceof load) {
+                    if (((load) s).to.id.equals(id)){
+                        ret = true;
+                        break;
+                    }
+                } else if (s instanceof store) {
+                    store s_ = (store) s;
+                    if (!s_.value.is_constant && s_.value.id.equals(id)) s_.value = new entity(const_);
+                }
+            }
+            if (!ret){
+                for (block blk_ : blk.successors()){
+                    if (preBlk.get(blk_.index).size() == 1){
+                        for (int i = 0; i < blk_.stmts.size(); ++i){
+                            statement s = blk_.stmts.get(i);
+                            if (s instanceof binary) {
+                                binary b = (binary) s;
+                                if (!b.op1.is_constant && b.op1.id.equals(id)) b.op1 = new entity(const_);
+                                if (!b.op2.is_constant && b.op2.id.equals(id)) b.op2 = new entity(const_);
+                                if (b.lhs.id.equals(id)) break;
+                            } else if (s instanceof branch) {
+                                branch b = (branch) s;
+                                if (!b.flag.is_constant && b.flag.id.equals(id)) b.flag = new entity(const_);
+                            } else if (s instanceof ret) {
+                                ret r = (ret) s;
+                                if (r.value != null && !r.value.is_constant && r.value.id.equals(id)) r.value = new entity(const_);
+                            } else if (s instanceof assign) {
+                                assign a_ = (assign) s;
+                                if (a_.rhs != null && !a_.rhs.is_constant && a_.rhs.id.equals(id)) a_.rhs = new entity(const_);
+                                if (a_.lhs.id.equals(id)) break;
+                            } else if (s instanceof load) {
+                                if (((load) s).to.id.equals(id)) break;
+                            } else if (s instanceof store) {
+                                store s_ = (store) s;
+                                if (!s_.value.is_constant && s_.value.id.equals(id)) s_.value = new entity(const_);
+                            }
+                        }
+                    }
+                }
+            }
         }
         Done.add(todo);
         // todo : if propagation is not thorough (most cases in this implementation), statement shouldn't be deleted
