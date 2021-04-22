@@ -235,7 +235,9 @@ public class IRBuilder implements ASTVisitor {
             }
         } else {
             if (currentScope.parentScope() == null){
-                currentBlock.push_back(new assign(new entity("@" + id), null));
+                entity tmp = new entity();
+                currentBlock.push_back(new assign(new entity(tmp), new entity(0)));
+                currentBlock.push_back(new store(new entity("@" + id), new entity(tmp), true));
             } else {
                 currentBlock.push_back(new assign(new entity(id), null));
             }
