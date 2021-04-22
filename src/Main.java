@@ -24,7 +24,7 @@ public class Main {
 //        String file_name = "./testcases/codegen/sorting/merge_sort.mx";
 //        String file_name = "./testcases/codegen/shortest_path/dijkstra.mx";
 //        String file_name = "./testcases/codegen/t2.mx";
-        String file_name = "./testcases/optim-new/inline-adv.mx";
+        String file_name = "./testcases/optim-new/const-adv.mx";
 //        String file_name = "./testcases/sema/misc-package/misc-24.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
@@ -71,7 +71,7 @@ public class Main {
                 new inline(blocks);
 //                new IRPrinter(blocks);
 //                System.out.println("___________________const________________");
-//                new constPropagation(blocks);
+                new constPropagation(blocks);
 //                new IRPrinter(blocks);
 //                System.out.println("___________________CFG________________");
                 new CFGopt(blocks);
