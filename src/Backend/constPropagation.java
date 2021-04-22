@@ -44,7 +44,7 @@ public class constPropagation{
         if (index2blk.containsKey(blk.index)) return;
         else index2blk.put(blk.index, blk);
         for (statement s : blk.stmts){
-            if (s instanceof store && ((store) s).id != null && ((store) s).id.id.startsWith("@") && ((store) s).value.is_constant){
+            if (s instanceof store && ((store) s).id != null && ((store) s).id.id.startsWith("@")){
                 if(!definedVar.containsKey(((store) s).id.id)) definedVar.put(((store) s).id.id, new HashSet<>());
                 definedVar.get(((store) s).id.id).add(new defineNode(s, blk.index));
             }
@@ -57,6 +57,8 @@ public class constPropagation{
             if (definedVar.get(id).size() == 1){
                 entity const_ = null;
                 for (defineNode d : definedVar.get(id)) const_ = ((store) d.def).value;
+                if (!const_.is_constant) continue;
+//                System.out.println(id);
                 for (Integer blk : index2blk.keySet()){
                     for (int i = 0; i < index2blk.get(blk).stmts.size(); ++i){
                         statement s = index2blk.get(blk).stmts.get(i);
