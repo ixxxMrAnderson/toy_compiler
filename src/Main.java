@@ -26,8 +26,8 @@ public class Main {
         String file_name = "./testcases/codegen/t29.mx";
 //        String file_name = "./testcases/optim-new/inline-adv.mx";
 //        String file_name = "./testcases/sema/misc-package/misc-24.mx";
-        InputStream input = new FileInputStream(file_name);
-//        InputStream input = System.in;
+//        InputStream input = new FileInputStream(file_name);
+        InputStream input = System.in;
 //        PrintStream o = new PrintStream(new File("test.s"));
 //        System.setOut(o);
 //
