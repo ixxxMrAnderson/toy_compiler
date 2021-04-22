@@ -87,7 +87,8 @@ public class inline implements Pass{
         statement s = blk.stmts.get(i);
         block toCpy = blocks.get(((call) s).funID);
 //        System.out.println("wrong inline " + ((call) s).funID + " in " + currentFun);
-        if (!currentFun.equals("main")) return;
+//        if (!currentFun.equals("main")) return;
+        if (!canInline(((call) s).funID)) return;
         if (!inlineCnt.containsKey(((call) s).funID)) inlineCnt.put(((call) s).funID, 1);
         else if (inlineCnt.get(((call) s).funID) > 0 && !canInline(((call) s).funID)) return;
         else inlineCnt.put(((call) s).funID, inlineCnt.get(((call) s).funID) + 1);
