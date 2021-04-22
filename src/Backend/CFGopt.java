@@ -23,6 +23,7 @@ public class CFGopt implements Pass{
                 block pre = null;
                 for (Integer i : preBlk.get(b)) pre = index2blk.get(i);
                 if (pre.stmts.size() == 0 || pre.tail() instanceof jump && ((jump) pre.tail()).destination == pre) continue;
+                if (index2blk.get(b).stmts.size() == 0 || index2blk.get(b).tail() instanceof jump && ((jump) index2blk.get(b).tail()).destination == index2blk.get(b)) continue;
                 Integer index = -1;
 //                System.out.println("combine_"+b+"_to_"+pre.index);
                 for (int i = 0; i < pre.stmts.size(); ++i){

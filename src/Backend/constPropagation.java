@@ -303,6 +303,8 @@ public class constPropagation{
             if (!ret){
                 for (block blk_ : blk.successors()){
                     if (preBlk.get(blk_.index).size() == 1){
+                        if (blk_.stmts.size() > 0 && blk_.tail() instanceof jump && ((jump) blk_.tail()).destination == blk_) continue;
+//                        System.out.println("propagate: "+id + " in "+blk_.index);
                         for (int i = 0; i < blk_.stmts.size(); ++i){
                             statement s = blk_.stmts.get(i);
                             if (s instanceof binary) {

@@ -23,8 +23,8 @@ public class Main {
 
 //        String file_name = "./testcases/codegen/sorting/merge_sort.mx";
 //        String file_name = "./testcases/codegen/shortest_path/dijkstra.mx";
-//        String file_name = "./testcases/codegen/e9.mx"; // e9 e7
-        String file_name = "./testcases/optim-new/const-adv.mx";
+        String file_name = "./testcases/codegen/t12.mx"; // 3 12 18 22
+//        String file_name = "./testcases/optim-new/const-adv.mx";
 //        String file_name = "./testcases/sema/scope-package/scope-2.mx";
 //        InputStream input = new FileInputStream(file_name);
         InputStream input = System.in;
@@ -57,6 +57,7 @@ public class Main {
             if (cnt > 200){
                 new RegAlloc(blocks, stackAlloc);
             } else {
+//                new IRPrinter(blocks);
 //                System.out.println("___________________CFGopt________________");
                 new CFGopt(blocks);
 //                new IRPrinter(blocks);
